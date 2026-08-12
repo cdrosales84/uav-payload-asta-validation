@@ -1,0 +1,33 @@
+# MATLAB session / autosave
+*.asv
+*.m~
+*.autosave
+slprj/
+*.slxc
+
+# Simulation outputs
+simulations/ResultadosPaper/
+simulations/**/ResultadosPaper/
+*.fig
+*.png
+*.eps
+*.avi
+*.mp4
+*.mat
+
+# Keep intentional parameter caches out of VCS unless curated
+GananciasAdaptativas*.mat
+
+# OS / editor
+.DS_Store
+Thumbs.db
+Desktop.ini
+.vscode/
+.idea/
+
+# Build leftovers (sources and committed Windows mex/exe are kept)
+*.obj
+*.o
+*.exp
+*.lib
+*.pdb
