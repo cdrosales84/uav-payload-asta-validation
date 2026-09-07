@@ -43,14 +43,13 @@ filtro_n = 1;
 filtro_fn = 0.1;
 filtro_exil = 0.35;
 filtro_epsi = 0.25;
-filtro_hp = 0.2;
-epsilon1 = 0.14;
+filtro_hp = 0.2;   % tau_h del estimador de dos etapas (Ec. h_p_filter) - PASO 2
+epsilon1 = 0.14;   % epsilon_1 del estimador de dos etapas (Ec. h_raw) - PASO 2
+K1_est = diag([3.0 3.0 3.0]);   % ganancia K1 de la etapa 1 del estimador (Ec. h_raw) - PASO 2
 
 %Ganancias del controlador de seguimiento de trayectoria
-Ktraj  = diag([4.0 4.0 2.0]);   %Ganancia fuera de la tanh (error x,y,z)
+Ktraj  = diag([1.4 1.4 0.7]);   %Ganancia fuera de la tanh (error x,y,z)
 Ktrajt = diag([0.35 0.35 0.35]);   %Ganancia dentro de la tanh (error x,y,z)
-Kvload  = diag([0.45 0.45 0.18]);
-Kvloadt = diag([0.90 0.90 0.60]);
 Kpsi = 1.0;             %Ganancia fuera de la tanh (error psi)
 Kpsit = 0.5;            %Ganancia dentro de la tanh (error psi)
 
@@ -66,7 +65,7 @@ ControlCarga = true; %Si es true, la trayectoria la sigue la carga, si
 % Flags para activar/desactivar etapas de control
 UsarKinematicoI        = false;   % Propuesta I: -k_osc*l*dot(theta)
 UsarKinematicoII       = true;   % Propuesta II: compensacion cinematica (R, R_dot)
-UsarCompensadorDinamico = false;  % Compensador dinamico Super-Twisting adaptativo
+UsarCompensadorDinamico = true;  % Compensador dinamico Super-Twisting adaptativo
 UsarAdaptacionST = false; % Se activa la adaptacion de ganancias del ST
 % Ganancias del compensador cinemático II propuesto
 % Kr_kinII = diag([0.15 0.15 0.0]);   % término restaurador horizontal
@@ -97,17 +96,17 @@ if CargarGananciasPrevias
             fprintf('  Kv inicial cargado: [%.4f, %.4f, %.4f, %.4f]\n', diag(Kv_inicial));
         else
             warning('El archivo no contiene Ku_final o Kv_final. Usando valores por defecto.');
-            Ku_inicial = diag([0.8 0.8 1.0 0.4]);
-            Kv_inicial = diag([0.2 0.2 0.3 0.1]);
+            Ku_inicial = diag([2.5 2.5 2.5 2.5]);
+            Kv_inicial = diag([2.5 2.5 2.5 2.5]);
         end
     else
         warning('Archivo de ganancias no encontrado: %s. Usando valores por defecto.', NombreArchivoGanancias);
-        Ku_inicial = diag([0.8 0.8 1.0 0.4]);
-        Kv_inicial = diag([0.2 0.2 0.3 0.1]);
+        Ku_inicial = diag([2.5 2.5 2.5 2.5]);
+        Kv_inicial = diag([2.5 2.5 2.5 2.5]);
     end
 else
-    Ku_inicial = diag([0.8 0.8 1.0 0.4]);
-    Kv_inicial = diag([0.2 0.2 0.3 0.1]);
+    Ku_inicial = diag([2.5 2.5 2.5 2.5]);
+    Kv_inicial = diag([2.5 2.5 2.5 2.5]);
 end
 %%
 % valores iniciales
@@ -285,11 +284,6 @@ ant_vel = zeros(4,1);
 w = zeros(4,1);
 s = zeros(4,length(tt)); % Superficie deslizante
 
-% Ku = Ku_inicial; % Valores iniciales de Ku (cargados o por defecto)
-% Kv = Kv_inicial; % Valores iniciales de Kv (cargados o por defecto)
-Ku = diag([1.25 1.25 1.15 0.05]);
-Kv = diag([0.18 0.18 0.25 0.01]);
-
 Gan_U = zeros(4,length(tt)); % Parametros de Ku
 Gan_V = zeros(4,length(tt)); % Parametros de Kv
 
@@ -312,26 +306,21 @@ UcDotFil_xy  = zeros(2,length(tt));        % derivada filtrada de la referencia 
 % Mantengo s global para compatibilidad con tus plots
 s = zeros(4,length(tt));
 
-% Parámetro de fuga del integrador
-lambda_i = 0.03;
+% Parámetros del compensador dinámico
+Lambda_xy = diag([0.08 0.08]);   % superficie deslizante (gamma del manuscrito)
+K1_xy     = diag([0.5 0.5]);     % ganancia del término sqrt(|s|) del super-twisting
+K2_xy     = diag([0.75 0.75]);   % ganancia del término integral del super-twisting
+alpha_udot = 0.15;               % filtro para la derivada de la referencia cinemática
 
-% Parámetros del ST consistente
-Lambda_xy = diag([0.08 0.08]);   % superficie deslizante
-K1_xy     = diag([0.5 0.5]);   % término sqrt(|s|)
-K2_xy     = diag([0.75 0.75]);   % término integral del ST
-tau_d     = 0.05;                % convierte pseudoaceleración en corrección de velocidad
-alpha_udot = 0.15;               % filtro para derivada de Uc
-
-gamma1 = 0.03;
-gamma2 = 0.04;
-sigma1 = 0.08;
-sigma2 = 0.08;
-
-K1_min = [0.08; 0.08];
-K1_max = [1.45; 1.45];
-
-K2_min = [0.10; 0.10];
-K2_max = [1.60; 1.60];
+% PASO 6: parametros FIJOS de la ley de control con inversion de modelo (Ec. AccionControl,
+% param_def), solo canales x,y. En esta version NO se adaptan.
+% quad1 recibe COMANDOS DE VELOCIDAD en m/s (ver Comandos en SimQuad.h), por lo que el
+% modelo xpp = kappa_u*u - kappa_v*xp debe tener ganancia estatica ~1, es decir kappa_u ~ kappa_v.
+% Con constante de tiempo del lazo de velocidad tau: kappa_u = kappa_v = 1/tau,
+% de donde theta1 = 1/kappa_u = tau  y  theta2 = kappa_v/kappa_u = 1.
+tau_vel   = 0.4;                          % [s] constante de tiempo estimada del lazo de velocidad
+theta1_xy = [tau_vel; tau_vel];           % theta1_i = 1/kappa_u_i = tau
+theta2_xy = [1.0; 1.0];                   % theta2_i = kappa_v_i/kappa_u_i = 1 (ganancia estatica unitaria)
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %% Inicio Simulaci�n
@@ -423,25 +412,28 @@ while (~finalCamino) && (k <= length(tt))
     yEpsi(k) = filtro_epsi*yEpsi(k)+ (1-filtro_epsi)*epsi_ant;
     epsi_ant = yEpsi(k);
 
-    %% Observador de estado suavizado para estimar h y hp = dh/dt
-    % Reemplazar el observador actual por un ST diferenciador
-    L1 = 3.0;   % ganancia capa 1
-    L2 = 4.5;   % ganancia capa 2
-    % En el bucle:
+    %% PASO 2: Estimador de velocidad del cable de dos etapas (Ecs. h_raw, h_hat_dyn, h_p_filter)
+    % Etapa 1 (ganancia alta, 1/epsilon1): estimacion cruda de la velocidad
     e_obs = yH(:,k) - yHe(:,k);
-    yHe_dot = yHp(:,k) - L1*sqrt(abs(e_obs)).*sign(e_obs);
-    yHp_dot = -L2*sign(e_obs);
-    yHe(:,k+1) = yHe(:,k) + yHe_dot*deltat;
-    yHp(:,k)   = yHp(:,k) + yHp_dot*deltat;
+    h_p_raw = (1/epsilon1) * K1_est * e_obs;
+
+    % Etapa 2: filtro pasabajos de primer orden (tau_h = filtro_hp) sobre la estimacion cruda
+    if k == 1
+        yHp(:,k) = h_p_raw;
+    else
+        yHp(:,k) = yHp(:,k-1) + (deltat/filtro_hp)*(h_p_raw - yHp(:,k-1));
+    end
+
+    % Estado interno h_hat, propagado al SIGUIENTE instante: dot(h_hat) = h_hat_p (Ec. h_hat_dyn)
+    yHe(:,k+1) = yHe(:,k) + yHp(:,k)*deltat;
     %% Calculo comandos de velocidad para cada objetivo de control
     % Parte base de seguimiento de trayectoria de la carga
     %     v_base = yXidp(:,k) + Ktraj*tanh(Ktrajt*yExil(:,k));
 %     Ktraj  = diag([3.6 3.6 2.0]);
 %     Ktrajt = diag([0.35 0.35 0.35]);
 
-    v_base = yXidp(:,k) ...
-        + Ktraj *tanh(Ktrajt *yExil(:,k))...
-        + Kvload*tanh(Kvloadt*yExilp(:,k));
+    % PASO 3: Ec. base_reference del manuscrito, lineal, sin saturacion y sin termino de velocidad de payload
+    v_base = yXidp(:,k) + Ktraj*yExil(:,k);
 
     % Inicialización
     %     yComp(:,k) = zeros(3,1);
@@ -454,7 +446,7 @@ while (~finalCamino) && (k <= length(tt))
             a_ref_h = yXidpp(1:2,k);
 
             % Referencia cuasiestática de inclinación horizontal
-            h_ref_h = -(lcuerda/9.81) * a_ref_h;  % PASO 1: signo corregido, Ec. href (Mapeo A.2)
+            h_ref_h = (lcuerda/9.81) * a_ref_h;
 
             % Derivada de h_ref (aprox. usando diferencia filtrada)
             if k == 1
@@ -482,11 +474,7 @@ while (~finalCamino) && (k <= length(tt))
             eh_h  = H_h  - h_ref_h;
             ehp_h = Hp_h - h_ref_dot_h;
 
-            comp_xy = -Kh*eh_h - Kdh*ehp_h;
-
-            % Saturación suave
-            comp_max = 0.9;
-            comp_xy = comp_max * tanh(comp_xy/comp_max);
+            comp_xy = -Kh*eh_h - Kdh*ehp_h;   % PASO 4: Ec. swing_compensation, sin saturacion
 
             yComp(:,k) = [comp_xy; 0];
         elseif UsarKinematicoI
@@ -551,8 +539,8 @@ while (~finalCamino) && (k <= length(tt))
     e_v_xy = e_v(1:2);
 
     if UsarCompensadorDinamico
-        % Integrador con fuga
-        ErrorAcum_xy = (1 - lambda_i*deltat)*ErrorAcum_xy + e_v_xy*deltat;
+        % PASO 5: integrador puro, sin fuga (Ec. s = v_tilde + Lambda*int(v_tilde dt))
+        ErrorAcum_xy = ErrorAcum_xy + e_v_xy*deltat;
 
         % Superficie deslizante
         s_xy(:,k) = e_v_xy + Lambda_xy*ErrorAcum_xy;
@@ -566,35 +554,19 @@ while (~finalCamino) && (k <= length(tt))
             UcDotFil_xy(:,k) = alpha_udot*UcDot_xy + (1-alpha_udot)*UcDotFil_xy(:,k-1);
         end
 
-        if UsarAdaptacionST
-            % Ley de adaptación tipo regresor (estilo: Theta = -Gamma*Phi'*s)
-            % Parametrización: Theta = [k1_x; k2_x; k1_y; k2_y]
-            Phi = [ (UcDotFil_xy(1,k) - Lambda_xy(1,1)*e_v_xy(1)), Xp(1), 0, 0; ...
-                    0, 0, (UcDotFil_xy(2,k) - Lambda_xy(2,2)*e_v_xy(2)), Xp(2)];
+        % PASO 6: ley de control con inversion de modelo (Ec. AccionControl), solo x,y.
+        % kappa_u_hat, kappa_v_hat (via theta1_xy, theta2_xy) son FIJAS: en esta version
+        % NO hay adaptacion de parametros.
+        a_xy = UcDotFil_xy(:,k) - Lambda_xy*e_v_xy;              % a = v_d_dot - gamma*v_tilde
+        phi_theta_xy = theta1_xy.*a_xy + theta2_xy.*Xp(1:2);     % phi*theta_hat (Ec. AccionControl)
 
-            Gamma_st = diag([gamma1, gamma2, gamma1, gamma2]);
-            Theta = -Gamma_st * (Phi' * s_xy(:,k));
-
-            k1_vec = [K1_xy(1,1); K1_xy(2,2)] + deltat*[Theta(1); Theta(3)];
-            k2_vec = [K2_xy(1,1); K2_xy(2,2)] + deltat*[Theta(2); Theta(4)];
-
-            k1_vec = min(max(k1_vec, K1_min), K1_max);
-            k2_vec = min(max(k2_vec, K2_min), K2_max);
-
-            K1_xy = diag(k1_vec);
-            K2_xy = diag(k2_vec);
-        end
-
-        % Super-twisting estándar
+        % Super-twisting estandar (K1_xy, K2_xy FIJAS)
         sqrt_s_xy = sqrt(abs(s_xy(:,k))) .* sign(s_xy(:,k));
-        nu_xy = nu_xy - K2_xy*sign(s_xy(:,k))*deltat;
-        u_st_xy = -K1_xy*sqrt_s_xy + nu_xy;
+        nu_xy = nu_xy + K2_xy*sign(s_xy(:,k))*deltat;            % integral de K2*sign(s)
+        w_xy = K1_xy*sqrt_s_xy + nu_xy;                          % w = K1*sqrt|s|*sign(s) + int(K2*sign(s)dt)
 
-        % Pseudoaceleración comandada
-        a_cmd_xy = UcDotFil_xy(:,k) - Lambda_xy*e_v_xy + u_st_xy;
-
-        % Entrada final tipo velocidad corregida
-        yULocal(1:2,k) = yUcFil(1:2,k) + tau_d*a_cmd_xy;
+        % Ley de control: u = phi*theta_hat - w  (Ec. AccionControl)
+        yULocal(1:2,k) = phi_theta_xy - w_xy;
 
         % Z y yaw pasan directo
         yULocal(3,k) = yUcFil(3,k);
@@ -787,9 +759,9 @@ colors = [0 0.45 0.74;   % azul
     0.49 0.18 0.56];% morado
 %% Guardar ganancias adaptativas finales
 if GuardarGananciasFinales
-    % Obtener valores finales de Ku y Kv
-    Ku_final = Ku;
-    Kv_final = Kv;
+    % Valores de kappa_u, kappa_v usados (fijos: no hay adaptacion en esta version)
+    Ku_final = diag([1./theta1_xy; Ku_inicial(3,3); Ku_inicial(4,4)]);
+    Kv_final = diag([theta2_xy.*(1./theta1_xy); Kv_inicial(3,3); Kv_inicial(4,4)]);
 
     % Guardar en archivo .mat
     save(NombreArchivoGanancias, 'Ku_final', 'Kv_final', '-v7.3');
@@ -1022,7 +994,7 @@ if ExportarResultadosPaper
         'RMSE_pos', 'RMSE_ErrorControl', 'RMSE_vel_payload', ...
         'RMSE_alpha', 'max_alpha', 'rho_rms', 'max_rho', ...
         'vperp_rms', 'vperp_peak', ...
-        'Gan_U', 'Gan_V', 'Ku', 'Kv', 'xd', 'yd', 'zd', 'pd', ...
+        'Gan_U', 'Gan_V', 'theta1_xy', 'theta2_xy', 'xd', 'yd', 'zd', 'pd', ...
         'lcuerda', 'payload', 'tam_carga', 'frameRate', 'TrayectoriaDefault', '-v7.3');
     fprintf('\nResultados exportados en %s:\n  %s\n  %s\n', CarpetaResultados, ...
         sprintf('%d figuras', length(figs)-1), archivo_mat);
