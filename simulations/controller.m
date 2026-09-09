@@ -17,7 +17,7 @@ frameRate = 50;
 deltat = 1/frameRate;
 
 % Trayectoria: 1=circ/elipse, 2=recta, 3=espiral, 4=Ocho, 5=Ocho inclinado, 6=punto. [] = preguntar
-TrayectoriaDefault = 1;
+TrayectoriaDefault = 5;
 if isempty(TrayectoriaDefault)
     [xd,yd,zd,pd,xdp,ydp,zdp,pdp,xdpp,ydpp,zdpp,pdpp] = ReferenciasCarga_ST(T,deltat);
 else
@@ -330,13 +330,36 @@ s = zeros(4,length(tt));
 % Par�metros del compensador din�mico
 Lambda_xy = diag([0.08 0.08]);   % superficie deslizante (gamma del manuscrito)
 % DIAGNOSTICO (2026-09-07): se habian bajado K1_xy/K2_xy a 1/4 (0.125 y
-% 0.1875) para probar si el termino robusto era demasiado agresivo, pero
-% el sistema SIGUIO inestable -> descarta esa hipotesis. Se vuelve a los
-% valores originales aca, porque el cambio que se esta probando ahora es
-% estructural (sacar theta2_xy.*Xp de phi_theta_xy, ver mas abajo), no de
-% ganancia del ST.
-K1_xy     = diag([0.5 0.5]);     % ganancia del t�rmino sqrt(|s|) del super-twisting
-K2_xy     = diag([0.75 0.75]);   % ganancia del t�rmino integral del super-twisting
+% 0.1875) para probar si el termino robusto era demasiado agresivo, en la
+% config AISLADA (UsarKinematicoII=false) que resulto no ser valida para
+% diagnosticar (ver comentarios en la seccion de flags, mas arriba). En la
+% config COMBINADA (la real) nunca se habian tocado estas ganancias.
+% DIAGNOSTICO (2026-09-08): datos de simulacion de la config combinada con
+% filtro_hp=0.06 mostraron una oscilacion que crece LENTAMENTE (en la
+% frecuencia natural del pendulo) a partir de t~50s. Se probo agregar fuga
+% al integrador ErrorAcum_xy (paso 5) para ver si era windup - el usuario
+% confirmo que no cambio nada, descartando esa hipotesis (revertido, ver
+% mas abajo en la seccion del compensador dinamico). Se probo subir
+% K1_xy/K2_xy al DOBLE de los originales (1.0/1.5) en la config combinada:
+% RESUELTO. Simulacion completa de 100s, sin cortes, max_alpha bajo de
+% 79.9 grados a 23.0 grados, RMSE_ErrorControl de 1.168m a 0.544m, rho
+% acotado y estacionario en toda la ventana (sin crecimiento). Se prueba
+% ahora un valor intermedio (x1.5 en vez de x2) para ver si alcanza con
+% menos ganancia sin perder la estabilidad lograda. Valores originales y
+% el x2 que ya funciono quedan comentados como referencia.
+% K1_xy     = diag([0.5 0.5]);     % valor original
+% K2_xy     = diag([0.75 0.75]);   % valor original
+% K1_xy     = diag([0.75 0.75]);    % x1.5 - probado 2026-09-08
+% K2_xy     = diag([1.125 1.125]);  % x1.5 - probado 2026-09-08
+% DIAGNOSTICO (2026-09-08): el usuario probo varias combinaciones de
+% ganancias despues de este punto y perdio el registro exacto de cual
+% config uso en cada corrida - todas terminaron inestabilizandose. Se
+% vuelve a fijar la UNICA config confirmada estable con datos de
+% simulacion completos (100s, sin cortes, max_alpha 23 grados en vez de
+% 79.9, RMSE_ErrorControl 0.544m) para volver a validarla desde un punto
+% de referencia conocido antes de seguir ajustando.
+K1_xy     = diag([1.0 1.0]);     % ganancia del t�rmino sqrt(|s|) del super-twisting (x2, CONFIRMADO estable 2026-09-08)
+K2_xy     = diag([1.5 1.5]);     % ganancia del t�rmino integral del super-twisting (x2, CONFIRMADO estable 2026-09-08)
 alpha_udot = 0.15;               % filtro para la derivada de la referencia cinem�tica
 
 % PASO 6: parametros FIJOS de la ley de control con inversion de modelo (Ec. AccionControl,
@@ -575,6 +598,14 @@ while (~finalCamino) && (k <= length(tt))
 
     if UsarCompensadorDinamico
         % PASO 5: integrador puro, sin fuga (Ec. s = v_tilde + Lambda*int(v_tilde dt))
+        % DIAGNOSTICO (2026-09-08): se habia probado agregar una fuga chica
+        % (fuga_xy=0.08) para acotar un posible windup, pero el usuario
+        % confirmo que el sistema se comporta IGUAL (mismo inicio del
+        % crecimiento, ~50s). Con una constante de tiempo de fuga de ~12.5s
+        % sobre 50s de simulacion deberia haberse notado una diferencia si el
+        % problema fuera acumulacion sin limite - al no notarse, se descarta
+        % el windup del integrador como causa dominante y se revierte al
+        % integrador puro original.
         ErrorAcum_xy = ErrorAcum_xy + e_v_xy*deltat;
 
         % Superficie deslizante
