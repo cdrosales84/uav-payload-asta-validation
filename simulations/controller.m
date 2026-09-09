@@ -17,7 +17,7 @@ frameRate = 50;
 deltat = 1/frameRate;
 
 % Trayectoria: 1=circ/elipse, 2=recta, 3=espiral, 4=Ocho, 5=Ocho inclinado, 6=punto. [] = preguntar
-TrayectoriaDefault = 5;
+TrayectoriaDefault = 1;
 if isempty(TrayectoriaDefault)
     [xd,yd,zd,pd,xdp,ydp,zdp,pdp,xdpp,ydpp,zdpp,pdpp] = ReferenciasCarga_ST(T,deltat);
 else
@@ -360,7 +360,7 @@ Lambda_xy = diag([0.08 0.08]);   % superficie deslizante (gamma del manuscrito)
 % de referencia conocido antes de seguir ajustando.
 K1_xy     = diag([1.0 1.0]);     % ganancia del t�rmino sqrt(|s|) del super-twisting (x2, CONFIRMADO estable 2026-09-08)
 K2_xy     = diag([1.5 1.5]);     % ganancia del t�rmino integral del super-twisting (x2, CONFIRMADO estable 2026-09-08)
-alpha_udot = 0.15;               % filtro para la derivada de la referencia cinem�tica
+alpha_udot = 0.7;               % filtro para la derivada de la referencia cinem�tica
 
 % PASO 6: parametros FIJOS de la ley de control con inversion de modelo (Ec. AccionControl,
 % param_def), solo canales x,y. En esta version NO se adaptan.
