@@ -1,7 +1,7 @@
 % mex load1.cpp
 % mex laser1.cpp
 % mex fforce1.cpp
-% mex rope1.cpp
+% mex rCIONe1.cpp
 % mex simulation1.cpp
 % mex force1.cpp
 % mex quad1.cpp
@@ -247,6 +247,7 @@ epsi_ant = 0;
 he_ant = zeros(3,1);
 hp_ant = zeros(3,1);
 yComp_ant = zeros(3,1);
+comp_xy_ant = zeros(2,1);   % sin uso: era el estado del filtro sobre comp_xy (OPCION 1, descartada 2026-09-16)
 
 lastsize = 0; %para sobreescribir el string (mensaje) de salida
 tic;
@@ -534,6 +535,23 @@ while (~finalCamino) && (k <= length(tt))
 
             comp_xy = -Kh*eh_h - Kdh*ehp_h;   % PASO 4: Ec. swing_compensation, sin saturacion
 
+            % DIAGNOSTICO (2026-09-16): la superficie deslizante s_xy mostraba
+            % una oscilacion sostenida (no creciente) de periodo ~0.8s (~7.85
+            % rad/s), medida directamente en el grafico de s a resolucion
+            % completa - NO es la frecuencia del pendulo (w0=2.21 rad/s) ni la
+            % de la trayectoria (0.63 rad/s).
+            % OPCION 1 (DESCARTADA): se probo filtrar comp_xy con un pasabajos
+            % suave (alpha_comp=0.10) antes de sumarlo a v_base, pensando que
+            % el ST estaba "persiguiendo" contenido oscilatorio de la
+            % referencia. RESULTADO: empeoro - la amplitud de s casi se
+            % duplico (de ~0.25 a ~0.6) y el periodo se alargo. Explicacion:
+            % comp_xy no es una referencia externa, es una correccion por
+            % realimentacion en tiempo real del swing medido (eh_h, ehp_h).
+            % Filtrarla no le "saca el filo" a nada, le agrega retardo de fase
+            % a un lazo de realimentacion real - eso reduce margen de
+            % estabilidad y agranda la oscilacion, no la corrige. Revertido
+            % (comp_xy_ant queda declarado pero sin usar, ver OPCION 2 en el
+            % compensador dinamico mas abajo para el intento vigente).
             yComp(:,k) = [comp_xy; 0];
         elseif UsarKinematicoI
             Kosc = diag([0.2 0.2 0.0]);
@@ -640,8 +658,22 @@ while (~finalCamino) && (k <= length(tt))
         phi_theta_xy = theta1_xy.*a_xy + theta2_xy.*Xp(1:2);     % phi*theta_hat (Ec. AccionControl)
 
         % Super-twisting estandar (K1_xy, K2_xy FIJAS)
-        sqrt_s_xy = sqrt(abs(s_xy(:,k))) .* sign(s_xy(:,k));
-        nu_xy = nu_xy + K2_xy*sign(s_xy(:,k))*deltat;            % integral de K2*sign(s)
+        % DIAGNOSTICO (2026-09-16): la OPCION 1 (filtrar comp_xy) empeoro la
+        % oscilacion de s (ver comentario en el compensador cinematico, mas
+        % arriba). OPCION 2 (esta): capa limite (boundary layer) sobre
+        % sign(s), reemplazandolo por una aproximacion suave s/(|s|+phi_bl).
+        % Esto ataca el chattering donde realmente se origina (la
+        % discontinuidad de la ley de control en s=0), sin agregar retardo a
+        % ningun lazo de realimentacion. phi_bl=0.03 (m/s) es chico respecto
+        % a la amplitud tipica de la oscilacion medida (~0.2-0.6), asi que la
+        % robustez del ST para |s|>>phi_bl no deberia verse afectada; solo se
+        % suaviza el entorno inmediato de s=0. Si no alcanza, subir phi_bl
+        % (mas suavizado, menos robustez fina); si mata demasiada
+        % correccion, bajarlo.
+        phi_bl = 0.03;   % ancho de la capa limite [m/s]
+        sign_s_xy = s_xy(:,k) ./ (abs(s_xy(:,k)) + phi_bl);      % aprox. suave de sign(s)
+        sqrt_s_xy = sqrt(abs(s_xy(:,k))) .* sign_s_xy;
+        nu_xy = nu_xy + K2_xy*sign_s_xy*deltat;                   % integral de K2*sign(s) suavizado
         w_xy = K1_xy*sqrt_s_xy + nu_xy;                          % w = K1*sqrt|s|*sign(s) + int(K2*sign(s)dt)
 
         % Ley de control: u = phi*theta_hat - w  (Ec. AccionControl)
