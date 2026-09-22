@@ -96,7 +96,7 @@ UsarAdaptacionST = false; % Se activa la adaptacion de ganancias del ST
 Ph = diag([1 1 0]);
 
 %% Exportar figuras y datos para el paper (carpeta ResultadosPaper)
-ExportarResultadosPaper = true;   % true = guardar figuras .png/.fig y datos .mat
+ExportarResultadosPaper = false;   % true = guardar figuras .png/.fig y datos .mat
 CarpetaResultados = 'ResultadosPaper';  % carpeta dentro de Simulaciones
 % Opcion para cargar ganancias de una simulacion previa
 CargarGananciasPrevias = false;  % true = cargar ganancias guardadas, false = usar valores iniciales por defecto
@@ -670,7 +670,7 @@ while (~finalCamino) && (k <= length(tt))
         % suaviza el entorno inmediato de s=0. Si no alcanza, subir phi_bl
         % (mas suavizado, menos robustez fina); si mata demasiada
         % correccion, bajarlo.
-        phi_bl = 0.03;   % ancho de la capa limite [m/s]
+        phi_bl = 0.00;   % ancho de la capa limite [m/s]
         sign_s_xy = s_xy(:,k) ./ (abs(s_xy(:,k)) + phi_bl);      % aprox. suave de sign(s)
         sqrt_s_xy = sqrt(abs(s_xy(:,k))) .* sign_s_xy;
         nu_xy = nu_xy + K2_xy*sign_s_xy*deltat;                   % integral de K2*sign(s) suavizado
