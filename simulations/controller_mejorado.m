@@ -98,7 +98,7 @@ UsarCompensadorDinamico = true;  % Compensador dinamico Super-Twisting adaptativ
 % en true), donde el problema pasa a ser oscilacion residual (mas leve),
 % y se sigue el diagnostico ajustando filtro_hp (retardo del estimador de
 % swing, ver definicion mas abajo).
-UsarAdaptacionST = false; % Se activa la adaptacion de ganancias del ST
+UsarAdaptacionST = true; % Se activa la adaptacion de ganancias del ST
 % Ganancias del compensador cinem�tico II propuesto
 % Kr_kinII = diag([0.15 0.15 0.0]);   % t�rmino restaurador horizontal
 % Kv_kinII = diag([1.2 1.2 0.0]);   % t�rmino amortiguante horizontal
@@ -521,8 +521,8 @@ while (~finalCamino) && (k <= length(tt))
             Hp_h = yHp(1:2,k);
 
             % Ganancias recomendadas
-            Kh  = diag([1.8 1.8]);
-            Kdh = diag([0.6 0.6]);
+            Kh  = diag([3.0 3.0]);
+            Kdh = diag([0.3 0.3]);
 %             Kh  = diag([1.8 1.8]);
 %             Kdh = diag([0.55 0.55]);
 

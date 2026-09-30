@@ -12,7 +12,7 @@ clearvars global
 close all;
 clc;
 
-T = 100;%tiempo de simulaci�n
+T = 100;%tiempo de simulacion
 frameRate = 50;
 deltat = 1/frameRate;
 
