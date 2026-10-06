@@ -137,8 +137,12 @@ The outer-loop dynamics in Eqs. (16)–(17) are not derived from the UAV–paylo
 \end{point}
 
 \begin{reply}
-We sincerely thank the reviewer for this rigorous and insightful analysis. The reviewer is absolutely correct on all points: our previous formulation abused the kinematic abstraction, leading to a circular definition of the perturbation term, an overreach in the stability claims of Theorem 1, and an undeniable contradiction regarding Global Exponential Stability. We have thoroughly rewritten the "Closed-Loop Error Analysis" section to address these critical flaws. The modifications are detailed below:1. Correction of the Cable-Error Dynamics and Circularity: We agree that forcing the cable-error dynamics into a first-order equation ($\dot{\tilde{h}}_h = -K_h\tilde{h}_h + \xi_h$) by hiding the physical pendulum acceleration ($\ddot{\theta}$) inside the perturbation term $\xi_h$ created an algebraic loop. To correct this, we have abandoned the flawed first-order simplification. The revised manuscript now explicitly introduces the time-scale separation between the fast inner velocity-tracking loop and the slower outer kinematic loop. The perturbation term $\xi_h$ has been rigorously redefined to depend only on strictly external or pre-determined bounded signals: the observer estimation error ($\mathbf{e}_h$) and the inner-loop velocity tracking error ($\tilde{\mathbf{v}} = \dot{\mathbf{x}} - \mathbf{v}_c$). By removing $\dot{\mathbf{h}}$ from the definition of $\xi_h$, the circularity has been entirely eliminated.2. Redefinition of Theorem 1 (Scope of Stability): The reviewer rightly pointed out that Theorem 1 did not prove the stability of the complete physical UAV-payload system. We have revised Theorem 1 to clarify its actual scope. The theorem now formally establishes the Input-to-State Stability (ISS) of the outer kinematic layer, treating the unmodeled higher-order pendulum dynamics and the inner-loop tracking errors as bounded non-vanishing perturbations. We now explicitly state that Theorem 1 validates the kinematic reference generation, while the stability of the physical interconnected system relies on the robustness of the dynamic compensator (addressed in Section [Insert Section Number]).3. Correction from Global to Local Stability: We apologize for the oversight regarding the global stability claim. As the reviewer correctly noted, any model relying on a small-angle approximation ($\Vert{}\mathbf{h}_h\Vert{}/l \ll 1$) and quasi-static behavior is inherently restricted to a local operating regime. We have corrected "Global Exponential Stability (GES)" to "Local Exponential Stability (LES)" (and regional ISS for the perturbed case) throughout the manuscript. The proofs have been updated to explicitly define the domain of attraction $\mathcal{D}$, which is strictly bounded by the physical validity of the small-inclination assumption. All these changes have been highlighted in Section [Insert Section Number] of the revised manuscript. We believe these corrections provide the mathematical rigor that the previous version lacked, and we are grateful to the reviewer for pointing out these foundational issues. 
-
+We thank the reviewer for this insightful observation. We acknowledge that the original shorthand definition of $\xi_h$ implicitly contained the error derivative $\dot{\tilde{h}}_h$ through the estimator output $\hat{h}_{p,h}$, creating an algebraic loop in the stability presentation. Furthermore, we agree that under Assumption 3 (small-inclination and quasi-static regime), the stability property is strictly local.To address this issue, we have revised Section 2.4 and Theorem 1 as follows:
+\begin{enumerate}
+\item Derivation of the outer-loop equations: This version presents the derivation of the kinematic equations given in equations (7)–(31).
+\item Elimination of Circularity: By explicitly expanding $\hat{h}_{p,h} = \dot{\tilde{h}}_h + \dot{h}_h^* + e_h$ into the kinematic closed loop, we group the derivative terms on the left-hand side:$$(I + K_{dh}) \dot{\tilde{h}}_h = -K_h \tilde{h}_h - K_{dh} e_h - \dot{h}_h^* + \mu_h$$Since $K_{dh}$ is positive definite, $(I + K_{dh})$ is nonsingular. Multiplying by $(I + K_{dh})^{-1}$ yields the non-circular error subsystem:$$\dot{\tilde{h}}_h = -\bar{K}_h \tilde{h}_h + \xi_h$$where $\bar{K}_h = (I + K_{dh})^{-1} K_h$ and $\xi_h = (I + K_{dh})^{-1} (-K_{dh} e_h - \dot{h}_h^* + \mu_h)$. Here, $\xi_h$ depends exclusively on exogenous bounded signals ($e_h, \dot{h}_h^*, \mu_h$), removing any circular dependence on $\dot{\tilde{h}}_h$.
+\item Clarification of Local Stability: We have explicitly restricted Theorem 1 to Local Exponential Stability (LES) in the unperturbed case and Local Input-to-State Stability (Local ISS) in the presence of bounded perturbations $\xi_h$ and $\zeta$, valid within the region of attraction $\mathcal{D} = \{\tilde{h}_h \in \mathbb{R}^2 : \Vert{}\tilde{h}_h\Vert{} \le h_{max}\}$ defined by Assumption 3. All references to global stability claims have been corrected.
+\end{enumerate}
 \end{reply}
 
 \begin{point}
@@ -230,7 +234,7 @@ Remove unnecessary abbreviations from the abstract and keywords. (LMD, STA)
 \end{point}
 
 \begin{reply}
-The authors thank the reviewer for the positive feedback.
+We thank the reviewer for this comment. The abbreviations LMD and STA have been removed from the abstract and the keywords. These terms now appear in full as “last-mile delivery” and “super-twisting algorithm”. The abbreviation UAV is retained in the abstract because it is used more than once in that paragraph.
 \end{reply}
 
 \begin{point}
@@ -238,11 +242,7 @@ Some of the introduction paragraphs are too long.
 \end{point}
 
 \begin{reply}
-We thank the reviewer for this comment. The introduction has been revised by splitting the longest 
-paragraphs at their natural topic boundaries: problem statement, scope, single-vehicle methods, 
-cooperative and related approaches, and the synthesis of the three research directions. 
-The technical content and the cited comparisons are unchanged; only the paragraph structure 
-has been reorganized to improve readability.
+The authors thank the reviewer for the positive feedback. We revised the introduction by splitting the longest paragraphs at natural topic boundaries: problem statement, scope, single-vehicle methods, cooperative and related approaches, and the synthesis of the three research directions. The technical content and cited comparisons remain unchanged; we only reorganized the paragraph structure to improve readability.
 \end{reply}
 
 \begin{point}
@@ -250,7 +250,7 @@ The terminology used to describe the proposed controller is not always consisten
 \end{point}
 
 \begin{reply}
-The authors thank the reviewer for the observation. 
+The authors thank the reviewer for the observation. The document was reviewed and corrected; therefore, the new version is consistent regarding the terms used to describe the controller.
 \end{reply}
 
 \begin{point}
@@ -258,16 +258,16 @@ The organization of Section 2 could be improved. The assumptions, system model, 
 \end{point}
 
 \begin{reply}
-We thank the reviewer for this suggestion. Section~2 (Methodology) has been reorganized so that the derivation can be followed in one sequence. As suggested, a new subsection, Assumptions, has been added. The model equations, the assumption statements, the control laws, and the stability proofs are unchanged; only their order and the corresponding cross-references have been updated.
+The authors thank the reviewer for the positive feedback. Section 2 (Methodology) has been reorganized so that the derivation can be followed in one sequence. As suggested, a new subsection, Assumptions, has been added. The model equations, the assumption statements, the control laws, and the stability proofs are unchanged; only their order and the corresponding cross-references have been updated.
 
 The section is now arranged as follows.
 \begin{enumerate}
-\item \textbf{System model.} The geometric description of the cable-suspended payload is followed by the vehicle velocity model, so that the cable vector, the disturbance, and the parameter matrices are defined before they are used.
-\item \textbf{Assumptions.} The six assumptions are collected in the new subsection. The first and the sixth support the dynamic compensator, and the other four support the kinematic controller. They are placed after the model, rather than before it, because each assumption refers to quantities introduced there.
-\item \textbf{Kinematic controller.} This subsection now contains only the outer-loop design.
-\item \textbf{Outer-loop stability.} The error analysis and its theorem follow that design directly.
-\item \textbf{Dynamic compensator.} This subsection now contains only the sliding surface and the adaptive super-twisting law.
-\item \textbf{Inner-loop stability.} The inner-loop theorem and its proof follow the compensator design.
+    \item System model. The geometric description of the cable-suspended payload is followed by the vehicle velocity model, so that the cable vector, the disturbance, and the parameter matrices are defined before they are used.
+    \item Assumptions. The six assumptions are collected in the new subsection. The first and the sixth support the dynamic compensator, and the other four support the kinematic controller. They are placed after the model, rather than before it, because each assumption refers to quantities introduced there.
+    \item Kinematic controller. This subsection now contains only the outer-loop design.
+    \item Outer-loop stability. The error analysis and its theorem follow that design directly.
+    \item Dynamic compensator. This subsection now contains only the sliding surface and the adaptive super-twisting law.
+    \item Inner-loop stability. The inner-loop theorem and its proof follow the compensator design.
 \end{enumerate}
 Each stability argument therefore stands next to the control law it concerns, and the assumptions are available before either design begins.
 \end{reply}
@@ -277,7 +277,7 @@ The relationship between the kinematic controller and the dynamic compensator sh
 \end{point}
 
 \begin{reply}
-The authors sincerely apologize for the spelling and grammatical issues in the previous version.
+The roles of the two loops and the signal that connects them are now stated once, at the opening of the kinematic controller and in the caption of the block diagram. The kinematic controller generates the velocity command so that the payload tracks the reference and the swing is reduced. The dynamic compensator does not suppress swing directly; it makes the UAV velocity track those commands under uncertainty and disturbances. The outer-loop analysis assumes that this command is realized exactly, and the inner loop enforces that condition approximately. The same distinction is no longer redefined in the introduction, the contributions, the simulation discussion, or the conclusions, which now refer to this statement. The simulation section still compares the kinematic controller alone with the full cascade, since that comparison is evidence of the separation rather than a second definition.
 \end{reply}
 
 \begin{point}
@@ -285,13 +285,13 @@ The simulation results section contains several qualitative statements describin
 \end{point}
 
 \begin{reply}
-We thank the reviewer for this comment. In the simulation section, each statement about performance now points to the figure or the table entry that supports it, and the same conclusion is no longer written twice.
+The authors thank the reviewer for the positive feedback. We thank the reviewer for this comment. In the simulation section, each statement about performance now points to the figure or the table entry that supports it, and the same conclusion is no longer written twice.
 
-In the payload-tracking subsection, the unfinished run is referred to panel (a) of the three-dimensional view, and the run that reaches the end of the trajectory is referred to panel (b). Position and yaw are referred to their time-history figure, and the swing signals $\alpha$, $\rho$, and $\|v_\perp\|$ are referred to the swing figure. An earlier sentence had attached the swing signals to the position figure; that citation has been corrected. Wording such as ``very good control error'' and ``significantly mitigated,'' which had no index, has been removed. The numerical comparison with the full cascade is left to the metrics table.
+In the payload-tracking subsection, the unfinished run is referred to in panel (a) of the three-dimensional view, and the run that reaches the end of the trajectory is referred to in panel (b). Position and yaw are referred to their time-history figure, and the swing signals $\alpha$, $\rho$, and $\|v_\perp\|$ are referred to the swing figure. An earlier sentence had attached the swing signals to the position figure; that citation has been corrected. Wording such as ``very good control error'' and ``significantly mitigated,'' which had no index, has been removed. The numerical comparison with the full cascade is left to the metrics table.
 
-In the dynamic-compensator subsection, the sequence of qualitative descriptions has been replaced by one paragraph. That paragraph names the four figures (position and yaw, swing, position and yaw error, and velocity error) and quotes two entries of the metrics table: the payload-position RMSE, from $0.4350$ to $0.3671\,\mathrm{m}$, and $\max v_T$, from $1.1420$ to $0.1403\,\mathrm{m/s}$ (about $88\%$). The following summary, which restated the same conclusion, has been removed.
+In the dynamic-compensator subsection, the sequence of qualitative descriptions has been replaced by one paragraph. That paragraph names the four figures (position and yaw, swing, control error, and velocity error) and quotes two entries of the metrics table: the payload-position RMSE, from $0.4350$ to $0.3671\,\mathrm{m}$, and $\max v_T$, from $1.1420$ to $0.1403\,\mathrm{m/s}$ (about $88\%$). The following summary, which restated the same conclusion, has been removed.
 
-The sentence that read this $88\%$ reduction as invariance of the payload trajectory to wind and to the cable state has been removed. The reduction belongs to the circular-trajectory comparison. The wind maneuver is discussed only in the next subsection, from its own figures.
+The sentence that read this $88\%$ reduction as invariance of the payload trajectory to wind and to the cable state has been removed. The reduction belongs to the circular-trajectory comparison. The wind maneuver is discussed only in the next subsection, using its own figures.
 
 In the wind subsection, the text had exchanged the position figure and the swing figure. Each sentence now cites the figure whose caption matches the variables being discussed. Statements of ``adequate'' tracking, of swing attenuation, and of restored symmetry, none of which was backed by a scalar index, have been replaced by what the figures show: bounded position, swing, and velocity error, and a return toward the reference after each gust. The closing paragraph that repeated those conclusions has been removed.
 
@@ -305,23 +305,17 @@ The captions of several figures should be revised.
 \end{point}
 
 \begin{reply}
-We thank the reviewer for this comment. The captions have been rewritten so that each one states what is plotted, on which maneuver, and for which controller. Conclusions that were previously repeated in the caption have been removed from it; they remain, where they are supported, in the text next to the corresponding figure or table.
+We thank the reviewer for this comment. The captions have been rewritten so that each one states what is plotted, on which maneuver, and for which controller. Conclusions that were previously repeated in the caption have been removed from it; they remain, where they are supported, in the text next to the corresponding figure or table. The schematic of the vehicle now names the inertial positions and the cable vector $\mathbf{h}=\mathbf{x}-\mathbf{x}_l$. The block diagram now names the two blocks and the command $\mathbf{u}_k$ that connects them. The three-dimensional view of the circular maneuver no longer refers to a ``basic pneumatic controller.'' Panel (a) is the kinematic law that does not compensate for swing, and panel (b) is the kinematic controller; the caption states only whether the run finishes.
 
-The schematic of the vehicle now names the inertial positions and the cable vector $\mathbf{h}=\mathbf{x}-\mathbf{x}_l$. The block diagram now names the two blocks and the command $\mathbf{u}_k$ that connects them. The three-dimensional view of the circular maneuver no longer refers to a ``basic pneumatic controller.'' Panel (a) is the kinematic law that does not compensate swing, and panel (b) is the kinematic controller; the caption states only whether the run finishes.
-
-The time-history captions for the circular trajectory now name the signals (position and yaw, swing variables, position and yaw errors, and velocity-tracking errors) and say whether the dynamic compensator is included. The wind captions name the lemniscate and the two gust intervals, and the swing caption uses the horizontal displacement $\rho$ rather than a ``displacement-related error.'' The benchmark captions name $\alpha$, $\rho$, and $\|v_\perp\|$, and the horizontal components of the inner-loop correction, and they no longer interpret the chattering in the caption itself.
+The time-history captions for the circular trajectory now name the signals (position and yaw, swing variables, position and yaw errors, and velocity-tracking errors) and say whether the dynamic compensator is included. The wind captions name the lemniscate and the two gust intervals, and the swing caption uses the horizontal displacement $\rho$ rather than a ``displacement-related error.'' The benchmark captions name $\alpha$, $\rho$, and $\|v_\perp\|$, and the horizontal components of the inner-loop correction, and they no longer interpret the chattering in the caption itself.    
 \end{reply}
 
 \begin{point}
-The claimed ``finite-time convergence'' of the super-twisting controller should be supported more rigorously. The current proof mainly establishes $\dot{V} \leq 0$ and invokes Barbalat's lemma to conclude asymptotic convergence. This does not by itself establish finite-time convergence. The authors should either provide an appropriate finite-time stability proof or revise the corresponding claims.
+The claimed “finite-time convergence” of the super-twisting controller should be supported more rigorously. The current proof mainly establishes $\dot{V} \leq 0$ and invokes Barbalat's lemma to conclude asymptotic convergence. This does not by itself establish finite-time convergence. The authors should either provide an appropriate finite-time stability proof or revise the corresponding claims.
 \end{point}
 
 \begin{reply}
-We agree with the reviewer. The Lyapunov argument shows that $\dot{V}\le 0$ outside a compact set, and that conclusion is practical stability. It does not establish finite-time convergence, and we have not added a finite-time proof.
-
-The sentence that attributed finite-time convergence to the adaptive super-twisting law has been replaced. The dynamic-compensator section now says that the law is used to attenuate the chattering of first-order sliding mode, and it points to Theorem~\ref{th:inner} for the result that is actually proved: the sliding variable and the parameter errors are uniformly ultimately bounded.
-
-The conclusions had gone further than this theorem. They stated that the velocity-tracking error converges asymptotically to zero and that the parameters converge under persistent excitation. Both statements have been removed. The conclusions now repeat the practical-stability statement of Theorem~\ref{th:inner}.
+The authors thank the reviewer for the positive feedback. We agree with the reviewer. The Lyapunov argument shows that $\dot{V}\le 0$ outside a compact set, and that conclusion is practical stability. It does not establish finite-time convergence, and we have not added a finite-time proof. The sentence that attributed finite-time convergence to the adaptive super-twisting law has been replaced. The dynamic-compensator section now says that the law is used to attenuate the chattering of first-order sliding mode, and it points to Theorem~\ref{th:inner} for the result that is actually proved: the sliding variable and the parameter errors are uniformly ultimately bounded. The conclusions had gone further than this theorem. They stated that the velocity-tracking error converges asymptotically to zero and that the parameters converge under persistent excitation. Both statements have been removed. The conclusions now repeat the practical-stability statement of Theorem~\ref{th:inner}.
 \end{reply}
 
 \begin{point}
@@ -329,13 +323,11 @@ There appears to be a dimensional/notation inconsistency in the adaptive paramet
 \end{point}
 
 \begin{reply}
-We checked the products and the transposes in the control law, the Lyapunov derivative, and the adaptation law. The revised manuscript does not use the parameterization $\boldsymbol{\phi}\in\mathbb{R}^{4\times 8}$, $\boldsymbol{\theta}\in\mathbb{R}^{8}$. The adapted quantities are the model matrices $\boldsymbol{\kappa}_u,\boldsymbol{\kappa}_v\in\mathbb{R}^{4\times 4}$. Equation numbers have shifted, so the expressions that corresponded to Eqs.~(31), (34) and (38)--(40) are now the control law \eqref{eq:AccionControl}, the Lyapunov candidate, and the adaptation law \eqref{eq:ajuste2}.
+The authors thank the reviewer for the positive feedback. We checked the products and the transposes in the control law, the Lyapunov derivative, and the adaptation law. The revised manuscript does not use the parameterization $\boldsymbol{\phi}\in\mathbb{R}^{4\times 8}$, $\boldsymbol{\theta}\in\mathbb{R}^{8}$. The adapted quantities are the model matrices $\boldsymbol{\kappa}_u,\boldsymbol{\kappa}_v\in\mathbb{R}^{4\times 4}$. Equation numbers have shifted, so the expressions that corresponded to Eqs.~(31), (34) and (38)--(40) are now the control law \eqref{eq:AccionControl}, the Lyapunov candidate, and the adaptation law \eqref{eq:ajuste2}.
 
 The dimensions are stated next to those expressions. With $n=4$, the vectors $\mathbf{u}$, $\mathbf{v}$, $\mathbf{v}_d$, $\tilde{\mathbf{v}}$, $\mathbf{w}$, $\mathbf{s}$ and $\boldsymbol{\delta}(t)$ lie in $\mathbb{R}^{n}$. The matrices $\boldsymbol{\beta}$, $\mathbf{K}_1$, $\mathbf{K}_2$ and the parameter matrices, their estimates and their errors, lie in $\mathbb{R}^{n\times n}$. The sign of $\mathbf{s}$ is taken componentwise, so $\mathbf{K}_1\sqrt{\|\mathbf{s}\|}\sign(\mathbf{s})$ and $\mathbf{K}_2\sign(\mathbf{s})$ are vectors in $\mathbb{R}^{n}$.
 
-The adaptation gain $\gamma>0$ is a scalar. It had been written in bold, as a matrix, in the Lyapunov function and in the adaptation law, and as a plain scalar in the final bound. It is now a scalar throughout, so $\gamma^{-1}\mathbf{u}\mathbf{s}^T$ is an $n\times n$ matrix, as is $\|\mathbf{s}\|\hat{\boldsymbol{\kappa}}^T$. The identity $\mathbf{s}^T\boldsymbol{\tilde{\kappa}}\mathbf{v}=\mathrm{tr}(\boldsymbol{\tilde{\kappa}}\mathbf{v}\mathbf{s}^T)$ matches a scalar to a scalar. The matrix norm in the bound is the Frobenius norm.
-
-After the adaptation law is substituted, the leakage terms are $-\gamma\|\mathbf{s}\|\mathrm{tr}(\boldsymbol{\tilde{\kappa}}\hat{\boldsymbol{\kappa}}^T)$. The factor $\gamma$ was missing from that line and was already present in the following bound; the two expressions now agree. The nominal matrices used to initialize the compensator are written as diagonal $4\times 4$ matrices, with the same diagonal entries as before.
+The adaptation gain $\gamma>0$ is a scalar. It had been written in bold, as a matrix, in the Lyapunov function and in the adaptation law, and as a plain scalar in the final bound. It is now a scalar throughout, so $\gamma^{-1}\mathbf{u}\mathbf{s}^T$ is an $n\times n$ matrix, as is $\|\mathbf{s}\|\hat{\boldsymbol{\kappa}}^T$. The identity $\mathbf{s}^T\boldsymbol{\tilde{\kappa}}\mathbf{v}=\mathrm{tr}(\boldsymbol{\tilde{\kappa}}\mathbf{v}\mathbf{s}^T)$ matches a scalar to a scalar. The matrix norm in the bound is the Frobenius norm. After the adaptation law is substituted, the leakage terms are $-\gamma\|\mathbf{s}\|\mathrm{tr}(\boldsymbol{\tilde{\kappa}}\hat{\boldsymbol{\kappa}}^T)$. The factor $\gamma$ was missing from that line and was already present in the following bound; the two expressions now agree. The nominal matrices used to initialize the compensator are written as diagonal $4\times 4$ matrices, with the same diagonal entries as before.
 \end{reply}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -349,7 +341,11 @@ The Introduction section lacks a comparison with existing methods.
 \end{point}
 
 \begin{reply}
-The authors thank the reviewer for the observation. Each of your comments will be addressed in detail.
+We thank the reviewer for this comment. The introduction discussed existing methods one by one, but it did not place them on a common set of design choices, so the difference between those methods and the proposed controller was easy to miss.
+
+We added Table~\ref{tab:method_comparison} at the end of the state-of-the-art subsection. The table compares representative geometric, robust, passivity-based, sliding-mode, planning, predictive, and cooperative designs along the features already used in the text: where the control objective is written, how payload swing is reduced, and how uncertainty and computation are handled. The last row is the proposed cascade. A paragraph after the table reads that comparison, and the research-gap subsection now opens from the table instead of restating the same contrasts in prose.
+
+The table is architectural. It is not a numerical ranking, and it does not claim that every cited controller was reimplemented. The only numerical comparison remains the inner-loop benchmark against a first-order sliding-mode baseline in Section~\ref{sec:simulations}. The last cell of the table also states the present limit of the claim: the design uses the quasi-static regime of Assumption~\ref{as:smallangle}, and the evidence in this paper is simulation.
 \end{reply}
 
 \begin{point}
@@ -357,7 +353,11 @@ The structure of the adaptive law is not clear enough.
 \end{point}
 
 \begin{reply}
-Thank you very much for your comment. 
+We thank the reviewer for this comment. The adaptation law was introduced inside the stability proof, and it was written as the derivative of the parameter error \(\boldsymbol{\tilde{\kappa}}\). That error depends on the unknown matrices \(\boldsymbol{\kappa}_u\) and \(\boldsymbol{\kappa}_v\), so the expression did not show which signals are integrated. The leakage term was attached to that error derivative, with the opposite sign of a restoring \(\sigma\)-modification.
+
+The law is now stated in Section~\ref{sec:dynamic}, immediately after the control law \eqref{eq:AccionControl}, as \eqref{eq:ajuste2}. It updates the estimates \(\hat{\boldsymbol{\kappa}}_u\) and \(\hat{\boldsymbol{\kappa}}_v\). Both are \(n\times n\) matrices, with \(n=4\), and the gain \(\gamma>0\) is a scalar. Each equation has two terms. The gradient term is \(\gamma^{-1}\mathbf{u}\mathbf{s}^{T}\) or \(-\gamma^{-1}\mathbf{v}\mathbf{s}^{T}\), and its sign follows the model \eqref{eq:ModeloLucas}. The leakage term is \(-\|\mathbf{s}\|\hat{\boldsymbol{\kappa}}^{T}\), and it uses only the current estimate. The right-hand side does not contain the unknown matrices.
+
+The proof keeps an equivalent form, \eqref{eq:ajuste_error}, obtained from \(\dot{\boldsymbol{\tilde{\kappa}}}=-\dot{\hat{\boldsymbol{\kappa}}}\) because the true parameters are constant. That form is used only to cancel the regressor in \(\dot{V}\). After the substitution, the factor \(\gamma\) multiplies the leakage traces, and the squared parameter errors enter \(\dot{V}\) with a negative sign.
 \end{reply}
 
 \begin{point}
@@ -365,7 +365,15 @@ Why does the regressor need to be persistently exciting for the parameter estima
 \end{point}
 
 \begin{reply}
-The authors thank the reviewer for the comment. 
+We thank the reviewer for this question. Persistent excitation is required for parameter convergence only in an ideal gradient law, with no disturbance and no leakage. In that law the update is driven by the products of the regressor with the sliding variable. After the sliding variable has reached zero, the update stops. Any component of the parameter error that stays orthogonal to the recorded regressor produces the same closed-loop signals, so it is never corrected. The integral condition
+\begin{equation*}
+\int_{t}^{t+T}\boldsymbol{\phi}(\tau)\boldsymbol{\phi}(\tau)^{\top}\,d\tau \ge \alpha I
+\end{equation*}
+removes that ambiguity: the only parameter error compatible with a zero residual is the zero error. For the full matrices \(\boldsymbol{\kappa}_u\) and \(\boldsymbol{\kappa}_v\), the regressor \(\boldsymbol{\phi}\) is the Kronecker regressor built from \(\mathbf{u}\) and \(\mathbf{v}\).
+
+That conclusion does not transfer to the law of this paper. Equation~\eqref{eq:ajuste2} keeps a leakage proportional to \(\|\mathbf{s}\|\), and the sliding dynamics keep the disturbance \(\boldsymbol{\delta}(t)\). The leakage balances the gradient away from the true matrices, and the disturbance imitates a parameter error. Both effects remain under persistent excitation. The update is also scaled by signals that vanish with \(\mathbf{s}\), so the estimates freeze in the sliding regime. Theorem~\ref{th:inner} therefore states uniform ultimate boundedness of the parameter errors.
+
+The conclusions previously said that parameter convergence required persistent excitation of the regressor. That sentence has been removed. The reasoning above is now Remark~\ref{rem:pe}, placed immediately after the proof of Theorem~\ref{th:inner}.
 \end{reply}
 
 \begin{point}
@@ -381,7 +389,13 @@ The authors are suggested to provide some recent results on the related topic of
 \end{point}
 
 \begin{reply}
-aa
+We thank the reviewer for this suggestion. Both works are now cited in the introduction, in a new paragraph that follows the discussion of adaptive and learning-based compensation. They belong to iterative learning control (ILC), an adaptive approach that the previous introduction did not cover.
+
+The paragraph summarizes the two designs. Shen et al. (2025), \emph{IEEE Transactions on Neural Networks and Learning Systems}, 36(7):13460--13469, treat strict-feedback systems with unknown state delays and input saturation. They combine radial-basis-function neural networks, Lyapunov--Krasovskii functionals, command filtering, and auxiliary saturation-compensation systems. Shen et al. (2026), \emph{IEEE Transactions on Reliability}, 75:87--96, introduce update laws with an equilibrium factor that tolerate initial-state errors and actuator faults in robot arms. In both works, convergence is established along the iteration axis through a composite energy function. The same paragraph cites two ILC designs for quadrotors, Schoellig et al. (2012) and Han et al. (2025), which learn over repeated or periodic trajectories.
+
+The paragraph also states how ILC differs from the compensator of this paper. ILC refines the input from one execution of the same task to the next, so it presupposes a task repeated over a finite interval. A delivery flight is executed once, along a reference that changes with each mission. The dynamic compensator therefore adapts its parameters along the time axis, within a single flight. The two suggested works also treat input saturation, delays, and actuator faults explicitly. These effects are not included in our analysis, and the paragraph refers to the conclusions, where their characterization is listed as future work.
+
+While revising this part, we noticed that Han et al. (2025) had been cited among the cooperative multi-UAV transport studies. That work concerns a single quadrotor without a suspended load, so the citation has been moved to the new paragraph.
 \end{reply}
 
 
