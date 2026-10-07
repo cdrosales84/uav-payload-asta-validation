@@ -1,0 +1,111 @@
+% Cambios en SN_Payload.tex necesarios para que el manuscrito coincida con paper_revision/
+% (respuesta al Comentario 1 del Revisor 1). Cada bloque indica que reemplaza.
+
+%% ---------------------------------------------------------------------------
+%% 1. Supuesto 3 y Ec. href: cambiar el signo (hoy dice -(l/g))
+%% ---------------------------------------------------------------------------
+% En Assumption~\ref{as:smallangle}:  \mathbf{h}_h^\star=(l/g)\,\ddot{\mathbf{x}}_{d,h}
+% Reemplazar Ec. (href) y la frase "obtained by filtered numerical differentiation":
+\begin{equation}\label{eq:href}
+\mathbf{h}_h^\star = \frac{l}{g}\,\ddot{\mathbf{x}}_{d,h},\qquad
+\dot{\mathbf{h}}_h^\star = \frac{l}{g}\,\dddot{\mathbf{x}}_{d,h}.
+\end{equation}
+Both quantities are evaluated analytically from the reference, which is three times
+differentiable by Assumption~\ref{as:reference}. With $\mathbf{h}=\mathbf{x}-\mathbf{x}_l$ the
+UAV leads the payload in the direction of the reference acceleration.
+
+%% ---------------------------------------------------------------------------
+%% 2. Ec. base_reference: agregar el feedforward
+%% ---------------------------------------------------------------------------
+\begin{equation}\label{eq:base_reference}
+\mathbf{v}_{\mathrm{base}} = \dot{\mathbf{x}}_d + \begin{bmatrix}\dot{\mathbf{h}}_h^\star\\ 0\end{bmatrix}
+ + K_{\mathrm{traj}}\,\tilde{\mathbf{x}}.
+\end{equation}
+Since $\mathbf{x}=\mathbf{x}_l+\mathbf{h}$, the UAV velocity that keeps the payload on the reference
+with the cable at its quasi-static inclination is $\dot{\mathbf{x}}_d+\dot{\mathbf{h}}^\star$; the
+second term supplies the horizontal part of that velocity.
+
+%% ---------------------------------------------------------------------------
+%% 3. Modelo del vehiculo (Ec. ModeloLucas): n = 2 canales en el marco de yaw
+%% ---------------------------------------------------------------------------
+% Reemplazar el parrafo "being n=4 ..." por:
+The velocity commands are applied in the yaw frame of the vehicle. Let
+$\mathbf{R}_\psi^{h}\in\mathbb{R}^{2\times2}$ be the upper-left block of \eqref{eq:yaw_rotation}. The
+horizontal velocity and the horizontal command of the kinematic controller are expressed in that frame,
+\begin{equation}\label{eq:yaw_frame}
+\mathbf{v} = (\mathbf{R}_\psi^{h})^{\top}\dot{\mathbf{x}}_h,\qquad
+\mathbf{v}_d = (\mathbf{R}_\psi^{h})^{\top}\mathbf{v}_{c,h},\qquad \mathbf{v},\mathbf{v}_d\in\mathbb{R}^{2}.
+\end{equation}
+The dynamic compensator acts on these $n=2$ channels; the vertical and yaw channels receive
+$v_{c,z}$ and $\dot\psi_c$ directly. For each channel $i\in\{x,y\}$, model \eqref{eq:ModeloLucas} reads
+$\dot v_i=\kappa_{u,i}u_i-\kappa_{v,i}v_i+\delta_i$, with $\kappa_{u,i},\kappa_{v,i}>0$, and $\delta_i$
+collects the cable force, the aerodynamic forces, the rotation of the frame and unmodelled dynamics.
+It is linear in $\boldsymbol{\theta}_i=[\,1/\kappa_{u,i}\ \ \kappa_{v,i}/\kappa_{u,i}\,]^{\top}\in\mathbb{R}^2$.
+
+%% ---------------------------------------------------------------------------
+%% 4. Ley de control y ley de adaptacion (reemplazan AccionControl y ajuste2)
+%% ---------------------------------------------------------------------------
+\begin{equation}\label{eq:AccionControl}
+u_i = \boldsymbol{\phi}_i\hat{\boldsymbol{\theta}}_i - w_i,\quad
+\boldsymbol{\phi}_i = [\,a_i\ \ v_i\,],\quad a_i=\dot v_{d,i}-\beta\tilde v_i,\quad
+w_i = K_{1,i}\sqrt{|s_i|}\,\mathrm{sign}(s_i)+\nu_i,\quad \dot\nu_i = K_{2,i}\,\mathrm{sign}(s_i),
+\end{equation}
+with $s_i=\tilde v_i+\beta\int\tilde v_i\,dt$, $\tilde v_i=v_i-v_{d,i}$. Substituting in the model,
+\begin{equation}\label{eq:sdot_theta}
+\dot s_i = \kappa_{u,i}\boldsymbol{\phi}_i\tilde{\boldsymbol{\theta}}_i - \kappa_{u,i}w_i + \delta_i,
+\qquad \tilde{\boldsymbol{\theta}}_i=\hat{\boldsymbol{\theta}}_i-\boldsymbol{\theta}_i .
+\end{equation}
+On the sliding mode ($s_i=\dot s_i=0$) the integral state equals the equivalent control,
+$\nu_i=\boldsymbol{\phi}_i\tilde{\boldsymbol{\theta}}_i+\delta_i/\kappa_{u,i}$. The parameters are updated with
+\begin{equation}\label{eq:ajuste_theta}
+\dot{\hat{\boldsymbol{\theta}}}_i=\mathrm{Proj}_{\Theta}\!\Big(-\Gamma\,\boldsymbol{\phi}_i^{\top}\,
+\mathrm{sat}_{\bar\nu}(\nu_i)-\sigma\big(\hat{\boldsymbol{\theta}}_i-\boldsymbol{\theta}_0\big)\Big)
+\quad\text{if } t>t_{\mathrm{on}}\text{ and }|s_i|\le s_{\mathrm{on}},\qquad
+\dot{\hat{\boldsymbol{\theta}}}_i=\mathbf{0}\ \text{otherwise},
+\end{equation}
+where $\Gamma\in\mathbb{R}^{2\times2}$ is positive definite, $\sigma>0$, $\boldsymbol{\theta}_0$ is the
+nominal value, $\mathrm{sat}_{\bar\nu}$ is the saturation at $\pm\bar\nu$ and $\Theta$ is a box with
+$\theta_{1}\ge\theta_{1,\min}>0$, so that $\hat\kappa_{u,i}>0$. Every signal on the right-hand side is
+available in the loop.
+
+% Agregar despues de la ley (o en el Remark de PE):
+\begin{remark}[Identifiability]\label{rem:ident}
+Law \eqref{eq:ajuste_theta} is a gradient estimator driven by $\nu_i$. It converges to
+$\boldsymbol{\theta}_i$ only if $\boldsymbol{\phi}_i$ is persistently exciting and $\delta_i$ has zero
+mean. On the circular reference the speed is constant, so $a_i\approx0$ in the yaw frame and
+$\theta_{1,i}$ is not excited. The lemniscate, whose speed varies, excites $\theta_{1,x}$. This is why
+the mass sweep of Section~\ref{sec:mass} uses the lemniscate.
+\end{remark}
+
+%% ---------------------------------------------------------------------------
+%% 5. Subseccion nueva al final de la Secc. 2
+%% ---------------------------------------------------------------------------
+\subsection{Discrete-time implementation}\label{sec:discrete}
+The controller runs at the sampling instants of the simulator, nominally $T_c=20$~ms; the period
+$\Delta t_k$ is taken from the simulator clock. The estimator
+\eqref{eq:h_raw}--\eqref{eq:h_p_filter} is discretised as
+$\hat{\mathbf{h}}_p(k)=\hat{\mathbf{h}}_p(k-1)+a_h\big(\mathbf{h}_{p,\mathrm{raw}}(k)-\hat{\mathbf{h}}_p(k-1)\big)$,
+$a_h=1-e^{-\Delta t_k/\tau_h}$, and
+$\hat{\mathbf{h}}(k+1)=\hat{\mathbf{h}}(k)+\Delta t_k\hat{\mathbf{h}}_p(k)$, with $\hat{\mathbf{h}}(0)=\mathbf{h}(0)$.
+With the values of Table~\ref{tab:params} the discrete estimator has damping $\zeta\approx0.44$ and,
+with respect to $\dot{\mathbf{h}}$, unit gain and a delay of about 37~ms at the pendulum frequency.
+The integrals $\int\tilde v_i\,dt$, $\nu_i$ and $\hat{\boldsymbol{\theta}}_i$ use the forward Euler rule;
+the projection onto $\Theta$ is applied after each step. The derivative $\dot v_{d,i}$ is a backward
+difference followed by a first-order filter with time constant 50~ms. No other filter is applied.
+The command is limited to $|u_i|\le u_{\max}$ and $\nu_i$ is not integrated while the limit is active
+in the direction of its update.
+
+%% ---------------------------------------------------------------------------
+%% 6. Seccion 3: parrafo de parametros nominales (reemplaza "initialized with arbitrary values...")
+%% ---------------------------------------------------------------------------
+The parameters of the controller are listed in Table~\ref{tab:params}. The nominal model parameters
+follow from the velocity-command interface of the simulator, which has unit static gain:
+$\kappa_{u,i}=\kappa_{v,i}=1/\tau$ with $\tau=0.4$~s, i.e., $\boldsymbol{\theta}_0=[0.4,\ 1.0]^{\top}$.
+No identification of the simulator was performed. Each case was run five times, because the real-time
+co-simulation is not strictly deterministic, and results are reported as mean $\pm$ standard deviation.
+% Borrar: "All runs were deterministic, with fixed references and prescribed wind profiles."
+
+%% ---------------------------------------------------------------------------
+%% 7. Ec. (44): alpha con el signo de h = x - x_l (Comentario 5, pero afecta las tablas de C1)
+%% ---------------------------------------------------------------------------
+% \alpha(t)=\mathrm{atan2}\big(\sqrt{h_x^2+h_y^2},\,h_z\big),\qquad \mathbf{v}_{rel}=\dot{\mathbf{x}}_l-\dot{\mathbf{x}}=-\dot{\mathbf{h}}
