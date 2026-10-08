@@ -1,44 +1,56 @@
 %% graficar_resultados_paper.m
-% Regenera las figuras del artículo a partir de los .mat exportados por la
-% simulación (bloque "Exportar figuras y datos para el paper").
-% Recorre todos los archivos *_datos.mat de la carpeta de resultados.
+% Regenera las figuras del artículo a partir de los .mat de experimentos
+% (estructuras R = series temporales, M = métricas).
+% Recorre todos los .mat de la carpeta de resultados.
 clear; close all; clc;
 
 %% ================= Configuración =================
-CarpetaResultados = 'C:\Repositorios\uav-payload-asta-validation\paper_revision\results\E2_circ_cinematico\raw';
-CarpetaFiguras    = fullfile(CarpetaResultados, 'figuras');
-ExportarFiguras   = true;    % guarda .fig y .png de cada figura
-Resolucion        = 300;     % dpi del .png (150 en el script original)
-CerrarTrasExportar = true;   % cierra figuras de cada caso tras exportarlas
+CarpetaResultados  = 'C:\Repositorios\uav-payload-asta-validation\paper_revision\results\E2_circ_cinematico\raw';
+CarpetaFiguras     = fullfile(CarpetaResultados, 'figuras');
+ExportarFiguras    = true;   % guarda .fig y .png de cada figura
+ExportarPDF        = false;  % además .pdf vectorial (recomendado para el paper)
+Resolucion         = 300;    % dpi del .png
+CerrarTrasExportar = true;   % cierra las figuras de cada caso tras exportarlas
 
-% Formato por defecto (solo se usa si el .mat no trae estas variables)
-Formato.LinAncho = 1.5;
-Formato.FntSize  = 14;
-Formato.colors   = lines(4);
+% Formato de las figuras del artículo
+F.LinAncho = 2.0;
+F.FntSize  = 14;
+F.colors   = lines(4);
 
 %% ================= Procesar archivos =================
 archivos = dir(fullfile(CarpetaResultados, '*.mat'));
 if isempty(archivos)
-    error('No se encontraron archivos *_datos.mat en %s', CarpetaResultados);
+    error('No se encontraron archivos .mat en %s', CarpetaResultados);
 end
 if ExportarFiguras && ~exist(CarpetaFiguras,'dir'), mkdir(CarpetaFiguras); end
 
 for k = 1:numel(archivos)
     archivo = fullfile(archivos(k).folder, archivos(k).name);
+    [~, experimento] = fileparts(archivo);
     fprintf('\n[%d/%d] %s\n', k, numel(archivos), archivos(k).name);
-    D = load(archivo);
-    [~, prefijo] = fileparts(archivo);
-    prefijo = erase(prefijo, '_datos');
 
-    [figs, nombres] = graficarCaso(D, Formato);
+    S = load(archivo);
+    if ~isfield(S, 'R') || ~isfield(S.R, 't')
+        fprintf('  Omitido: no contiene la estructura R con R.t\n');
+        continue
+    end
+    if ~isfield(S, 'M'), S.M = struct(); end
+    if isfield(S.R, 'completo') && ~S.R.completo
+        fprintf('  Aviso: simulación incompleta (%s)\n', getf(S.R, 'motivo', ''));
+    end
+
+    D = calcularDerivadas(S.R, S.M);
+    [figs, nombres] = graficarCaso(D, F, experimento);
+    imprimirMetricas(D, S.M);
 
     if ExportarFiguras
         for i = 1:numel(figs)
-            base = fullfile(CarpetaFiguras, sprintf('%s_%s', prefijo, nombres{i}));
+            base = fullfile(CarpetaFiguras, sprintf('%s_%s', experimento, nombres{i}));
             saveas(figs(i), [base '.fig']);
             exportgraphics(figs(i), [base '.png'], 'Resolution', Resolucion);
-            % Para el paper en vectorial:
-            % exportgraphics(figs(i), [base '.pdf'], 'ContentType', 'vector');
+            if ExportarPDF
+                exportgraphics(figs(i), [base '.pdf'], 'ContentType', 'vector');
+            end
         end
         fprintf('  %d figuras exportadas en %s\n', numel(figs), CarpetaFiguras);
         if CerrarTrasExportar && numel(archivos) > 1, close(figs); end
@@ -46,189 +58,209 @@ for k = 1:numel(archivos)
 end
 
 %% =====================================================================
-function [figs, nombres] = graficarCaso(D, F)
-    % Formato: usa el del .mat si existe, si no el por defecto
-    LinAncho = getf(D, 'LinAncho', F.LinAncho);
-    FntSize  = getf(D, 'FntSize',  F.FntSize);
-    colors   = getf(D, 'colors',   F.colors);
-    ControlCarga = getf(D, 'ControlCarga', true);
+function D = calcularDerivadas(R, M)
+    % Copia R y añade las señales que el artículo grafica pero no se guardan
+    D = R;
+    t = R.t;
 
-    idx = 1:D.yTFind;
-    t   = D.tt(idx);
+    % Velocidad verdadera de la carga. Convencion del codigo: h = x - x_l,
+    % por lo que v_l = v - hdot. Se usa M.serie.vl (derivada de R.xl) si existe.
+    serie0 = getf(M, 'serie', struct());
+    if isfield(serie0, 'vl') && size(serie0.vl, 2) == numel(t)
+        D.vl = serie0.vl;
+    else
+        D.vl = [diff(R.xl, 1, 2) ./ diff(t), zeros(3,1)];
+    end
+
+    % Señales de oscilación: se toman de M.serie si existen, si no se
+    % calculan del vector cuerda h = x - x_l
+    serie = getf(M, 'serie', struct());
+    h  = R.h;   hp = R.hp;
+    L2 = sum(h.^2, 1);
+    D.alpha = atan2(vecnorm(h(1:2,:)), abs(h(3,:)));            % ángulo respecto a la vertical
+    D.rho   = vecnorm(h(1:2,:));                                % desplazamiento horizontal
+    D.vperp = vecnorm(hp - (sum(hp.*h,1)./L2).*h);              % velocidad relativa ⟂ a la cuerda
+    D.fuente_osc = 'calculada de R.h';
+    camposSerie = {'alpha','rho','vperp'};
+    for c = camposSerie
+        nombre = buscarCampo(serie, c{1});
+        if ~isempty(nombre) && numel(serie.(nombre)) == numel(t)
+            D.(c{1}) = serie.(nombre)(:).';
+            D.fuente_osc = 'M.serie';
+        end
+    end
+
+    % Velocidad de yaw para el error de velocidad
+    D.psip = gradient(unwrap(R.psi), t);
+end
+
+function [figs, nombres] = graficarCaso(D, F, experimento)
+    LinAncho = F.LinAncho; FntSize = F.FntSize; colors = F.colors;
+    t = D.t;
     figs = gobjects(0); nombres = {};
     lx = @(s) xlabel(s,'Interpreter','Latex','FontSize',FntSize);
     ly = @(s) ylabel(s,'Interpreter','Latex','FontSize',FntSize);
     lg = @(varargin) legend(varargin{:},'Interpreter','Latex','FontSize',FntSize);
+    tituloFig = @(f) set(f, 'Name', experimento, 'NumberTitle', 'off');
 
     %% 1) Errores de posición de la carga
-    if tiene(D, {'yExil','yEpsi'})
-        f = nuevaFig();
-        etq = {'$\tilde{X}$ [m]','$\tilde{Y}$ [m]','$\tilde{Z}$ [m]','$\tilde{\psi}$ [rad]'};
-        datos = {D.yExil(1,idx), D.yExil(2,idx), D.yExil(3,idx), D.yEpsi(idx)};
-        for j = 1:4
-            subplot(4,1,j); hold on; grid on;
-            plot(t, datos{j}, 'LineWidth', LinAncho, 'Color', colors(1,:));
-            ly(etq{j});
-        end
-        lx('Time [s]');
-        [figs, nombres] = agregar(figs, nombres, f, 'error_posicion');
+    f = nuevaFig(); tituloFig(f);
+    etq   = {'$\tilde{X}$ [m]','$\tilde{Y}$ [m]','$\tilde{Z}$ [m]','$\tilde{\psi}$ [rad]'};
+    datos = {D.ex(1,:), D.ex(2,:), D.ex(3,:), D.epsi};
+    for j = 1:4
+        subplot(4,1,j); hold on; grid on;
+        plot(t, datos{j}, 'LineWidth', LinAncho, 'Color', colors(1,:));
+        ly(etq{j});
     end
+    lx('Time [s]');
+    [figs, nombres] = agregar(figs, nombres, f, 'error_posicion');
 
-    %% 2) Error de seguimiento de velocidad
-    if tiene(D, {'yXip','yPsip','yU'})
-        TE = [D.yXip; D.yPsip] - D.yU;
-        f = nuevaFig();
-        etq = {'$\dot{\tilde{X}}$ [m/s]','$\dot{\tilde{Y}}$ [m/s]', ...
-               '$\dot{\tilde{Z}}$ [m/s]','$\dot{\tilde{\psi}}$ [rad/s]'};
-        for j = 1:4
-            subplot(4,1,j); hold on; grid on;
-            plot(t, TE(j,idx), 'LineWidth', LinAncho, 'Color', colors(1,:));
-            ly(etq{j});
-        end
-        lx('Time [s]');
-        [figs, nombres] = agregar(figs, nombres, f, 'error_velocidad');
-    else
-        avisar('error de velocidad', {'yXip','yPsip'});
+    %% 2) Error de seguimiento de velocidad de la carga: v_d - v_l (como M.rmse_evl), y yaw
+    TE = [D.vd - D.vl; gradient(unwrap(D.psid), t) - D.psip];
+    f = nuevaFig(); tituloFig(f);
+    etq = {'$\dot{\tilde{X}}$ [m/s]','$\dot{\tilde{Y}}$ [m/s]', ...
+           '$\dot{\tilde{Z}}$ [m/s]','$\dot{\tilde{\psi}}$ [rad/s]'};
+    for j = 1:4
+        subplot(4,1,j); hold on; grid on;
+        plot(t, TE(j,:), 'LineWidth', LinAncho, 'Color', colors(1,:));
+        ly(etq{j});
     end
+    lx('Time [s]');
+    [figs, nombres] = agregar(figs, nombres, f, 'error_velocidad');
 
     %% 3) Ángulo de oscilación, rho y velocidad tangencial
-    if tiene(D, {'alpha_l','rho','vperp_norm'})
-        f = nuevaFig();
-        subplot(3,1,1); hold on; grid on;
-        plot(t, D.alpha_l(idx), 'LineWidth', LinAncho, 'Color', colors(1,:));
-        ly('$\alpha$ [rad]'); lg('$\alpha_\ell$');
+    f = nuevaFig(); tituloFig(f);
+    subplot(3,1,1); hold on; grid on;
+    plot(t, D.alpha, 'LineWidth', LinAncho, 'Color', colors(1,:));
+    ly('$\alpha$ [rad]'); lg('$\alpha_\ell$');
+    subplot(3,1,2); hold on; grid on;
+    plot(t, D.rho, 'LineWidth', LinAncho, 'Color', colors(1,:));
+    ly('$\rho$ [m]'); lg('$\rho(t)$');
+    subplot(3,1,3); hold on; grid on;
+    plot(t, D.vperp, 'LineWidth', LinAncho, 'Color', colors(1,:));
+    ly('$||v_\perp||$ [m/s]'); lx('Time [s]'); lg('$||v_\perp(t)||$');
+    [figs, nombres] = agregar(figs, nombres, f, 'oscilacion');
 
-        subplot(3,1,2); hold on; grid on;
-        plot(t, D.rho(idx), 'LineWidth', LinAncho, 'Color', colors(1,:));
-        ly('$\rho$ [m]'); lg('$\rho(t)$');
-
-        subplot(3,1,3); hold on; grid on;
-        plot(t, D.vperp_norm(idx), 'LineWidth', LinAncho, 'Color', colors(1,:));
-        ly('$||v_\perp||$ [m/s]'); lx('Time [s]'); lg('$||v_\perp(t)||$');
-        [figs, nombres] = agregar(figs, nombres, f, 'oscilacion');
-    else
-        avisar('oscilación', {'alpha_l','rho','vperp_norm'});
-    end
+    f = nuevaFig(); tituloFig(f);
+    subplot(3,1,1); hold on; grid on;
+    plot(t, D.alpha, 'LineWidth', LinAncho, 'Color', colors(1,:));
+    ly('$\alpha$ [rad]'); lg('$\alpha_\ell$');
+    subplot(3,1,2); hold on; grid on;
+    plot(t, D.rho, 'LineWidth', LinAncho, 'Color', colors(1,:));
+    ly('$\rho$ [m]'); lg('$\rho(t)$');
+    subplot(3,1,3); hold on; grid on;
+    [vt, malo, ev] = marcar_lecturas_atrasadas(D, D.vt);    
+    plot(D.t, vt, 'LineWidth', LinAncho, 'Color', colors(1,:));
+%     plot(t, D.vperp, 'LineWidth', LinAncho, 'Color', colors(1,:));
+    ly('$||v_\perp||$ [m/s]'); lx('Time [s]'); lg('$||v_\perp(t)||$');
+    [figs, nombres] = agregar(figs, nombres, f, 'oscilacion');
 
     %% 4) Plano XY: deseada vs carga
-    if tiene(D, {'yXid','yXil'})
-        f = nuevaFig();
-        comp = {'x','y'};
-        for j = 1:2
-            subplot(2,1,j); hold on; grid on;
-            plot(t, D.yXid(j,idx), '--', 'LineWidth', LinAncho, 'Color', colors(2,:));
-            plot(t, D.yXil(j,idx), '-',  'LineWidth', LinAncho, 'Color', colors(1,:));
-            ly(sprintf('$%s_\\ell$ [m]', comp{j}));
-            lg(sprintf('$%s_d$', comp{j}), sprintf('$%s_\\ell$', comp{j}));
-        end
-        lx('Time [s]');
-        [figs, nombres] = agregar(figs, nombres, f, 'seguimiento_xy');
+    f = nuevaFig(); tituloFig(f);
+    comp = {'x','y'};
+    for j = 1:2
+        subplot(2,1,j); hold on; grid on;
+        plot(t, D.xd(j,:), '--', 'LineWidth', LinAncho, 'Color', colors(2,:));
+        plot(t, D.xl(j,:), '-',  'LineWidth', LinAncho, 'Color', colors(1,:));
+        ly(sprintf('$%s_\\ell$ [m]', comp{j}));
+        lg(sprintf('$%s_d$', comp{j}), sprintf('$%s_\\ell$', comp{j}));
     end
+    lx('Time [s]');
+    [figs, nombres] = agregar(figs, nombres, f, 'seguimiento_xy');
 
-    %% 5) Posiciones X, Y, Z y yaw (carga o dron)
-    if tiene(D, {'yXid','yPsid','yQuad'})
-        if ControlCarga && isfield(D,'yXil')
-            yX = D.yXil;
-            leg = {'$x_\ell$','$y_\ell$','$z_\ell$','$\psi_\ell$'};
+    %% 5) Posiciones X, Y, Z y yaw de la carga
+    f = nuevaFig(); tituloFig(f);
+    legd = {'$x_d$','$y_d$','$z_d$','$\psi_d$'};
+    leg  = {'$x_\ell$','$y_\ell$','$z_\ell$','$\psi_\ell$'};
+    etq  = {'x [m]','y [m]','z [m]','$\psi$ [rad]'};
+    for j = 1:4
+        subplot(4,1,j); hold on; grid on;
+        if j < 4
+            plot(t, D.xd(j,:), '-', 'LineWidth', LinAncho, 'Color', colors(1,:));
+            plot(t, D.xl(j,:), '-', 'LineWidth', LinAncho, 'Color', colors(2,:));
         else
-            yX = D.yQuad(1:3,:);
-            leg = {'$x$','$y$','$z$','$\psi$'};
+            plot(t, D.psid, '-', 'LineWidth', LinAncho, 'Color', colors(1,:));
+            plot(t, D.psi,  '-', 'LineWidth', LinAncho, 'Color', colors(2,:));
         end
-        legd = {'$x_d$','$y_d$','$z_d$','$\psi_d$'};
-        etq  = {'x [m]','y [m]','z [m]','$\psi$ [rad]'};
-        f = nuevaFig();
-        for j = 1:4
-            subplot(4,1,j); hold on; grid on;
-            if j < 4
-                plot(t, D.yXid(j,idx), '-', 'LineWidth', LinAncho, 'Color', colors(1,:));
-                plot(t, yX(j,idx),     '-', 'LineWidth', LinAncho, 'Color', colors(2,:));
-            else
-                plot(t, D.yPsid(1,idx),  '-', 'LineWidth', LinAncho, 'Color', colors(1,:));
-                plot(t, D.yQuad(15,idx), '-', 'LineWidth', LinAncho, 'Color', colors(2,:));
-            end
-            lg(legd{j}, leg{j}); ly(etq{j});
-        end
-        lx('Time [s]');
-        [figs, nombres] = agregar(figs, nombres, f, 'posiciones');
+        lg(legd{j}, leg{j}); ly(etq{j});
     end
+    lx('Time [s]');
+    [figs, nombres] = agregar(figs, nombres, f, 'posiciones');
 
-    %% 6) Ganancias adaptativas Ku y Kv
-    if tiene(D, {'Gan_U','Gan_V'})
-        f = nuevaFig();
-        G = {D.Gan_U, D.Gan_V}; pre = {'Ku','Kv'};
-        for j = 1:2
-            subplot(2,1,j); hold on; grid on;
-            for c = 1:4
-                plot(t, G{j}(c,idx), 'LineWidth', LinAncho, 'Color', colors(c,:));
-            end
-            etqK = arrayfun(@(c) sprintf('$%s_{%d}$', pre{j}, c), 1:4, 'UniformOutput', false);
-            lg(etqK{:});
-        end
-        lx('Time [s]');
-        [figs, nombres] = agregar(figs, nombres, f, 'ganancias');
+    %% 6) Parámetros adaptativos theta
+    f = nuevaFig(); tituloFig(f); hold on; grid on;
+    n = size(D.theta,1);
+    for c = 1:n
+        plot(t, D.theta(c,:), 'LineWidth', LinAncho, 'Color', colors(c,:));
     end
+    etqT = arrayfun(@(c) sprintf('$\\hat{\\theta}_{%d}$', c), 1:n, 'UniformOutput', false);
+    lg(etqT{:}); ly('$\hat{\theta}$'); lx('Time [s]');
+    [figs, nombres] = agregar(figs, nombres, f, 'parametros_theta');
 
     %% 7) Superficie deslizante
-    if tiene(D, {'s'})
-        f = nuevaFig(); hold on; grid on;
-        for c = 1:4
-            plot(t, D.s(c,idx), 'LineWidth', LinAncho, 'Color', colors(c,:));
-        end
-        lg('$s_x$','$s_y$','$s_z$','$s_{\psi}$'); lx('Time [s]');
-        [figs, nombres] = agregar(figs, nombres, f, 'superficie');
+    f = nuevaFig(); tituloFig(f); hold on; grid on;
+    etqS = {'$s_x$','$s_y$','$s_z$','$s_{\psi}$'};
+    n = size(D.s,1);
+    for c = 1:n
+        plot(t, D.s(c,:), 'LineWidth', LinAncho, 'Color', colors(c,:));
     end
+    lg(etqS{1:n}); lx('Time [s]');
+    [figs, nombres] = agregar(figs, nombres, f, 'superficie');
 
     %% 8) Referencia vs dron vs carga (posiciones)
-    if tiene(D, {'yXid','yQuad','yXil'})
-        f = nuevaFig();
-        etq = {'X [m]','Y [m]','Z [m]'};
-        for j = 1:3
-            subplot(3,1,j); hold on; grid on;
-            plot(t, D.yXid(j,idx), 'r');
-            plot(t, D.yQuad(j,idx), 'k');
-            plot(t, D.yXil(j,idx));
-            ly(etq{j});
-            if j == 1, lg('$x_d$','$x$','$x_\ell$'); end
-        end
-        lx('Time [s]');
-        [figs, nombres] = agregar(figs, nombres, f, 'ref_dron_carga_pos');
+    f = nuevaFig(); tituloFig(f);
+    etq = {'X [m]','Y [m]','Z [m]'};
+    for j = 1:3
+        subplot(3,1,j); hold on; grid on;
+        plot(t, D.xd(j,:), 'r');
+        plot(t, D.x(j,:),  'k');
+        plot(t, D.xl(j,:));
+        ly(etq{j});
+        if j == 1, lg('$x_d$','$x$','$x_\ell$'); end
     end
+    lx('Time [s]');
+    [figs, nombres] = agregar(figs, nombres, f, 'ref_dron_carga_pos');
 
     %% 9) Referencia vs dron vs carga (velocidades)
-    if tiene(D, {'yXidp','yQuad','yHp'})
-        f = nuevaFig();
-        etq = {'$\dot{x}$ [m/s]','$\dot{y}$ [m/s]','$\dot{z}$ [m/s]'};
-        for j = 1:3
-            subplot(3,1,j); hold on; grid on;
-            plot(t, D.yXidp(j,idx), 'r');
-            plot(t, D.yQuad(3+j,idx), 'k');
-            plot(t, D.yHp(j,idx) + D.yQuad(3+j,idx));
-            ly(etq{j});
-            if j == 1, lg('$\dot{x}_d$','$\dot{x}$','$\dot{x}_\ell$'); end
-        end
-        lx('Time [s]');
-        [figs, nombres] = agregar(figs, nombres, f, 'ref_dron_carga_vel');
+    f = nuevaFig(); tituloFig(f);
+    etq = {'$\dot{x}$ [m/s]','$\dot{y}$ [m/s]','$\dot{z}$ [m/s]'};
+    for j = 1:3
+        subplot(3,1,j); hold on; grid on;
+        plot(t, D.vd(j,:), 'r');
+        plot(t, D.v(j,:),  'k');
+        plot(t, D.vl(j,:));
+        ly(etq{j});
+        if j == 1, lg('$\dot{x}_d$','$\dot{x}$','$\dot{x}_\ell$'); end
     end
+    lx('Time [s]');
+    [figs, nombres] = agregar(figs, nombres, f, 'ref_dron_carga_vel');
 
-    %% 10) Error de velocidad en el marco local
-    if tiene(D, {'TrackingErrorDyn'})
-        f = nuevaFig();
-        etq = {'$e_{vx}$ [m/s]','$e_{vy}$ [m/s]','$e_{vz}$ [m/s]','$e_{v\psi}$ [rad/s]'};
-        for j = 1:4
-            subplot(4,1,j); hold on; grid on;
-            plot(t, D.TrackingErrorDyn(j,idx), 'LineWidth', LinAncho, 'Color', colors(j,:));
-            ly(etq{j});
-        end
-        lx('Time [s]');
-        [figs, nombres] = agregar(figs, nombres, f, 'error_vel_local');
-    else
-        avisar('error de velocidad local', {'TrackingErrorDyn'});
+    %% 10) Señales de control
+    f = nuevaFig(); tituloFig(f);
+    etq = {'$u_1$','$u_2$','$u_3$','$u_4$'};
+    for j = 1:size(D.u,1)
+        subplot(size(D.u,1),1,j); hold on; grid on;
+        plot(t, D.u(j,:), 'LineWidth', LinAncho, 'Color', colors(j,:));
+        ly(etq{j});
     end
+    lx('Time [s]');
+    [figs, nombres] = agregar(figs, nombres, f, 'control');
+end
 
-    %% Resumen de métricas guardadas
-    met = {'RMSE_pos','RMSE_vel_payload','RMSE_alpha','max_alpha','rho_rms','max_rho','vperp_rms','vperp_peak'};
-    for m = met
-        if isfield(D, m{1}), fprintf('  %-17s = %s\n', m{1}, mat2str(D.(m{1}), 4)); end
+function imprimirMetricas(D, M)
+    fprintf('  Oscilación: %s\n', D.fuente_osc);
+    % Comprobación: lo calculado debe coincidir con las métricas guardadas
+    chk = {'rms_alpha', rms(D.alpha); 'max_alpha', max(abs(D.alpha));
+           'rms_rho',   rms(D.rho);   'max_rho',   max(D.rho);
+           'rms_vperp', rms(D.vperp); 'max_vperp', max(D.vperp)};
+    fprintf('  %-12s %12s %12s\n', 'métrica', 'en M', 'calculada');
+    for i = 1:size(chk,1)
+        if isfield(M, chk{i,1})
+            fprintf('  %-12s %12.4g %12.4g\n', chk{i,1}, M.(chk{i,1}), chk{i,2});
+        end
+    end
+    for m = {'rmse_ex','rmse_ex_xyz','rmse_evl','rmse_epsi','frac_sat'}
+        if isfield(M, m{1}), fprintf('  %-12s = %s\n', m{1}, mat2str(M.(m{1}), 4)); end
     end
 end
 
@@ -238,15 +270,16 @@ function f = nuevaFig()
 end
 
 function v = getf(D, nombre, defecto)
-    if isfield(D, nombre), v = D.(nombre); else, v = defecto; end
+    if isstruct(D) && isfield(D, nombre), v = D.(nombre); else, v = defecto; end
 end
 
-function ok = tiene(D, vars)
-    ok = all(isfield(D, vars));
-end
-
-function avisar(fig, vars)
-    fprintf('  Aviso: figura de %s omitida (faltan en el .mat: %s)\n', fig, strjoin(vars, ', '));
+function nombre = buscarCampo(S, clave)
+    % Devuelve el primer campo de S cuyo nombre contenga 'clave'
+    nombre = '';
+    if ~isstruct(S), return; end
+    f = fieldnames(S);
+    i = find(contains(lower(f), lower(clave)), 1);
+    if ~isempty(i), nombre = f{i}; end
 end
 
 function [figs, nombres] = agregar(figs, nombres, f, nombre)

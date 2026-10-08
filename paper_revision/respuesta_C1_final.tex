@@ -1,0 +1,128 @@
+% Respuesta al Comentario 1 del Revisor 1 (version final, formal).
+% Reemplaza el bloque \begin{reply} ... \end{reply} del Comentario 1 en ResponsesReviewers.tex.
+% Requiere en el preambulo: \newcommand{\XX}{\textcolor{red}{\textbf{XX}}} (valores que salen de
+% run_paper_experiments.m con SimQuad1.exe: results/<fecha>/tabla_metricas.tex y tabla_masa.tex).
+% Etiquetas nuevas del manuscrito: eq:yaw_frame, eq:sdot_theta, eq:ajuste_theta, rem:ident,
+% sec:discrete, tab:params, sec:mass (ver paper_revision/manuscrito_cambios_C1.tex).
+
+\begin{reply}
+We sincerely thank the reviewer for this detailed comparison between the manuscript and the released code. We fully agree with the assessment: the previous code and the previous manuscript described two different controllers, and the earlier simulations therefore did not validate the adaptation law or Theorem~2. To resolve this, we rewrote both the manuscript and the code so that they describe one and the same controller, and we regenerated every figure and table of the paper with this code. In the revised repository, all equations of Section~2 are implemented in a single function (\texttt{controlador\_paso.m}), each line is tagged with the label of the equation it implements, all parameters are read from one configuration file (\texttt{cfg\_paper.m}) that is stored with every result, and a line-by-line correspondence between equations and code is provided (\texttt{EQUATION\_MAP.md}).
+
+Table~R1 lists each discrepancy identified by the reviewer, how it appeared in the previous code, and how it has been resolved. Each item is then addressed in detail.
+
+\begin{table}[h]
+\centering
+\small
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{p{0.3cm} p{3.4cm} p{3.6cm} p{5.4cm} p{2.4cm}}
+\toprule
+ & \textbf{Reviewer's observation} & \textbf{Previous code} & \textbf{Revised manuscript and code} & \textbf{Location} \\
+\midrule
+1 & Saturated position feedback & $K_{\mathrm{traj}}\tanh(K^t_{\mathrm{traj}}\tilde{\mathbf{x}})$ & Linear term $K_{\mathrm{traj}}\tilde{\mathbf{x}}$, identical in manuscript and code & Eq.~\eqref{eq:base_reference} \\
+2 & Payload-velocity feedback absent from Eq.~(8) & $K_{vl}\tanh(K^t_{vl}\dot{\tilde{\mathbf{x}}})$ & Removed. A feedforward $[\dot{\mathbf{h}}^\star_h;0]$, derived from $\mathbf{x}=\mathbf{x}_l+\mathbf{h}$, is now part of the manuscript & Eq.~\eqref{eq:base_reference} \\
+3 & Sign of the quasi-static cable reference & $+(l/g)\ddot{\mathbf{x}}_{d,h}$ (manuscript: $-$) & $+(l/g)\ddot{\mathbf{x}}_{d,h}$ in both; $\mathbf{h}^\star_h$ and $\dot{\mathbf{h}}^\star_h$ computed analytically & Eq.~\eqref{eq:href}, Assumption~\ref{as:smallangle} \\
+4 & Additional filters & Five undeclared first-order filters & One filter, on $\dot{\mathbf{v}}_d$ (50~ms), declared with its time constant & Section~\ref{sec:discrete} \\
+5 & Saturation & $\tanh$ saturation of the swing term & Removed. Only a command limit $u_{\max}$ remains, declared, with conditional integration & Section~\ref{sec:discrete} \\
+6 & Leaky integral & Leakage in $\int\tilde{\mathbf{v}}\,dt$ & Pure integral, as in the sliding surface & Section~\ref{sec:dynamic} \\
+7 & Inner compensator acts only on horizontal channels & Undeclared & Declared: $n=2$ channels in the yaw frame; model, regressor and analysis rewritten for $n=2$ & Eq.~\eqref{eq:yaw_frame}, Section~\ref{sec:dynamic} \\
+8 & Adapted quantities differ ($\kappa_u,\kappa_v$ vs.\ $K_1,K_2$) & $K_1,K_2$ adapted & Model parameters $\boldsymbol{\theta}_i=[1/\kappa_{u,i},\ \kappa_{v,i}/\kappa_{u,i}]^\top$ adapted in both, with an implementable law; $K_1,K_2$ fixed & Eq.~\eqref{eq:ajuste_theta}, Theorem~\ref{th:inner} \\
+9 & Simulations do not validate Eqs.~(29)--(40) or Theorem~2 & Different controller & All results regenerated with the controller analysed in the paper; new experiments isolate the inner loop and the adaptation & Section~\ref{sec:simulations}, repository \\
+\bottomrule
+\end{tabular}
+\caption*{Table R1. Correspondence between the reviewer's observations and the revision.}
+\end{table}
+
+\medskip
+\noindent\textbf{1. Saturated position feedback and payload-velocity feedback (items 1--2).}
+Both terms have been removed from the code. The previous implementation computed
+$\mathbf{v}_{\mathrm{base}}=\dot{\mathbf{x}}_d+K_{\mathrm{traj}}\tanh(K^t_{\mathrm{traj}}\tilde{\mathbf{x}})+K_{vl}\tanh(K^t_{vl}\dot{\tilde{\mathbf{x}}})$, which differed from Eq.~(8). Manuscript and code now implement the same law,
+\begin{equation*}
+\mathbf{v}_{\mathrm{base}}=\dot{\mathbf{x}}_d+\begin{bmatrix}\dot{\mathbf{h}}_h^\star\\0\end{bmatrix}+K_{\mathrm{traj}}\,\tilde{\mathbf{x}},
+\end{equation*}
+with a linear position term and no payload-velocity term. The only addition, the feedforward $[\dot{\mathbf{h}}_h^\star;0]$, is now written and justified in the manuscript. Since $\mathbf{x}=\mathbf{x}_l+\mathbf{h}$, the UAV velocity that keeps the payload on its reference with the cable at the quasi-static inclination is $\dot{\mathbf{x}}_d+\dot{\mathbf{h}}^\star$. Without this term, the cable-error dynamics are driven by $-\dot{\mathbf{h}}^\star_h$, and the reference itself forces a periodic tracking error on curved paths.
+
+\medskip
+\noindent\textbf{2. Sign of the quasi-static cable reference (item 3).}
+The sign used in the code was correct, and the manuscript contained the error. With the convention $\mathbf{h}=\mathbf{x}-\mathbf{x}_l$ of Eq.~\eqref{eq:cable_vector}, the horizontal force balance on the payload gives, to first order, $\ddot{\mathbf{x}}_{l,h}=(g/l)\,\mathbf{h}_h$. Hence
+\begin{equation*}
+\mathbf{h}_h^\star=\frac{l}{g}\,\ddot{\mathbf{x}}_{d,h},\qquad \dot{\mathbf{h}}_h^\star=\frac{l}{g}\,\dddot{\mathbf{x}}_{d,h},
+\end{equation*}
+i.e., the UAV leads the payload in the direction of the reference acceleration. Eq.~\eqref{eq:href} and Assumption~\ref{as:smallangle} have been corrected accordingly. In addition, both quantities are now evaluated analytically from the reference, which is three times differentiable by Assumption~\ref{as:reference}, instead of by filtered numerical differentiation. While verifying the references, we also found and corrected an error in the second derivative of the lemniscate used in the wind scenario (see our response to Comment~5).
+
+\medskip
+\noindent\textbf{3. Additional filters, saturation and leaky integral (items 4--6).}
+The previous code contained the following elements that were not declared in the manuscript: first-order filters on the payload tracking error and its derivative, on the yaw error, on the kinematic command, on the numerical derivative of that command and on the derivative of $\mathbf{h}^\star_h$; a $\tanh$ saturation of the swing-compensation term; and leakage in the integral of the sliding surface. All of them have been removed, with one exception that is now declared. The derivative $\dot{\mathbf{v}}_d$ entering the regressor is obtained by a backward difference followed by a first-order filter with a time constant of 50~ms (2.5 control periods). The sliding-surface integral is a pure integral, as in the manuscript.
+
+A new subsection, ``Discrete-time implementation'' (Section~\ref{sec:discrete}), now states every implementation detail:
+\begin{itemize}
+\item the sampling period, which is taken from the simulator clock (nominally 20~ms);
+\item the discretisation of the cable-rate estimator \eqref{eq:h_raw}--\eqref{eq:h_p_filter};
+\item the forward-Euler integration of $\int\tilde{v}_i\,dt$, $\nu_i$ and $\hat{\boldsymbol{\theta}}_i$;
+\item the filter on $\dot{\mathbf{v}}_d$;
+\item a command limit $|u_i|\le u_{\max}=5$~m/s, during which the super-twisting state is not integrated outward. The limit is a safeguard; the fraction of saturated samples in the reported runs is \XX.
+\end{itemize}
+All numerical values are collected in a new Table~\ref{tab:params}, generated automatically from the configuration file so that the manuscript and the code cannot diverge again.
+
+\medskip
+\noindent\textbf{4. Channels of the inner compensator (item 7).}
+The reviewer is correct that the compensator acts only on the horizontal channels; the manuscript now states this explicitly. The velocity commands of the vehicle are applied in its yaw frame, which is also the frame in which the model of Ref.~\cite{Lucas_ICUAS2014} is defined. The compensator therefore acts on the $n=2$ horizontal velocity channels expressed in that frame (new Eq.~\eqref{eq:yaw_frame}). The vertical and yaw channels receive the kinematic command directly, in agreement with Assumption~\ref{as:vertical} and with the fact that swing compensation is horizontal. The vehicle model, the regressor, the control law and the stability analysis have been rewritten for $n=2$, with one regressor $\boldsymbol{\phi}_i\in\mathbb{R}^{1\times2}$ and one parameter vector $\boldsymbol{\theta}_i\in\mathbb{R}^{2}$ per channel, and the dimensions of every term are stated.
+
+\medskip
+\noindent\textbf{5. Adapted quantities (item 8).}
+The reviewer is correct: the previous code adapted the super-twisting gains $K_1,K_2$, whereas the manuscript adapted the model parameters. Moreover, the adaptation law of the previous manuscript was not implementable, because it was written in terms of the parameter error, which depends on the unknown true parameters. In the revised manuscript and code, the super-twisting gains are fixed, and both adapt the same model parameters,
+\begin{equation*}
+\theta_{1,i}=\frac{1}{\kappa_{u,i}},\qquad \theta_{2,i}=\frac{\kappa_{v,i}}{\kappa_{u,i}},\qquad i\in\{x,y\},
+\end{equation*}
+with respect to which the model of each channel, $\dot v_i=\kappa_{u,i}u_i-\kappa_{v,i}v_i+\delta_i$, is linear. With the control law
+\begin{equation*}
+u_i=\boldsymbol{\phi}_i\hat{\boldsymbol{\theta}}_i-w_i,\qquad \boldsymbol{\phi}_i=[\,a_i\ \ v_i\,],\quad a_i=\dot v_{d,i}-\beta\tilde v_i,\qquad w_i=K_{1,i}\sqrt{|s_i|}\,\mathrm{sign}(s_i)+\nu_i,\quad \dot\nu_i=K_{2,i}\,\mathrm{sign}(s_i),
+\end{equation*}
+the sliding dynamics become $\dot s_i=\kappa_{u,i}\boldsymbol{\phi}_i\tilde{\boldsymbol{\theta}}_i-\kappa_{u,i}w_i+\delta_i$, with $\tilde{\boldsymbol{\theta}}_i=\hat{\boldsymbol{\theta}}_i-\boldsymbol{\theta}_i$ (Eq.~\eqref{eq:sdot_theta}). Once the sliding mode is reached ($s_i=\dot s_i=0$), the integral state of the super-twisting algorithm equals the equivalent control, $\nu_i=\boldsymbol{\phi}_i\tilde{\boldsymbol{\theta}}_i+\delta_i/\kappa_{u,i}$. Since $\nu_i$ is an internal state of the controller, it provides a measured signal that carries the parameter error. The adaptation law uses it:
+\begin{equation*}
+\dot{\hat{\boldsymbol{\theta}}}_i=\mathrm{Proj}_{\Theta}\Big(-\Gamma\,\boldsymbol{\phi}_i^{\top}\,\mathrm{sat}_{\bar\nu}(\nu_i)-\sigma\big(\hat{\boldsymbol{\theta}}_i-\boldsymbol{\theta}_{0}\big)\Big),
+\end{equation*}
+active after $t_{\mathrm{on}}$ and while $|s_i|\le s_{\mathrm{on}}$ (Eq.~\eqref{eq:ajuste_theta}). Every signal on the right-hand side is available in the loop. The law is a gradient estimator on the parameter error. The $\sigma$-modification and the projection onto the box $\Theta$ keep the estimates bounded and guarantee $\hat\kappa_{u,i}>0$.
+
+The manuscript now also states the conditions under which the estimates converge to the true parameters: persistent excitation of $\boldsymbol{\phi}_i$ and a zero-mean $\delta_i$ (Remark~\ref{rem:ident}). On the circular reference the speed is constant, so $a_i\approx0$ in the yaw frame and $\theta_{1,i}$ is not excited; the lemniscate, whose speed varies, does excite it. Theorem~\ref{th:inner} and its proof have been rewritten for this law (see our response to Comment~3).
+
+\medskip
+\noindent\textbf{6. Validation of the analysed controller (item 9).}
+All simulation results of Section~\ref{sec:simulations} have been regenerated with the controller analysed in Section~2. The previous text reported ``arbitrary'' nominal values $\hat{\kappa}_u=0.5$ and $\hat{\kappa}_v=0.75$, which the released inner controller did not use. All values actually used are now listed in Table~\ref{tab:params}. The nominal parameters follow from the velocity-command interface of the simulator, which has unit static gain: $\kappa_{u,i}=\kappa_{v,i}=1/\tau$ with $\tau=0.4$~s, i.e., $\boldsymbol{\theta}_0=[0.4,\ 1.0]^\top$.
+
+The experiments are now organised so that each layer of the controller is evaluated separately:
+\begin{enumerate}[(a)]
+\item the kinematic law without swing compensation, which does not complete the circular maneuver (the cable inclination exceeds 80$^\circ$ after \XX~s);
+\item the kinematic controller alone;
+\item the full cascade with fixed parameters $\hat{\boldsymbol{\theta}}_i=\boldsymbol{\theta}_0$;
+\item the proposed controller, with adaptation;
+\item the proposed controller on the lemniscate under wind gusts;
+\item an inner-loop ablation with a boundary-layer sliding-mode law (see our response to Comment~7);
+\item a new payload-mass sweep (0.05, 0.10, 0.20 and 0.30~kg, Section~\ref{sec:mass}), on the lemniscate, starting from the mismatched estimate $\hat{\boldsymbol{\theta}}_i(0)=[0.2,\ 0.5]^\top$ and comparing fixed and adaptive parameters.
+\end{enumerate}
+The comparison of (c) and (d) isolates the effect of the adaptation law, and experiment (g) tests it under a wrong initial model. With adaptation, $\hat\theta_{2,x}$ converges to \XX, $\hat\theta_{1,x}$ increases with the payload mass from \XX\ to \XX, and the RMS value of the integral state $\nu_x$ decreases from \XX\ to \XX. That is, the identified model takes over part of the effort previously supplied by the robust term. The payload tracking error changes only from \XX\ to \XX~m, because the super-twisting algorithm already rejects this matched uncertainty. The manuscript reports this result as it is and no longer claims that adaptation improves tracking accuracy.
+
+We also note that the former values $\hat{\boldsymbol{\theta}}=[2.0,\ 1.5]^\top$ (i.e., $\hat\kappa_u=0.5$, $\hat\kappa_v=0.75$) cannot be used as an initial condition of the revised law. With model inversion, $\hat\theta_2>\theta_2$ introduces positive velocity feedback, the command saturates, and the sliding mode that activates the adaptation is never reached. This limitation is now stated in the manuscript.
+
+\medskip
+\noindent\textbf{7. Verification and reproducibility.}
+To ensure that this inconsistency cannot reoccur, the revised repository provides:
+\begin{itemize}
+\item a single script, \texttt{run\_paper\_experiments.m}, that regenerates every figure and table without manual reconfiguration;
+\item five repetitions of each case, reported as mean $\pm$ standard deviation, because the co-simulation runs in real time and is not strictly deterministic;
+\item the raw time series and the configuration of every run;
+\item swing and payload-velocity metrics computed from the simulator ground truth instead of the cable-rate estimate (see our response to Comment~4);
+\item an automatic check of every analytical reference derivative against numerical differentiation;
+\item the equation-to-code correspondence table \texttt{EQUATION\_MAP.md}.
+\end{itemize}
+
+\medskip
+In summary, every point raised in this comment has been addressed:
+\begin{itemize}
+\item the saturated position feedback, the payload-velocity term, the undeclared filters, the saturation and the leaky integral have been removed or explicitly declared;
+\item the sign of the cable reference has been corrected in the manuscript;
+\item the restriction of the compensator to the horizontal channels is now part of the model and of the analysis;
+\item the manuscript and the code adapt the same parameters, with a law that can be implemented;
+\item all reported simulations now use the controller analysed in Section~2.
+\end{itemize}
+The corresponding changes in the manuscript are: Eqs.~\eqref{eq:href}, \eqref{eq:base_reference}, \eqref{eq:yaw_frame}, \eqref{eq:AccionControl}, \eqref{eq:sdot_theta} and \eqref{eq:ajuste_theta}; Assumption~\ref{as:smallangle}; Remark~\ref{rem:ident}; Theorem~\ref{th:inner}; Section~\ref{sec:discrete}; Table~\ref{tab:params}; Section~\ref{sec:mass}; and the regenerated figures and tables of Section~\ref{sec:simulations}.
+\end{reply}

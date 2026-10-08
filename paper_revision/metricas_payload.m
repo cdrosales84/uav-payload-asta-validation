@@ -50,7 +50,8 @@ M.rms_s     = sqrt(mean(R.s(:,sel).^2, 2)).';
 M.rms_nu    = sqrt(mean(R.nu(:,sel).^2, 2)).';
 M.frac_sat  = mean(any(R.sat(:,sel),1));
 M.theta_fin = R.theta(:,end).';                     % [th1_x th2_x th1_y th2_y]
-du = diff(R.u(1:2,sel), 1, 2) ./ diff(t(sel));
+ts = t(sel); dts = diff(ts); ok = dts > 0;         % el simulador puede repetir un tiempo de muestra
+du = diff(R.u(1:2,sel), 1, 2); du = du(:,ok) ./ dts(ok);
 M.rms_du    = sqrt(mean(du.^2, 2)).';               % diagnostico de chattering
 M.tv_u      = sum(abs(diff(R.u(1:2,sel), 1, 2)), 2).';
 

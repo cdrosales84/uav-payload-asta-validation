@@ -65,7 +65,7 @@ ControlCarga = true; %Si es true, la trayectoria la sigue la carga, si
 
 % Flags para activar/desactivar etapas de control
 UsarKinematicoI        = false;   % Propuesta I: -k_osc*l*dot(theta)
-UsarKinematicoII       = true;   % Propuesta II: compensacion cinematica (R, R_dot)
+UsarKinematicoII       = false;   % Propuesta II: compensacion cinematica (R, R_dot)
 UsarCompensadorDinamico = false;  % Compensador dinamico Super-Twisting adaptativo
 UsarAdaptacionST = false; % Se activa la adaptacion de ganancias del ST
 % Ganancias del compensador cinemático II propuesto
@@ -76,7 +76,7 @@ UsarAdaptacionST = false; % Se activa la adaptacion de ganancias del ST
 Ph = diag([1 1 0]);
 
 %% Exportar figuras y datos para el paper (carpeta ResultadosPaper)
-ExportarResultadosPaper = true;   % true = guardar figuras .png/.fig y datos .mat
+ExportarResultadosPaper = false;   % true = guardar figuras .png/.fig y datos .mat
 CarpetaResultados = 'ResultadosPaper';  % carpeta dentro de Simulaciones
 % Opcion para cargar ganancias de una simulacion previa
 CargarGananciasPrevias = false;  % true = cargar ganancias guardadas, false = usar valores iniciales por defecto
@@ -876,6 +876,46 @@ plot(tt(1:yTFind), yXil(2,1:yTFind), '-',  'LineWidth', LinAncho, 'Color', color
 ylabel('$y_\ell$ [m]','Interpreter','Latex','FontSize',FntSize);
 xlabel('Time [s]','Interpreter','Latex','FontSize',FntSize);
 legend('$y_d$','$y_\ell$','Interpreter','Latex','FontSize',FntSize);
+
+%% Figura Plot 3D
+fig=figure;
+% fig.WindowState = 'maximized';
+s = get(0, 'ScreenSize');
+fig.Position = [s(3)*0.125 s(4)*0.125 s(3)*0.75 s(4)*0.75];
+xlabel('x [m]');
+ylabel('y [m]');
+zlabel('z [m]');
+grid;
+% axis image;
+% view(2);
+% view(3);
+%     view([-90,0]); %view -Y-Z
+%     view([0,0]); %view X-Z
+%     view([-180,0]); %view -X-Z
+
+plot3(xd,yd,zd,'--r');
+scale=0.573;  %2 normal size
+colorFrenteQuad=[1 0 1];  %magenta
+color_matlab = get(groot,'defaultAxesColorOrder');
+colorquad = color_matlab(1,:);
+Nquadrotor_parametros(1,scale,colorFrenteQuad,colorquad);
+colorBox = [0.38 0.1 0.035];
+colorCuerda = [0.5430 0.2695 0.0742];
+
+H1 = Nquadrotor(1,[0 0 0 0 0 0]);
+vent_des=frameRate*6;
+if(payload >= 0.001)
+    H2 = line(0,0,0);
+    H3 = line(0,0,0);
+    H4 = cube_plot([0,0,0],.1,.1,.1,'r');
+    H6 = animatedline('MaximumNumPoints',vent_des,'Color',colorBox,'LineWidth',1.5);
+end
+H5 = animatedline('MaximumNumPoints',vent_des,'Color',colorquad,'LineWidth',1.5);
+H7 = animatedline('MaximumNumPoints',1,'LineWidth',2,'Color',[1 0 0],'Marker','s','MarkerSize',5);
+% x = zeros(1,6);
+% r = zeros(10,3);
+view(45,20);
+axis image;
 %%
 figure('Position',[50 50 1200 600]);
 % Variable de interés: posición de la carga o del dron según ControlCarga
