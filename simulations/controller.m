@@ -72,8 +72,8 @@ ControlCarga = true; %Si es true, la trayectoria la sigue la carga, si
 
 % Flags para activar/desactivar etapas de control
 UsarKinematicoI        = false;   % Propuesta I: -k_osc*l*dot(theta)
-UsarKinematicoII       = false;   % Propuesta II: compensacion cinematica (R, R_dot)
-UsarCompensadorDinamico = false;  % Compensador dinamico Super-Twisting adaptativo
+UsarKinematicoII       = true;   % Propuesta II: compensacion cinematica (R, R_dot)
+UsarCompensadorDinamico = true;  % Compensador dinamico Super-Twisting adaptativo
 % DIAGNOSTICO (2026-09-07): se aislo el compensador dinamico solo
 % (UsarKinematicoII=false, UsarCompensadorDinamico=true) para investigar
 % una oscilacion/inestabilidad del sistema dron-carga. Esa config resulto

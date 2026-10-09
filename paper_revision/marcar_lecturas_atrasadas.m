@@ -19,13 +19,8 @@ function [Y, malo, ev] = marcar_lecturas_atrasadas(R, Y, ventana, umbral)
 %   malo : 1xN logico, muestras reemplazadas
 %   ev   : indices de las muestras con la lectura atrasada
 %
-% Ejemplo (figura y metricas sin los picos):
-%   S = load('E2_circ_cinematico_rep1.mat'); R = S.R;
-%   [vt, malo, ev] = marcar_lecturas_atrasadas(R, R.vt);
-%   plot(R.t, vt);
-%   sel = R.t >= R.cfg.met.t_inicio;
-%   rms_vt = sqrt(mean(vt(:, sel).^2, 2)).';
-%   fprintf('%d eventos, %d muestras reemplazadas\n', numel(ev), nnz(malo));
+%   Nota: si R.t tiene instantes repetidos, entre las muestras buenas con el mismo
+%   tiempo se usa la ultima como ancla de la interpolacion.
 
 if nargin < 2, Y = []; end
 if nargin < 3 || isempty(ventana), ventana = 0.1;   end
@@ -52,9 +47,20 @@ malo([1 N]) = false;                    % los extremos se conservan (anclas de l
 % 3) reemplazar por interpolacion lineal entre vecinos buenos
 if ~isempty(Y) && any(malo)
     if size(Y, 2) ~= N, Y = Y.'; end    % aceptar vectores columna
-    bueno = ~malo;
+    iBueno = find(~malo);
+
+    % interp1 exige tiempos unicos: si hay instantes repetidos entre las
+    % muestras buenas, se conserva la ultima lectura de cada instante
+    [tb, iu] = unique(t(iBueno), 'last');
+    iBueno   = iBueno(iu);
+
+    if numel(tb) < 2
+        warning('marcar_lecturas_atrasadas:pocasMuestras', ...
+                'Menos de 2 instantes buenos distintos; no se interpola.');
+        return
+    end
     for i = 1:size(Y, 1)
-        Y(i, malo) = interp1(t(bueno), Y(i, bueno), t(malo), 'linear');
+        Y(i, malo) = interp1(tb, Y(i, iBueno), t(malo), 'linear');
     end
 end
 end

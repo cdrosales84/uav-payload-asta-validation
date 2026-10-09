@@ -46,7 +46,7 @@ cfg.viento.bloques = zeros(0,5);
 %% Lazo externo: controlador cinematico (Secc. kinematic)
 cfg.ext.ley    = 'completo';            % 'completo' (Ecs. base_reference, swing_compensation) | 'sin_swing' (solo xd_dot + Ktraj*e)
 cfg.ext.Ktraj  = diag([1.4 1.4 0.7]);   % Ec. base_reference
-cfg.ext.Kh     = diag([3.0 3.0]);       % Ec. swing_compensation
+cfg.ext.Kh     = diag([2.2 2.2]);       % Ec. swing_compensation
 cfg.ext.Kdh    = diag([0.3 0.3]);       % Ec. swing_compensation
 cfg.ext.Ts     = 3.0;                   % [s] Ec. final_reference, sigma(t) = 1 - exp(-t/Ts)
 cfg.ext.kpsi   = 1.0;                   % Ec. yaw_reference

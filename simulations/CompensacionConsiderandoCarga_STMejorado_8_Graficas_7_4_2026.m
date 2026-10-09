@@ -65,9 +65,9 @@ ControlCarga = true; %Si es true, la trayectoria la sigue la carga, si
 
 % Flags para activar/desactivar etapas de control
 UsarKinematicoI        = false;   % Propuesta I: -k_osc*l*dot(theta)
-UsarKinematicoII       = false;   % Propuesta II: compensacion cinematica (R, R_dot)
-UsarCompensadorDinamico = false;  % Compensador dinamico Super-Twisting adaptativo
-UsarAdaptacionST = false; % Se activa la adaptacion de ganancias del ST
+UsarKinematicoII       = true;   % Propuesta II: compensacion cinematica (R, R_dot)
+UsarCompensadorDinamico = true;  % Compensador dinamico Super-Twisting adaptativo
+UsarAdaptacionST = true; % Se activa la adaptacion de ganancias del ST
 % Ganancias del compensador cinemático II propuesto
 % Kr_kinII = diag([0.15 0.15 0.0]);   % término restaurador horizontal
 % Kv_kinII = diag([1.2 1.2 0.0]);   % término amortiguante horizontal
@@ -322,10 +322,14 @@ K2_xy     = diag([0.75 0.75]);   % término integral del ST
 tau_d     = 0.05;                % convierte pseudoaceleración en corrección de velocidad
 alpha_udot = 0.15;               % filtro para derivada de Uc
 
-gamma1 = 0.03;
-gamma2 = 0.04;
-sigma1 = 0.08;
-sigma2 = 0.08;
+% gamma1 = 0.03;
+% gamma2 = 0.04;
+% sigma1 = 0.08;
+% sigma2 = 0.08;
+gamma1 = 0.05;
+gamma2 = 0.08;
+
+
 
 K1_min = [0.08; 0.08];
 K1_max = [1.45; 1.45];
@@ -880,8 +884,8 @@ legend('$y_d$','$y_\ell$','Interpreter','Latex','FontSize',FntSize);
 %% Figura Plot 3D
 fig=figure;
 % fig.WindowState = 'maximized';
-s = get(0, 'ScreenSize');
-fig.Position = [s(3)*0.125 s(4)*0.125 s(3)*0.75 s(4)*0.75];
+ss = get(0, 'ScreenSize');
+fig.Position = [ss(3)*0.125 ss(4)*0.125 ss(3)*0.75 ss(4)*0.75];
 xlabel('x [m]');
 ylabel('y [m]');
 zlabel('z [m]');

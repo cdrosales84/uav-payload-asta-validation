@@ -288,7 +288,10 @@ Y = nan(numel(S), numel(tg));
 for k = 1:numel(S)
     y = S(k).(campo)(fila, :);
     if ~isempty(fn), y = fn(y); end
-    Y(k,:) = interp1(S(k).t, y, tg, 'linear', NaN);
+%     Y(k,:) = interp1(S(k).t, y, tg, 'linear', NaN);
+    [tu, iu] = unique(S(k).t(:), 'last');   % descarta lecturas repetidas del simulador
+    yv = y(:);
+    Y(k,:) = interp1(tu, yv(iu), tg, 'linear', NaN);
 end
 if size(Y,1) == 1, return; end
 end

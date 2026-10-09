@@ -252,7 +252,9 @@ The cable-rate estimator used in the public code does not correspond to Eqs. (9)
 \end{point}
 
 \begin{reply}
-The authors thank the reviewer for the positive feedback.  
+We thank the reviewer for this inspection, and we agree. The released estimator was not Eqs.~\eqref{eq:h_raw}--\eqref{eq:h_p_filter}: its corrections had the wrong sign and its rate state was overwritten at the current sample instead of being propagated. The combination of these two errors made the estimate a constant of magnitude \(0.09\)~m/s, with no information about the cable motion. The payload velocity, the velocity RMSE and \(v_\perp\) of Tables~2 and~3 were therefore not valid, and the reported \(88\%\) reduction of \(\max v_T\) compared two different signals. That claim has been withdrawn.
+
+The revised estimator implements Eqs.~\eqref{eq:h_raw}--\eqref{eq:h_p_filter} and has been validated against the cable rate computed from the simulator ground truth (Figure~\ref{fig:estimator_validation}). The velocity metrics are now computed from that ground truth, and Tables~\ref{tab:metrics} and~\ref{tab:benchmark_smc} have been regenerated.
 \end{reply}
 
 \begin{point}

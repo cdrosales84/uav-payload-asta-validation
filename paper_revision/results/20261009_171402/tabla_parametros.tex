@@ -1,0 +1,21 @@
+% Generado por tabla_parametros_latex.m desde cfg_paper.m (paper_revision 1.0)
+\begin{tabular}{llll}
+\toprule
+Bloque & S\'imbolo & Valor & Ec. \\
+\midrule
+Cinem\'atico & $K_{\mathrm{traj}}$ & diag(1.4, 1.4, 0.7) & \eqref{eq:base_reference} \\
+ & $K_h$ & diag(2.2, 2.2) & \eqref{eq:swing_compensation} \\
+ & $K_{dh}$ & diag(0.3, 0.3) & \eqref{eq:swing_compensation} \\
+ & $T_s$ & 3.0 s & \eqref{eq:final_reference} \\
+ & $k_\psi,\ k_\psi^t$ & 1.00, 0.50 & \eqref{eq:yaw_reference} \\
+Estimador & $\varepsilon_1,\ K_1,\ \tau_h$ & 0.14, diag(3, 3, 3), 0.060 s & \eqref{eq:h_raw}--\eqref{eq:h_p_filter} \\
+Interno ($n=2$) & $\beta$ & 0.08 & superficie \\
+ & $K_1,\ K_2$ & [0.5, 0.5]$^\top$, [0.75, 0.75]$^\top$ & \eqref{eq:AccionControl} \\
+ & $u_{\max}$ & 5.0 m/s & implementaci\'on \\
+Adaptaci\'on & $\boldsymbol{\theta}_0$ & [0.4, 1]$^\top$ & nominal \\
+ & $\Gamma,\ \sigma$ & diag(0.1, 0.1), 0.005 & \eqref{eq:ajuste_theta} \\
+ & $\bar\nu,\ s_{\mathrm{on}},\ t_{\mathrm{on}}$ & 5.0, 0.050, 5.0 s & \eqref{eq:ajuste_theta} \\
+ & $\Theta$ & $[0.05,3.0]\times[0.2,3.0]$ & \eqref{eq:ajuste_theta} \\
+Filtro & $\dot{\mathbf{v}}_d$ & $\tau = 50$ ms ($2.50\,T_c$) & implementaci\'on \\
+\bottomrule
+\end{tabular}
