@@ -5,7 +5,8 @@
 clear; close all; clc;
 
 %% ================= Configuración =================
-CarpetaResultados  = 'C:\Repositorios\uav-payload-asta-validation\paper_revision\results\E2_circ_cinematico\raw';
+%CarpetaResultados  = 'C:\Repositorios\uav-payload-asta-validation\paper_revision\results\20261010_011019\raw';
+CarpetaResultados = 'C:\Users\claud\GitHub\uav-payload-asta-validation\paper_revision\results\E4_circ_asta\raw';
 CarpetaFiguras     = fullfile(CarpetaResultados, 'figuras');
 ExportarFiguras    = true;   % guarda .fig y .png de cada figura
 ExportarPDF        = false;  % además .pdf vectorial (recomendado para el paper)
@@ -97,6 +98,7 @@ end
 function [figs, nombres] = graficarCaso(D, F, experimento)
     LinAncho = F.LinAncho; FntSize = F.FntSize; colors = F.colors;
     t = D.t;
+    Bv = bloques_viento(D);
     figs = gobjects(0); nombres = {};
     lx = @(s) xlabel(s,'Interpreter','Latex','FontSize',FntSize);
     ly = @(s) ylabel(s,'Interpreter','Latex','FontSize',FntSize);
@@ -113,10 +115,16 @@ function [figs, nombres] = graficarCaso(D, F, experimento)
         ly(etq{j});
     end
     lx('Time [s]');
-    [figs, nombres] = agregar(figs, nombres, f, 'error_posicion');
+    [figs, nombres] = agregar(Bv, figs, nombres, f, 'error_posicion');
 
-    %% 2) Error de seguimiento de velocidad de la carga: v_d - v_l (como M.rmse_evl), y yaw
-    TE = [D.vd - D.vl; gradient(unwrap(D.psid), t) - D.psip];
+    %% 2) Error de velocidad.
+    % R.ev es la serie del script de SimQuad: [v; psi_dot] - u, con psi_dot medido.
+    % Si no está, se usa v_d - v_l y la derivada del yaw (corridas de paper_revision).
+    if isfield(D, 'ev') && size(D.ev, 1) >= 4 && size(D.ev, 2) == numel(t)
+        TE = D.ev(1:4, :);
+    else
+        TE = [D.vd - D.vl; gradient(unwrap(D.psid), t) - D.psip];
+    end
     f = nuevaFig(); tituloFig(f);
     etq = {'$\dot{\tilde{X}}$ [m/s]','$\dot{\tilde{Y}}$ [m/s]', ...
            '$\dot{\tilde{Z}}$ [m/s]','$\dot{\tilde{\psi}}$ [rad/s]'};
@@ -126,7 +134,7 @@ function [figs, nombres] = graficarCaso(D, F, experimento)
         ly(etq{j});
     end
     lx('Time [s]');
-    [figs, nombres] = agregar(figs, nombres, f, 'error_velocidad');
+    [figs, nombres] = agregar(Bv, figs, nombres, f, 'error_velocidad');
 
     %% 3) Ángulo de oscilación, rho y velocidad tangencial
     f = nuevaFig(); tituloFig(f);
@@ -139,7 +147,7 @@ function [figs, nombres] = graficarCaso(D, F, experimento)
     subplot(3,1,3); hold on; grid on;
     plot(t, D.vperp, 'LineWidth', LinAncho, 'Color', colors(1,:));
     ly('$||v_\perp||$ [m/s]'); lx('Time [s]'); lg('$||v_\perp(t)||$');
-    [figs, nombres] = agregar(figs, nombres, f, 'oscilacion');
+    [figs, nombres] = agregar(Bv, figs, nombres, f, 'oscilacion');
 
     f = nuevaFig(); tituloFig(f);
     subplot(3,1,1); hold on; grid on;
@@ -153,7 +161,7 @@ function [figs, nombres] = graficarCaso(D, F, experimento)
     plot(D.t, vt, 'LineWidth', LinAncho, 'Color', colors(1,:));
 %     plot(t, D.vperp, 'LineWidth', LinAncho, 'Color', colors(1,:));
     ly('$||v_\perp||$ [m/s]'); lx('Time [s]'); lg('$||v_\perp(t)||$');
-    [figs, nombres] = agregar(figs, nombres, f, 'oscilacion');
+    [figs, nombres] = agregar(Bv, figs, nombres, f, 'oscilacion');
 
     %% 4) Plano XY: deseada vs carga
     f = nuevaFig(); tituloFig(f);
@@ -166,7 +174,7 @@ function [figs, nombres] = graficarCaso(D, F, experimento)
         lg(sprintf('$%s_d$', comp{j}), sprintf('$%s_\\ell$', comp{j}));
     end
     lx('Time [s]');
-    [figs, nombres] = agregar(figs, nombres, f, 'seguimiento_xy');
+    [figs, nombres] = agregar(Bv, figs, nombres, f, 'seguimiento_xy');
 
     %% 5) Posiciones X, Y, Z y yaw de la carga
     f = nuevaFig(); tituloFig(f);
@@ -185,7 +193,7 @@ function [figs, nombres] = graficarCaso(D, F, experimento)
         lg(legd{j}, leg{j}); ly(etq{j});
     end
     lx('Time [s]');
-    [figs, nombres] = agregar(figs, nombres, f, 'posiciones');
+    [figs, nombres] = agregar(Bv, figs, nombres, f, 'posiciones');
 
     %% 6) Parámetros adaptativos theta
     f = nuevaFig(); tituloFig(f); hold on; grid on;
@@ -195,7 +203,7 @@ function [figs, nombres] = graficarCaso(D, F, experimento)
     end
     etqT = arrayfun(@(c) sprintf('$\\hat{\\theta}_{%d}$', c), 1:n, 'UniformOutput', false);
     lg(etqT{:}); ly('$\hat{\theta}$'); lx('Time [s]');
-    [figs, nombres] = agregar(figs, nombres, f, 'parametros_theta');
+    [figs, nombres] = agregar(Bv, figs, nombres, f, 'parametros_theta');
 
     %% 7) Superficie deslizante
     f = nuevaFig(); tituloFig(f); hold on; grid on;
@@ -205,7 +213,7 @@ function [figs, nombres] = graficarCaso(D, F, experimento)
         plot(t, D.s(c,:), 'LineWidth', LinAncho, 'Color', colors(c,:));
     end
     lg(etqS{1:n}); lx('Time [s]');
-    [figs, nombres] = agregar(figs, nombres, f, 'superficie');
+    [figs, nombres] = agregar(Bv, figs, nombres, f, 'superficie');
 
     %% 8) Referencia vs dron vs carga (posiciones)
     f = nuevaFig(); tituloFig(f);
@@ -219,7 +227,7 @@ function [figs, nombres] = graficarCaso(D, F, experimento)
         if j == 1, lg('$x_d$','$x$','$x_\ell$'); end
     end
     lx('Time [s]');
-    [figs, nombres] = agregar(figs, nombres, f, 'ref_dron_carga_pos');
+    [figs, nombres] = agregar(Bv, figs, nombres, f, 'ref_dron_carga_pos');
 
     %% 9) Referencia vs dron vs carga (velocidades)
     f = nuevaFig(); tituloFig(f);
@@ -233,7 +241,7 @@ function [figs, nombres] = graficarCaso(D, F, experimento)
         if j == 1, lg('$\dot{x}_d$','$\dot{x}$','$\dot{x}_\ell$'); end
     end
     lx('Time [s]');
-    [figs, nombres] = agregar(figs, nombres, f, 'ref_dron_carga_vel');
+    [figs, nombres] = agregar(Bv, figs, nombres, f, 'ref_dron_carga_vel');
 
     %% 10) Señales de control
     f = nuevaFig(); tituloFig(f);
@@ -244,7 +252,7 @@ function [figs, nombres] = graficarCaso(D, F, experimento)
         ly(etq{j});
     end
     lx('Time [s]');
-    [figs, nombres] = agregar(figs, nombres, f, 'control');
+    [figs, nombres] = agregar(Bv, figs, nombres, f, 'control');
 end
 
 function imprimirMetricas(D, M)
@@ -282,6 +290,57 @@ function nombre = buscarCampo(S, clave)
     if ~isempty(i), nombre = f{i}; end
 end
 
-function [figs, nombres] = agregar(figs, nombres, f, nombre)
+function [figs, nombres] = agregar(Bv, figs, nombres, f, nombre)
+    marcar_viento(f, Bv);
     figs(end+1) = f; nombres{end+1} = nombre;
+end
+
+function B = bloques_viento(D)
+% Filas [t_ini t_fin wx wy wz]. Vacío si el caso no tiene viento.
+B = zeros(0, 5);
+if isfield(D, 'cfg') && isfield(D.cfg, 'viento') && isfield(D.cfg.viento, 'bloques')
+    B = D.cfg.viento.bloques;
+end
+if isempty(B) && isfield(D, 'viento') && isfield(D, 't') && ~isempty(D.viento)
+    on = any(abs(D.viento) > 1e-6, 1);
+    d = diff([false, on, false]);
+    i0 = find(d == 1);
+    i1 = find(d == -1) - 1;
+    B = zeros(numel(i0), 5);
+    for i = 1:numel(i0)
+        B(i, 1:2) = [D.t(i0(i)), D.t(i1(i))];
+        B(i, 3:5) = D.viento(:, i0(i)).';
+    end
+end
+if ~isempty(B)
+    B = B(any(abs(B(:, 3:5)) > 1e-6, 2), :);
+end
+end
+
+function marcar_viento(f, B)
+% Bandas semitransparentes sobre los intervalos de viento, detrás de las curvas.
+% El primer bloque (lateral) va en verde y el segundo (oblicuo) en azul.
+if isempty(B), return; end
+relleno = [0.75 0.90 0.75; 0.75 0.84 0.95];
+borde0  = [0.15 0.55 0.20; 0.20 0.40 0.85];
+borde1  = [0.90 0.45 0.10; 0.80 0.15 0.55];
+ax = findobj(f, 'Type', 'axes');
+for a = 1:numel(ax)
+    if strcmp(get(ax(a), 'Tag'), 'legend'), continue; end
+    if ~isequal(round(get(ax(a), 'View')), [0 90]), continue; end
+    yl = ylim(ax(a));
+    hold(ax(a), 'on');
+    for i = 1:size(B, 1)
+        k = mod(i-1, size(relleno, 1)) + 1;
+        hp = patch(ax(a), [B(i,1) B(i,2) B(i,2) B(i,1)], yl([1 1 2 2]), ...
+            relleno(k,:), 'FaceAlpha', 0.28, 'EdgeColor', 'none', 'HandleVisibility', 'off');
+        plot(ax(a), [B(i,1) B(i,1)], yl, '--', 'Color', borde0(k,:), ...
+            'LineWidth', 1.25, 'HandleVisibility', 'off');
+        plot(ax(a), [B(i,2) B(i,2)], yl, '--', 'Color', borde1(k,:), ...
+            'LineWidth', 1.25, 'HandleVisibility', 'off');
+        uistack(hp, 'bottom');
+    end
+    ylim(ax(a), yl);
+    set(ax(a), 'Layer', 'top');
+end
 end

@@ -76,8 +76,9 @@ UsarAdaptacionST = true; % Se activa la adaptacion de ganancias del ST
 Ph = diag([1 1 0]);
 
 %% Exportar figuras y datos para el paper (carpeta ResultadosPaper)
-ExportarResultadosPaper = false;   % true = guardar figuras .png/.fig y datos .mat
-CarpetaResultados = 'ResultadosPaper';  % carpeta dentro de Simulaciones
+ExportarResultadosPaper = false;   % true = guardar figuras .png/.fig y el .mat suelto
+GuardarFormatoPaper = false;        % true = .mat con R y M para graficar_resultados_paper.m
+CarpetaResultados = 'ResultadosPaper';  % carpeta relativa al directorio de trabajo de MATLAB
 % Opcion para cargar ganancias de una simulacion previa
 CargarGananciasPrevias = false;  % true = cargar ganancias guardadas, false = usar valores iniciales por defecto
 GuardarGananciasFinales = false;   % true = guardar ganancias al final, false = no guardar
@@ -668,45 +669,45 @@ while (~finalCamino) && (k <= length(tt))
     end
 
     % Graficar en L�nea %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    delete(H1);
-
-    if(payload >= 0.001)
-        delete(H2);
-        delete(H3);
-        delete(H4);
-        r = yRope(1:3:40,:,k);  %ver que coincida justo en el �ltimo eslab�n el arreglo
-        %         r = yRope(:,:,k);  %ver que coincida justo en el �ltimo eslab�n el arreglo
-    end
-
-    x = [yQuad(1,k) yQuad(2,k) yQuad(3,k) yQuad(13,k) yQuad(14,k) yQuad(15,k)];
-    H1 = Nquadrotor(1,[x(1),x(2),x(3),x(4),x(5),x(6)]);
-
-    if(payload >= 0.001)
-        H2 = line(r(:,1),r(:,2),r(:,3)+0.0025);
-        H2.Color = colorCuerda;
-        H2.LineWidth = 1.5;
-
-        H3 = line([r(1,1) x(1)],[r(1,2) x(2)],[r(1,3) x(3)]);
-        H3.Color = colorquad;
-        H3.LineWidth = 2;
-
-        dirBoxT = squeeze(r(end-1,:)-r(end,:))/norm(squeeze(r(end-1,:)-r(end,:)));
-        moverBox = dirBoxT*0;
-        %     moverBox = dirBoxT*tam_carga/2; %Box translation
-        if(yXil(3,k) < tam_carga/2)
-            H4=cube_plot([r(end,1)-moverBox(1),r(end,2)-moverBox(2),tam_carga/2],tam_carga,tam_carga,tam_carga,colorBox);
-        else
-            H4=cube_plot([r(end,1)-moverBox(1),r(end,2)-moverBox(2),r(end,3)-moverBox(3)-tam_carga/2],tam_carga,tam_carga,tam_carga,colorBox);
-        end
-        rotate(H4,[1 0 0],rad2deg(-asin(dirBoxT(2))),[r(end,1)-moverBox(1),r(end,2)-moverBox(2),r(end,3)-moverBox(3)]);
-        rotate(H4,[0 1 0],rad2deg(asin(dirBoxT(1))),[r(end,1)-moverBox(1),r(end,2)-moverBox(2),r(end,3)-moverBox(3)]);
-        addpoints(H6,yXil(1,k),yXil(2,k),yXil(3,k));
-    end
-    addpoints(H5,x(1),x(2),x(3));
-    addpoints(H7,xd(k),yd(k),zd(k));
-    % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    ant_Uk = yUk(:,k);
-    drawnow;
+%     delete(H1);
+% 
+%     if(payload >= 0.001)
+%         delete(H2);
+%         delete(H3);
+%         delete(H4);
+%         r = yRope(1:3:40,:,k);  %ver que coincida justo en el �ltimo eslab�n el arreglo
+%         %         r = yRope(:,:,k);  %ver que coincida justo en el �ltimo eslab�n el arreglo
+%     end
+% 
+%     x = [yQuad(1,k) yQuad(2,k) yQuad(3,k) yQuad(13,k) yQuad(14,k) yQuad(15,k)];
+%     H1 = Nquadrotor(1,[x(1),x(2),x(3),x(4),x(5),x(6)]);
+% 
+%     if(payload >= 0.001)
+%         H2 = line(r(:,1),r(:,2),r(:,3)+0.0025);
+%         H2.Color = colorCuerda;
+%         H2.LineWidth = 1.5;
+% 
+%         H3 = line([r(1,1) x(1)],[r(1,2) x(2)],[r(1,3) x(3)]);
+%         H3.Color = colorquad;
+%         H3.LineWidth = 2;
+% 
+%         dirBoxT = squeeze(r(end-1,:)-r(end,:))/norm(squeeze(r(end-1,:)-r(end,:)));
+%         moverBox = dirBoxT*0;
+%         %     moverBox = dirBoxT*tam_carga/2; %Box translation
+%         if(yXil(3,k) < tam_carga/2)
+%             H4=cube_plot([r(end,1)-moverBox(1),r(end,2)-moverBox(2),tam_carga/2],tam_carga,tam_carga,tam_carga,colorBox);
+%         else
+%             H4=cube_plot([r(end,1)-moverBox(1),r(end,2)-moverBox(2),r(end,3)-moverBox(3)-tam_carga/2],tam_carga,tam_carga,tam_carga,colorBox);
+%         end
+%         rotate(H4,[1 0 0],rad2deg(-asin(dirBoxT(2))),[r(end,1)-moverBox(1),r(end,2)-moverBox(2),r(end,3)-moverBox(3)]);
+%         rotate(H4,[0 1 0],rad2deg(asin(dirBoxT(1))),[r(end,1)-moverBox(1),r(end,2)-moverBox(2),r(end,3)-moverBox(3)]);
+%         addpoints(H6,yXil(1,k),yXil(2,k),yXil(3,k));
+%     end
+%     addpoints(H5,x(1),x(2),x(3));
+%     addpoints(H7,xd(k),yd(k),zd(k));
+%     % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%     ant_Uk = yUk(:,k);
+%     drawnow;
 
     k=k+1;
 end
@@ -781,6 +782,82 @@ fprintf('\nRMSE evx   = %.6f', RMSE_vx);
 fprintf('\nRMSE evy   = %.6f', RMSE_vy);
 fprintf('\nRMSE evz   = %.6f', RMSE_vz);
 fprintf('\nRMSE evpsi = %.6f\n', RMSE_vpsi);
+
+%% Serie en el formato de paper_revision (R = señales, M = métricas)
+% graficar_resultados_paper.m hace load del .mat y usa S.R y S.M.
+% No es la salida de sim_payload_asta: theta aquí es [K1x; K2x; K1y; K2y]
+% del super-twisting de este script, y ex/epsi son los errores ya filtrados.
+if GuardarFormatoPaper
+    N = yTFind;
+    tR = tt(1:N);
+    xlR = yXil(:,1:N);
+    % v_l del script: v_uav - h_p. Derivar x_l amplifica el salto de la cuerda.
+    vlR = yXip(:,1:N) - yHp(:,1:N);
+
+    R = struct();
+    R.t    = tR;
+    R.dt   = repmat(deltat, 1, N);
+    R.x    = yXi(:,1:N);
+    R.v    = yXip(:,1:N);
+    R.psi  = yPsi(1:N);
+    R.xl   = xlR;
+    R.xd   = yXid(:,1:N);
+    R.vd   = yXidp(:,1:N);
+    R.ad   = yXidpp(:,1:N);
+    R.psid = yPsid(1:N);
+    R.h    = yH(:,1:N);
+    R.hp   = yHp(:,1:N);
+    R.ex   = yExil(:,1:N);
+    R.epsi = yEpsi(1:N);
+    R.u    = yULocal(:,1:N);
+    R.ev   = [yXip(:,1:N); yPsip(1:N)] - yU(:,1:N);   % misma serie que TrackingError del script
+    R.s    = s(:,1:N);
+    R.vt   = yXpLocal(1:2,1:N) - yUcFil(1:2,1:N);
+    R.theta = [Gan_U(1,1:N); Gan_V(1,1:N); Gan_U(2,1:N); Gan_V(2,1:N)];
+    R.completo = (N == numel(tt));
+    if R.completo, R.motivo = 'fin'; else, R.motivo = 'interrumpida'; end
+    R.fecha = datestr(now, 'yyyy-mm-dd HH:MM:SS');
+    R.origen = mfilename;
+    R.ley = struct('kinematicoI', UsarKinematicoI, 'kinematicoII', UsarKinematicoII, ...
+        'compensador', UsarCompensadorDinamico, 'adaptacion', UsarAdaptacionST, ...
+        'trayectoria', TrayectoriaDefault);
+
+    evl = R.vd - vlR;
+    M = struct();
+    M.completo = R.completo;
+    M.t_final = tR(end);
+    M.dt_medio = deltat;
+    M.dt_max = deltat;
+    M.rmse_ex = RMSE_ErrorControl;
+    M.rmse_ex_xyz = sqrt(mean(R.ex.^2, 2)).';
+    M.rmse_evl = sqrt(mean(sum(evl.^2, 1)));
+    M.rmse_epsi = sqrt(mean(R.epsi.^2));
+    M.rms_alpha = RMSE_alpha;
+    M.max_alpha = max_alpha;
+    M.rms_rho = rho_rms;
+    M.max_rho = max_rho;
+    M.rms_vperp = vperp_rms;
+    M.max_vperp = vperp_peak;
+    M.serie = struct('t', tR, 'vl', vlR, 'alpha', alpha_l(1:N), ...
+        'rho', rho(1:N), 'vperp', vperp_norm(1:N));
+
+    partes = {'CompCarga'};
+    if UsarKinematicoI, partes{end+1} = 'kinI'; end %#ok<AGROW>
+    if UsarKinematicoII, partes{end+1} = 'kinII'; end %#ok<AGROW>
+    if UsarCompensadorDinamico
+        if UsarAdaptacionST, partes{end+1} = 'ASTA'; else, partes{end+1} = 'STA'; end %#ok<AGROW>
+    end
+    nombre_corrida = sprintf('%s_rep1', strjoin(partes, '_'));
+    script_path = mfilename('fullpath');
+    if isempty(script_path), raiz_repo = fileparts(pwd); else, raiz_repo = fileparts(fileparts(script_path)); end
+    carpeta_raw = fullfile(raiz_repo, 'paper_revision', 'results', ...
+        datestr(now, 'yyyymmdd_HHMMSS'), 'raw');
+    if ~exist(carpeta_raw, 'dir'), mkdir(carpeta_raw); end
+    archivo_paper = fullfile(carpeta_raw, [nombre_corrida '.mat']);
+    save(archivo_paper, 'R', 'M', '-v7');
+    fprintf('\nFormato paper guardado en:\n  %s\n', archivo_paper);
+    fprintf('  En graficar_resultados_paper.m asignar CarpetaResultados a:\n  %s\n', carpeta_raw);
+end
 
 LinAncho = 1.5;
 FntSize = 12;

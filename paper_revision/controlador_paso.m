@@ -45,6 +45,9 @@ st.hhat = st.hhat + dt*hp;                                        % Ec. h_hat_dy
 
 %% Errores (Ecs. payload_tracking_error, yaw_reference)
 ex   = r.p - m.xl;                                                % x_tilde = x_d - x_l
+%% Error de velocidad de la carga (Ec. payload_velocity_error)
+xl_dot_hat = m.v - hp;                 % xdot_l = xdot - hdot (Ec. cable_vector derivada)
+exd        = r.v - xl_dot_hat;         % xdot_tilde = xdot_d - xdot_l
 epsi = atan2(sin(r.psi - m.psi), cos(r.psi - m.psi));
 [ex,   st.ex_f]   = filtro1(ex,   st.ex_f,   F.tau_ex,   dt);
 [epsi, st.epsi_f] = filtro1(epsi, st.epsi_f, F.tau_epsi, dt);
@@ -56,8 +59,12 @@ hsd_h = (l/g) * r.j(1:2);                                         % hdot*_h, ana
 %% Controlador cinematico (Ecs. base_reference, swing_compensation, final_reference)
 switch E.ley
     case 'completo'
-        ff     = [E.usar_ff_hdot*hsd_h; 0];
-        v_base = r.v + ff + E.Ktraj*ex;                           % Ec. base_reference
+        if isfield(E, 'seguimiento') && strcmp(E.seguimiento, 'abril')
+            v_base = r.v + E.Ktraj_abril*tanh(E.Ktrajt*ex) + E.Kvload*tanh(E.Kvloadt*exd);
+        else
+            ff     = [E.usar_ff_hdot*hsd_h; 0];
+            v_base = r.v + ff + E.Ktraj*ex;                       % Ec. base_reference
+        end
         v_comp = [-E.Kh*(h(1:2) - hs_h) - E.Kdh*(hp(1:2) - hsd_h); 0];   % Ec. swing_compensation
     case 'sin_swing'
         v_base = r.v + E.Ktraj*ex;                                % ley sin compensacion (Fig. 6a)

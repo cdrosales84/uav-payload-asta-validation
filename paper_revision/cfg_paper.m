@@ -32,7 +32,8 @@ cfg.planta.air_friction      = 0.01/20;
 cfg.planta.ground_repel      = 50/20;
 cfg.planta.ground_slide      = 0.1/20;
 cfg.planta.ground_absorption = 1/20;
-cfg.planta.grafico_en_linea  = false;  % las corridas del paper se hacen sin graficar en linea
+cfg.planta.grafico_en_linea  = false;  % true: Nquadrotor + cuerda + carga dentro del while de sim_payload_asta
+cfg.planta.grafico_cada      = 5;      % redibuja cada N muestras (1 = cada paso; en tiempo real alarga el periodo)
 cfg.planta.g            = 9.81;
 
 %% Referencia (Ec. ref_circ / ref_lemn)
@@ -45,13 +46,18 @@ cfg.viento.bloques = zeros(0,5);
 
 %% Lazo externo: controlador cinematico (Secc. kinematic)
 cfg.ext.ley    = 'completo';            % 'completo' (Ecs. base_reference, swing_compensation) | 'sin_swing' (solo xd_dot + Ktraj*e)
-cfg.ext.Ktraj  = diag([1.4 1.4 0.7]);   % Ec. base_reference
-cfg.ext.Kh     = diag([2.2 2.2]);       % Ec. swing_compensation
+cfg.ext.Ktraj  = diag([1.8 1.8 0.7]);   % Ec. base_reference
+cfg.ext.Kh     = diag([3.0 3.0]);       % Ec. swing_compensation. E2_circ: 4.0 -> 3.0; el modo de cable a 1.42 s crecia (alpha -> 74 deg)
 cfg.ext.Kdh    = diag([0.3 0.3]);       % Ec. swing_compensation
-cfg.ext.Ts     = 3.0;                   % [s] Ec. final_reference, sigma(t) = 1 - exp(-t/Ts)
+cfg.ext.Ts     = 5.0;                   % [s] Ec. final_reference, sigma(t) = 1 - exp(-t/Ts)
 cfg.ext.kpsi   = 1.0;                   % Ec. yaw_reference
 cfg.ext.kpsit  = 0.5;                   % Ec. yaw_reference
 cfg.ext.usar_ff_hdot = true;            % termino [hdot*;0] en v_base (Ec. base_reference)
+cfg.ext.seguimiento = 'lineal';          % 'lineal' (Ec. base_reference) | 'abril' (script 7-abr-2026, solo v_base)
+cfg.ext.Ktraj_abril = diag([4.0 4.0 2.0]);    % ganancia fuera del tanh del script de abril
+cfg.ext.Ktrajt      = diag([0.35 0.35 0.35]); % ganancia dentro del tanh, error de posicion
+cfg.ext.Kvload      = diag([0.45 0.45 0.18]); % ganancia fuera del tanh, velocidad de la carga
+cfg.ext.Kvloadt     = diag([0.90 0.90 0.60]); % ganancia dentro del tanh, velocidad de la carga
 
 %% Estimador de velocidad del cable (Ecs. h_raw, h_hat_dyn, h_p_filter)
 cfg.est.eps1  = 0.14;
@@ -72,8 +78,8 @@ cfg.int.beta  = 0.08;                   % Ec. superficie s = v_tilde + beta*int(
 % K1/K2 = 1.0/1.5 (controller.m) compensaban la inestabilidad del lazo externo con
 % Kh/Kdh = 1.8/0.6. Con Kh/Kdh = 3.0/0.3 (Kh > (1+Kdh)*Ktraj) vuelven a 0.5/0.75, que
 % reduce el ciclo limite del STA (verificar en SimQuad: ver README).
-cfg.int.K1    = [0.5; 0.5];             % Ec. AccionControl, termino K1*sqrt|s|*sign(s)
-cfg.int.K2    = [0.75; 0.75];           % Ec. AccionControl, termino int(K2*sign(s))
+cfg.int.K1    = [0.35; 0.35];             % Ec. AccionControl, termino K1*sqrt|s|*sign(s)
+cfg.int.K2    = [0.525; 0.525];           % Ec. AccionControl, termino int(K2*sign(s))
 cfg.int.phi_bl = 0;                     % 0 = sign(s) puro; >0 = sign(s) ~ s/(|s|+phi_bl) (declararlo si se usa)
 cfg.int.u_max = 5.0;                    % [m/s] saturacion del comando; integracion condicional de nu
 cfg.int.K_smc  = [1.2; 1.2];            % solo ablacion SMC: u = phi*theta0 - K_smc .* s./(|s|+phi_smc)
@@ -127,10 +133,12 @@ switch escenario
         cfg.ext.ley = 'sin_swing'; cfg.int.ley = 'ninguno';
     case 'E2_circ_cinematico'       % Tabla metrics, fila "Kinematic"
         cfg.int.ley = 'ninguno';
+        cfg.ext.seguimiento = 'lineal';   % E2: v_base del script 7-abr-2026, para ver el atraso de 10 s
     case 'E3_circ_sta_fijo'         % cascada con theta fija (theta0)
         cfg.int.ley = 'sta_fijo';
     case 'E4_circ_asta'             % controlador propuesto
         cfg.int.ley = 'asta';
+        cfg.ext.seguimiento = 'lineal';   % E2: v_base del script 7-abr-2026, para ver el atraso de 10 s
     case 'E5_lemn_viento'           % robustez con viento
         cfg.ref.tipo = 'lemniscata'; cfg.planta.mL = 0.30; cfg.int.ley = 'asta';
         cfg.viento.bloques = [20 40 0 6 0; 60 80 3*sqrt(2) 3*sqrt(2) 0];

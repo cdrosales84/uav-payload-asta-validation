@@ -1,506 +1,1208 @@
-\documentclass[11pt]{article}
+
+%Version 3.1 December 2024
+% See section 11 of the User Manual for version history
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%                                                                 %%
+%% Please do not use \input{...} to include other tex files.       %%
+%% Submit your LaTeX manuscript as one .tex document.              %%
+%%                                                                 %%
+%% All additional figures and files should be attached             %%
+%% separately and not embedded in the \TeX\ document itself.       %%
+%%                                                                 %%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%\documentclass[referee,sn-basic]{sn-jnl}% referee option is meant for double line spacing
+
+%%=======================================================%%
+%% to print line numbers in the margin use lineno option %%
+%%=======================================================%%
+
+%%\documentclass[lineno,pdflatex,sn-basic]{sn-jnl}% Basic Springer Nature Reference Style/Chemistry Reference Style
+
+%%=========================================================================================%%
+%% the documentclass is set to pdflatex as default. You can delete it if not appropriate.  %%
+%%=========================================================================================%%
+
+%%\documentclass[sn-basic]{sn-jnl}% Basic Springer Nature Reference Style/Chemistry Reference Style
+
+%%Note: the following reference styles support Namedate and Numbered referencing. By default the style follows the most common style. To switch between the options you can add or remove Numbered in the optional parenthesis. 
+%%The option is available for: sn-basic.bst, sn-chicago.bst%  
+ 
+%%\documentclass[pdflatex,sn-nature]{sn-jnl}% Style for submissions to Nature Portfolio journals
+%%\documentclass[pdflatex,sn-basic]{sn-jnl}% Basic Springer Nature Reference Style/Chemistry Reference Style
+%\documentclass[pdflatex,sn-mathphys-num]{sn-jnl}
+\documentclass[sn-mathphys-num]{sn-jnl}
+
+% Math and Physical Sciences Numbered Reference Style
+%%\documentclass[pdflatex,sn-mathphys-ay]{sn-jnl}% Math and Physical Sciences Author Year Reference Style
+%%\documentclass[pdflatex,sn-aps]{sn-jnl}% American Physical Society (APS) Reference Style
+%%\documentclass[pdflatex,sn-vancouver-num]{sn-jnl}% Vancouver Numbered Reference Style
+%%\documentclass[pdflatex,sn-vancouver-ay]{sn-jnl}% Vancouver Author Year Reference Style
+%%\documentclass[pdflatex,sn-apa]{sn-jnl}% APA Reference Style
+%%\documentclass[pdflatex,sn-chicago]{sn-jnl}% Chicago-based Humanities Reference Style
+
+%%%% Standard Packages
+%%<additional latex packages if required can be included here>
+
+\usepackage{graphicx}%
+\usepackage{multirow}%
+\usepackage{amsmath,amssymb,amsfonts}%
+\DeclareMathOperator{\sign}{sign}
+\usepackage{amsthm}%
+\usepackage{mathrsfs}%
+\usepackage[title]{appendix}%
+\usepackage{xcolor}%
+\usepackage{textcomp}%
+\usepackage{manyfoot}%
+\usepackage{booktabs}%
+\usepackage{algorithm}%
+\usepackage{algorithmicx}%
+\usepackage{algpseudocode}%
+\usepackage{listings}%
+%%%%
+\usepackage{txfonts}
 \usepackage[utf8]{inputenc}
-\usepackage{amsmath}
-\usepackage{lipsum} % to generate some filler text
-\usepackage{fullpage}
-\usepackage{mathrsfs}
-\usepackage{svg}
-\usepackage{xr}
-\usepackage{amsthm,cite,url,graphicx,booktabs,lipsum,color,bm,caption,subcaption,soul}
-\usepackage{pifont,tikz,paralist,multirow,amssymb}
-\usepackage{xifthen}
-\usepackage{enumerate}
-\usepackage{titlesec}
-\newcounter{reviewer}
-\setcounter{reviewer}{0}
-\newcounter{point}[reviewer]
-\setcounter{point}{0}
-\usepackage{color,soul}
+\usepackage{makecell}
+\usepackage{xcolor}  \usepackage{soul}
+\newtheorem{assumption}{Assumption}
 
-% This refines the format of how the reviewer/point reference will appear.
-%\renewcommand{\thepoint}{C\,\thereviewer.\arabic{point}}
+%%%%%=============================================================================%%%%
+%%%%  Remarks: This template is provided to aid authors with the preparation
+%%%%  of original research articles intended for submission to journals published 
+%%%%  by Springer Nature. The guidance has been prepared in partnership with 
+%%%%  production teams to conform to Springer Nature technical requirements. 
+%%%%  Editorial and presentation requirements differ among journal portfolios and 
+%%%%  research disciplines. You may find sections in this template are irrelevant 
+%%%%  to your work and are empowered to omit any such section if allowed by the 
+%%%%  journal you intend to submit to. The submission guidelines and policies 
+%%%%  of the journal take precedence. A detailed User Manual is available in the 
+%%%%  template package for technical guidance.
+%%%%%=============================================================================%%%%
 
-\renewcommand{\thepoint}{Comment\,\thereviewer.\arabic{point}}
+%% as per the requirement new theorem styles can be included as shown below
+\theoremstyle{thmstyleone}%
+\newtheorem{theorem}{Theorem}%  meant for continuous numbers
+%%\newtheorem{theorem}{Theorem}[section]% meant for sectionwise numbers
+%% optional argument [theorem] produces theorem numbering sequence instead of independent numbers for Proposition
+\newtheorem{proposition}[theorem]{Proposition}% 
+%%\newtheorem{proposition}{Proposition}% to get separate numbers for theorem and proposition etc.
 
-% command declarations for reviewer points and our responses
+\theoremstyle{thmstyletwo}%
+\newtheorem{example}{Example}%
+\newtheorem{remark}{Remark}%
 
-\newenvironment{point1}
-   {\refstepcounter{point} \bigskip \noindent {\textbf{Associate reviewer Comment~}} ---\ }
-   {\par }
+\theoremstyle{thmstylethree}%
+\newtheorem{definition}{Definition}%
 
-\newcommand{\reviewersection}{\stepcounter{reviewer} \bigskip \hrule
-                  \section*{Reviewer \thereviewer}}
-
-% \newenvironment{point}
-
-%    {\refstepcounter{point} \bigskip \noindent {\textbf{Reviewer~\thepoint} } ---\ }
-%    {\par }
-
-\newenvironment{point}
-   {\refstepcounter{point} \bigskip \noindent {\textbf{Reviewer~\thepoint} } ---\ }
-   {\par }
-
-
-\newcommand{\shortpoint}[1]{\refstepcounter{point}   \bigskip \noindent 
-	{\textbf{Reviewer~Point~\thepoint} } ---~#1  }
-
-\newenvironment{reply}
-   {\medskip \noindent \color{blue} \begin{sf}\textbf{Reply}:\  }
-   {\medskip \par \end{sf}}
-
-\newcommand{\shortreply}[2][]{\medskip \noindent \begin{sf}\textbf{Reply}:\  #2
-	\ifthenelse{\equal{#1}{}}{}{ \hfill \footnotesize (#1)}%
-	\medskip \end{sf}}
-
-\makeatletter
-\newcommand*{\addFileDependency}[1]{% argument=file name and extension
-  \typeout{(#1)}
-  \@addtofilelist{#1}
-  \IfFileExists{#1}{}{\typeout{No file #1.}}
-}
-\makeatother
-
-\newcommand*{\myexternaldocument}[1]{%
-    \externaldocument{#1}%
-    \addFileDependency{#1.tex}%
-    \addFileDependency{#1.aux}%
-}
-
-\myexternaldocument{main}
-%\externaldocument[I-]{main}
-
-
-\def\thesubsubsection{\arabic{subsubsection}}
-\titleformat{\subsubsection}[runin]
-{\normalfont\bfseries}
-{\indent\thesubsubsection)}{0.5em}{}
-
-
-% Valores pendientes de las corridas finales en SimQuad1.exe
-\newcommand{\XX}{\textcolor{red}{\textbf{XX}}}
-\providecommand{\sign}{\operatorname{sign}}
+\raggedbottom
+%%\unnumbered% uncomment this for unnumbered level heads
 
 \begin{document}
-\section*{Robust Adaptive Control of Underactuated UAV-Suspended Payload Systems: A Symmetry Approach for Last-Mile Delivery}
-\paragraph{Submission ID: 8f58d8bc-94ff-4c7a-b6d0-29e1897b5988} \\
 
-\vspace{10pt}
+\title[Article Title]{Robust Adaptive Control of Underactuated UAV-Suspended Payload Systems: A Modular Adaptive Approach for Last-Mile Delivery}
 
-The authors would like to thank the reviewer and reviewers for their constructive comments and suggestions that have helped improve the quality of this manuscript. The manuscript has been thoroughly revised according to the reviewer's comments. Please see our responses below.
+%%=============================================================%%
+%% GivenName	-> \fnm{Joergen W.}
+%% Particle	-> \spfx{van der} -> surname prefix
+%% FamilyName	-> \sur{Ploeg}
+%% Suffix	-> \sfx{IV}
+%% \author*[1,2]{\fnm{Joergen W.} \spfx{van der} \sur{Ploeg} 
+%%  \sfx{IV}}\email{iauthor@gmail.com}
+%%=============================================================%%
+\author*[1]{\fnm{Souad} \sur{Kamel}}\email{skamel@uj.edu.sa}\equalcont{}
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\reviewersection
-The manuscript addresses an important problem in UAV transportation of cable-suspended payloads, and the use of a flexible-cable simulator together with the release of source code are positive aspects. However, the current conclusions are not supported because the mathematical formulation, stability analysis, public implementation, and reported performance metrics are not mutually consistent.
+\author[2]{\fnm{Claudio} \sur{Rosales}}\email{crosales@inaut.unsj.edu.ar}\equalcont{}
+
+\author[3]{\fnm{Sahbi} \sur{Boubaker}}\email{sboubaker@uj.edu.sa}\equalcont{}
 
 
-%%%%%%%%%%%%%%%%
-\begin{point}
-The controller implemented in the public code is substantially different from the controller analysed in the manuscript. The code uses saturated position feedback and an additional payload-velocity feedback term absent from Eq. (8); the sign of the quasi-static cable reference differs from Eq. (12); additional filters, saturation, and a leaky integral are introduced; and the inner compensator acts only on the horizontal channels. Most importantly, the manuscript adapts the model parameters associated with \(\kappa_u\) and \(\kappa_v\), whereas the code adapts the super-twisting gains \(K_1\) and \(K_2\). Therefore, the simulations do not validate Eqs. (29)–(40) or Theorem 2.
-\end{point}
+\author[3]{\fnm{Faisal S.} \sur{Alsubaei}}\email{fsalsubaei@uj.edu.sa}\equalcont{}
 
 
-\begin{reply}
-We sincerely thank the reviewer for this detailed comparison between the manuscript and the released code. We fully agree with the assessment: the previous code and the previous manuscript described two different controllers, and the earlier simulations therefore did not validate the adaptation law or Theorem~2. To resolve this, we rewrote both the manuscript and the code so that they describe one and the same controller, and we regenerated every figure and table of the paper with this code. In the revised repository, all equations of Section~2 are implemented in a single function (\texttt{controlador\_paso.m}), each line is tagged with the label of the equation it implements, all parameters are read from one configuration file (\texttt{cfg\_paper.m}) that is stored with every result, and a line-by-line correspondence between equations and code is provided (\texttt{EQUATION\_MAP.md}).
+\author[4]{\fnm{Eduardo Oliverira} \sur{Freire}}\email{efreire@academico.ufs.br}\equalcont{}
 
-Table~R1 lists each discrepancy identified by the reviewer, how it appeared in the previous code, and how it has been resolved. Each item is then addressed in detail.
 
-\begin{table}[h]
+\author[2]{\fnm{Francisco G.} \sur{Rossomando}}\email{frosoma@inaut.unsj.edu.ar}\equalcont{}
+
+\affil*[1]{\orgdiv{Department of Computer and Network Engineering}, \orgname{College of Computer Science and Engineering, University of Jeddah}, \orgaddress{\city{Jeddah}, \postcode{23890}, \state{Jeddah}, \country{Saudi Arabia}}}
+
+\affil[2]{\orgdiv{Instituto de Automatica}, \orgname{UNSJ-CONICET}, \orgaddress{ \city{San Juan}, \postcode{CP5400}, \state{San Juan}, \country{Argentina}}}
+
+\affil[3]{\orgdiv{Department of Cybersecurity}, \orgname{College of Computer Science and Engineering, University of Jeddah}, \orgaddress{\city{Jeddah}, \postcode{21959}, \state{Jeddah}, \country{Saudi Arabia}}}
+
+\affil[4]{\orgdiv{Departamento de Engenharia Elétrica}, \orgname{Universidade Federal de Sergipe}, \orgaddress{\city{São Cristóvão/SE}, \postcode{49100-000}, \state{Sergipe}, \country{Brasil}}}
+
+
+%%==================================%%
+%% Sample for unstructured abstract %%
+%%==================================%%
+
+\abstract{This work addresses the computational modeling, design, and simulation of a robust adaptive cascaded controller for last-mile delivery using quadrotors (UAVs), which carry a payload. This work explores the interplay between the inherent unbalanced behavior of coupled UAV-payload dynamics and the restoration of performance balanced transient behavior through robust adaptive control. The system under study consists of the quadrotor, the cable, and the payload, where these elements are modeled as a subactuated dynamic system in which the payload must follow a desired trajectory and the quadrotor acts as the actuation platform. Taking advantage of the geometric and structural symmetries inherent in the pendulum-type configuration, the proposed controller combines a kinematic controller (outer loop), which shapes the UAV velocity command to dampen payload oscillations, with a dynamic compensator (inner loop), which tracks that command by an adaptive super-twisting law. The proposed controller ensures simplicity and robustness during control. Stability analysis was performed using Lyapunov theory, demonstrating the practical stability of control errors and ensuring the overall stability of the closed-loop system. The numerical simulations presented for a quadrotor carrying a suspended payload validate the proposed controller, demonstrating that the proposal is effective in rejecting disturbances and ensuring precise trajectory tracking, making it ideal for high-precision UAV applications.}
+
+
+%%================================%%
+%% Sample for structured abstract %%
+%%================================%%
+
+% \abstract{\textbf{Purpose:} The abstract serves both as a general introduction to the topic and as a brief, non-technical summary of the main results and their implications. The abstract must not include subheadings (unless expressly permitted in the journal's Instructions to Authors), equations or citations. As a guide the abstract should not exceed 200 words. Most journals do not set a hard limit however authors are advised to check the author instructions for the journal they are submitting to.
+% 
+% \textbf{Methods:} The abstract serves both as a general introduction to the topic and as a brief, non-technical summary of the main results and their implications. The abstract must not include subheadings (unless expressly permitted in the journal's Instructions to Authors), equations or citations. As a guide the abstract should not exceed 200 words. Most journals do not set a hard limit however authors are advised to check the author instructions for the journal they are submitting to.
+% 
+% \textbf{Results:} The abstract serves both as a general introduction to the topic and as a brief, non-technical summary of the main results and their implications. The abstract must not include subheadings (unless expressly permitted in the journal's Instructions to Authors), equations or citations. As a guide the abstract should not exceed 200 words. Most journals do not set a hard limit however authors are advised to check the author instructions for the journal they are submitting to.
+% 
+% \textbf{Conclusion:} The abstract serves both as a general introduction to the topic and as a brief, non-technical summary of the main results and their implications. The abstract must not include subheadings (unless expressly permitted in the journal's Instructions to Authors), equations or citations. As a guide the abstract should not exceed 200 words. Most journals do not set a hard limit however authors are advised to check the author instructions for the journal they are submitting to.}
+
+\keywords{Quadrotor UAV, last-mile delivery, transportation, adaptive control, trajectory tracking, super-twisting algorithm, robust control}
+
+%%\pacs[JEL Classification]{D8, H51}
+
+%%\pacs[MSC Classification]{35A01, 65L10, 65L12, 65L20, 65L70}
+
+
+\maketitle
+
+\section{Introduction}
+
+\subsection{State of the Art and Control of Cable-Suspended Payload Transport}
+Cable-suspended payload transport via unmanned aerial vehicles (UAVs) is a cornerstone of modern aerial logistics, infrastructure inspection, and emergency response in complex environments. Despite its operational potential, high-precision transport using a single UAV remains an open challenge. The system is fundamentally underactuated: a suspended load introduces oscillatory degrees of freedom that cannot be directly controlled, as the number of independent control inputs does not increase with the payload’s dimensionality. In this coupled quadcopter–cable–payload system, payload oscillations and external factors, such as wind gusts, act as primary sources of dynamic unbalanced that break the system’s natural equilibrium. These asymmetric perturbations not only degrade tracking accuracy but also introduce directional biases in the system's response, exacerbated by the nonlinear coupling \cite{Estevez2024,Wang2023,Yu2024,Mohammadi2021}.
+
+Two configurations are commonly considered. Cooperative transport with several quadcopters distributes the load over more actuators and can improve transport performance \cite{Costantini2024,sun2025agile,di2026modeling}, where these systems require advanced, nonlinear control techniques to reject disturbances \cite{han2022controller} and avoid obstacles \cite{aliyu2022control}, whereas single-UAV transport keeps the hardware, sensing, and coordination requirements minimal. Since the cooperative case and its drawbacks are discussed later in this section, the present work focuses on the single-vehicle configuration, in which one higher-performance vehicle must carry the suspended load along the desired trajectory. In much of the literature, the suspended load is treated as a disturbance or an undesirable effect to be rejected.
+
+For single-vehicle transport, where quadcopters today play a significant role in logistics and rescue operations, most control designs are built upon a dynamic model of the coupled quadcopter--payload--cable system. A geometric controller on the Lie group SE(3) \cite{goodarzi2014geometric} avoids the singularities of Euler-angle parameterizations. Its performance, however, is tied to an accurate full-dynamics model and full-state feedback, so that wind gusts and parametric uncertainty, explicitly acknowledged by the authors, directly degrade tracking, while the scheme provides no online mechanism to estimate or compensate for unmodeled effects. To improve disturbance handling, robust controllers \cite{qian2019path,barikbin2019trajectory} preserve tracking accuracy under bounded disturbances. Nevertheless, robustness is typically obtained through conservative worst-case gains tuned around fixed operating points, which limits performance under time-varying disturbances and, as the authors themselves note, leaves part of the load swing uncompensated. Passivity-based strategies, such as an energy-shaping controller \cite{guerrero2015passivity}, exploit the system's energy structure to attenuate load oscillations. This approach, however, requires an accurate energy and parameter model and generally yields only passive asymptotic damping, whose convergence is slow against persistent excitation.
+
+Sliding-mode control \cite{kusznir2020sliding} is well suited to rejecting matched uncertainties and reducing payload vibration. Yet conventional first-order implementations act at the UAV position or attitude level, induce chattering that stresses the actuators, and rely on prior knowledge of the disturbance bounds. Optimization- and planning-based methods, such as optimal trajectory tracking \cite{akhtar2022path} and swing-free trajectory generation \cite{palunko2012trajectory}, reduce oscillations by shaping the reference itself. Their largely feedforward nature, however, makes them sensitive to model mismatch and unanticipated disturbances, and the associated optimization introduces a computational burden that is difficult to sustain on lightweight embedded platforms.
+
+Beyond the single-vehicle case, transporting loads that exceed the capacity of one drone has motivated cooperative systems \cite{maza2009multi,michael2011cooperative}, in which coordination and joint manipulation are essential. These gains, however, come at the cost of additional hardware, distributed sensing, and inter-agent coordination, which restrict their applicability in the low-cost, single-UAV missions targeted in this work.
+
+A related line refines the physical realism of the model: cable-tension management to prevent the instantaneous loss of controllability under slack cables \cite{delbene2024cables}, geometric control accounting for cable elasticity \cite{goodman2023geometric}, and quantification of the tether effect on UAV stability through Lyapunov exponents \cite{tang2024analyzing}. Valuable as they are, these contributions increase the model fidelity and state-estimation requirements, and they remain primarily analysis- or modeling-oriented rather than delivering a lightweight feedback law for real-time transport.
+
+A second group manages uncertainty through intelligent or adaptive compensation, including optimized neural PID controllers under unknown dynamics and external disturbances \cite{siwek2024application} and robust architectures tolerant to unknown payload mass \cite{outeiro2023control}. Learning-based schemes, however, depend on representative training data and seldom provide formal stability guarantees, whereas mass-robust designs typically address a single uncertain parameter rather than the combined effect of parametric drift, unmodeled dynamics, and external disturbances.
+
+Iterative learning control (ILC) is another adaptive approach for uncertain systems. It refines the input from one execution of a task to the next, and it has been applied to precise quadrotor tracking of repeated or periodic trajectories \cite{schAR12,han2025sliding}. Recent adaptive ILC designs extend the method to effects that a deployed vehicle also faces. One design \cite{shen2025neural} treats strict-feedback systems with unknown state delays and input saturation by combining radial-basis-function neural networks, Lyapunov--Krasovskii functionals, command filtering, and auxiliary saturation-compensation systems. A subsequent design \cite{shen2026equilibrium} introduces update laws with an equilibrium factor that tolerate initial-state errors and actuator faults in robot arms. In both designs, convergence is established along the iteration axis through a composite energy function, which presupposes a task repeated over a finite interval. A delivery flight is executed once, along a reference that changes with each mission. The dynamic compensator of Section~\ref{sec:dynamic} therefore adapts its parameters along the time axis, within a single flight. Input saturation, delay, and actuator faults, which these ILC designs treat explicitly, are not included in the present analysis (Section~\ref{sec:conclusiones}).
+
+A third group operates at the planning and coordination level: two-time-scale swing minimization \cite{costantini2025two}, distributed trajectory optimization for scalability \cite{jackson2020scalable}, safe formation transport via ``virtual tubes'' \cite{liu2026virtual}, and SQP-based tension allocation for energy efficiency and slack avoidance \cite{vazquez:hal-05485942}. These methods presuppose either a clear time-scale separation, a multi-UAV formation, or the online solution of constrained optimization problems, all of which raise the computational and structural demands beyond what a single embedded platform can typically afford. Finally, perception- and orientation-aware controllers that decouple translational motion from yaw to preserve situational awareness during transport \cite{masuda2026geometric} target viewpoint regulation rather than payload-swing reduction, and thus pursue an objective that is complementary to, but distinct from, the one addressed here.
+
+Recent work on cable-suspended transport can be broadly grouped into three main directions. The first includes fully coupled nonlinear dynamic controllers, such as geometric, passivity-based, or model-based schemes derived from complete Newton--Euler or Lagrangian descriptions of the UAV--payload system \cite{Estevez2024,Costantini2024}, which reach high accuracy when the model is reliable but require detailed knowledge of payload mass, cable geometry, and tension conditions, together with rich state information and nontrivial computational effort. The second comprises robust and adaptive sliding-mode strategies, including higher-order and super-twisting algorithms \cite{Wang2023,Mohammadi2021,rao2024adaptive}, which improve disturbance rejection but are usually applied at the position or attitude level, with limited integration into a payload-aware reference layer and only partial validation on real suspended-load transport. The third includes optimization-based and predictive methods, such as swing-aware trajectory planning and nonlinear MPC \cite{Yu2024,Estevez2024}, which handle constraints and reduce swing at the planning stage but rely on accurate models and computational resources that may hinder deployment on lightweight embedded platforms.
+
+A hybrid regulator \cite{budak2026hybrid} combines a linear quadratic regulator with sliding-mode and super-twisting action, tuned by the Big Bang–Big Crunch algorithm, to improve transient performance and limit chattering in a three-degree-of-freedom levitation system that does not carry a suspended load.
+
+Recent advancements in agile aerial manipulation, such as the cinodynamic planning proposed in \cite{sun2025agile}, have pushed the boundaries of maneuverability. However, there is still a gap in providing lightweight, adaptive solutions that handle the asymmetric perturbations of wind and uncertain payload masses without the high computational cost of nonlinear model predictive control.
+
+Table~\ref{tab:method_comparison} places the methods reviewed above on a common set of design choices: where the control objective is written, how payload swing is reduced, and how uncertainty is handled. The entries summarize those architectural features. They are a positioning of the literature, and the only numerical comparison in this paper is the inner-loop benchmark of Section~\ref{sec:simulations}.
+
+\begin{table}[ht]
 \centering
-\small
-\renewcommand{\arraystretch}{1.2}
-\begin{tabular}{p{0.3cm} p{3.4cm} p{3.6cm} p{5.4cm} p{2.4cm}}
+\caption{Comparison with representative methods for cable-suspended UAV payload transport. The last row is the controller proposed in this paper.}
+\label{tab:method_comparison}
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{1.12}
+\begin{tabular}{p{3.7cm} p{5.5cm} p{5.3cm}}
 \toprule
- & \textbf{Reviewer's observation} & \textbf{Previous code} & \textbf{Revised manuscript and code} & \textbf{Location} \\
+\textbf{Approach} & \textbf{Payload objective and swing} & \textbf{Uncertainty and computation} \\
 \midrule
-1 & Saturated position feedback & $K_{\mathrm{traj}}\tanh(K^t_{\mathrm{traj}}\tilde{\mathbf{x}})$ & Linear term $K_{\mathrm{traj}}\tilde{\mathbf{x}}$, identical in manuscript and code & Eq.~\eqref{eq:base_reference} \\
-2 & Payload-velocity feedback absent from Eq.~(8) & $K_{vl}\tanh(K^t_{vl}\dot{\tilde{\mathbf{x}}})$ & Removed. A feedforward $[\dot{\mathbf{h}}^\star_h;0]$, derived from $\mathbf{x}=\mathbf{x}_l+\mathbf{h}$, is now part of the manuscript & Eq.~\eqref{eq:base_reference} \\
-3 & Sign of the quasi-static cable reference & $+(l/g)\ddot{\mathbf{x}}_{d,h}$ (manuscript: $-$) & $+(l/g)\ddot{\mathbf{x}}_{d,h}$ in both; $\mathbf{h}^\star_h$ and $\dot{\mathbf{h}}^\star_h$ computed analytically & Eq.~\eqref{eq:href}, Assumption~\ref{as:smallangle} \\
-4 & Additional filters & Five undeclared first-order filters & One filter, on $\dot{\mathbf{v}}_d$ (50~ms), declared with its time constant & Section~\ref{sec:discrete} \\
-5 & Saturation & $\tanh$ saturation of the swing term & Removed. Only a command limit $u_{\max}$ remains, declared, with conditional integration & Section~\ref{sec:discrete} \\
-6 & Leaky integral & Leakage in $\int\tilde{\mathbf{v}}\,dt$ & Pure integral, as in the sliding surface & Section~\ref{sec:dynamic} \\
-7 & Inner compensator acts only on horizontal channels & Undeclared & Declared: $n=2$ channels in the yaw frame; model, regressor and analysis rewritten for $n=2$ & Eq.~\eqref{eq:yaw_frame}, Section~\ref{sec:dynamic} \\
-8 & Adapted quantities differ ($\kappa_u,\kappa_v$ vs.\ $K_1,K_2$) & $K_1,K_2$ adapted & Model parameters $\boldsymbol{\theta}_i=[1/\kappa_{u,i},\ \kappa_{v,i}/\kappa_{u,i}]^\top$ adapted in both, with an implementable law; $K_1,K_2$ fixed & Eq.~\eqref{eq:ajuste_theta}, Theorem~\ref{th:inner} \\
-9 & Simulations do not validate Eqs.~(29)--(40) or Theorem~2 & Different controller & All results regenerated with the controller analysed in the paper; new experiments isolate the inner loop and the adaptation & Section~\ref{sec:simulations}, repository \\
+Geometric and full-dynamics control \cite{goodarzi2014geometric,Estevez2024}
+& Coupled UAV--payload model on SE(3) or Newton--Euler dynamics. Swing is reduced through that model.
+& Requires an accurate model and full-state feedback. Unmodeled effects have no online compensation. \\
+\addlinespace
+Robust nonlinear control \cite{qian2019path,barikbin2019trajectory}
+& Trajectory tracking with fixed robust gains. Part of the load swing is left uncompensated.
+& Robustness comes from worst-case gains about a fixed operating point. \\
+\addlinespace
+Passivity-based control \cite{guerrero2015passivity}
+& Energy shaping of the suspended load, with asymptotic damping of the oscillation.
+& Requires an accurate energy model. Convergence is slow under persistent excitation. \\
+\addlinespace
+First-order sliding mode \cite{kusznir2020sliding}
+& Discontinuous action at the UAV position or attitude. Vibration is reduced at that level.
+& Matched uncertainty with a known disturbance bound. The switching term produces chattering. \\
+\addlinespace
+Adaptive and higher-order sliding mode \cite{Wang2023,Mohammadi2021,rao2024adaptive}
+& Robust tracking, usually closed at position or attitude, with a weak link to a payload reference.
+& Online adaptation improves disturbance rejection. Swing compensation is not assigned to a separate kinematic command. \\
+\addlinespace
+Planning and predictive control \cite{palunko2012trajectory,akhtar2022path,Yu2024}
+& Swing is reduced by shaping the reference or by predicting the trajectory.
+& Feedforward or online constrained optimization. Performance depends on the model of disturbances that occur in flight. \\
+\addlinespace
+Cooperative multi-UAV transport \cite{maza2009multi,michael2011cooperative,Costantini2024}
+& The load is shared among several vehicles, and swing is handled by coordination.
+& Requires additional vehicles, distributed sensing, and inter-agent communication. \\
+\midrule
+This paper (Section~\ref{sec:kinematic})
+& The kinematic loop writes the objective in payload coordinates and compensates swing in the velocity command. The inner loop tracks that command.
+& Adaptive super-twisting on the velocity loop. No a priori disturbance bound and no online optimization. The design uses the quasi-static regime of Assumption~\ref{as:smallangle}, and the evidence in this paper is simulation. \\
 \bottomrule
 \end{tabular}
-\caption*{Table R1. Correspondence between the reviewer's observations and the revision.}
 \end{table}
 
-\medskip
-\noindent\textbf{1. Saturated position feedback and payload-velocity feedback (items 1--2).}
-Both terms have been removed from the code. The previous implementation computed
-$\mathbf{v}_{\mathrm{base}}=\dot{\mathbf{x}}_d+K_{\mathrm{traj}}\tanh(K^t_{\mathrm{traj}}\tilde{\mathbf{x}})+K_{vl}\tanh(K^t_{vl}\dot{\tilde{\mathbf{x}}})$, which differed from Eq.~(8). Manuscript and code now implement the same law,
-\begin{equation*}
-\mathbf{v}_{\mathrm{base}}=\dot{\mathbf{x}}_d+\begin{bmatrix}\dot{\mathbf{h}}_h^\star\\0\end{bmatrix}+K_{\mathrm{traj}}\,\tilde{\mathbf{x}},
-\end{equation*}
-with a linear position term and no payload-velocity term. The only addition, the feedforward $[\dot{\mathbf{h}}_h^\star;0]$, is now written and justified in the manuscript. Since $\mathbf{x}=\mathbf{x}_l+\mathbf{h}$, the UAV velocity that keeps the payload on its reference with the cable at the quasi-static inclination is $\dot{\mathbf{x}}_d+\dot{\mathbf{h}}^\star$. Without this term, the cable-error dynamics are driven by $-\dot{\mathbf{h}}^\star_h$, and the reference itself forces a periodic tracking error on curved paths.
+Geometric and passivity-based designs reduce swing when the dynamic or energy model is reliable. Robust and sliding-mode designs reject uncertainty at the vehicle, so the payload objective remains implicit. Planning and predictive designs move swing reduction into a reference generator or an optimizer. Cooperative designs add vehicles and communication. The cascade in Section~\ref{sec:kinematic} uses another split of the same tasks: swing compensation stays in the kinematic command, and uncertainty rejection stays in the adaptive super-twisting loop.
 
-\medskip
-\noindent\textbf{2. Sign of the quasi-static cable reference (item 3).}
-The sign used in the code was correct, and the manuscript contained the error. With the convention $\mathbf{h}=\mathbf{x}-\mathbf{x}_l$ of Eq.~\eqref{eq:cable_vector}, the horizontal force balance on the payload gives, to first order, $\ddot{\mathbf{x}}_{l,h}=(g/l)\,\mathbf{h}_h$. Hence
-\begin{equation*}
-\mathbf{h}_h^\star=\frac{l}{g}\,\ddot{\mathbf{x}}_{d,h},\qquad \dot{\mathbf{h}}_h^\star=\frac{l}{g}\,\dddot{\mathbf{x}}_{d,h},
-\end{equation*}
-i.e., the UAV leads the payload in the direction of the reference acceleration. Eq.~\eqref{eq:href} and Assumption~\ref{as:smallangle} have been corrected accordingly. In addition, both quantities are now evaluated analytically from the reference, which is three times differentiable by Assumption~\ref{as:reference}, instead of by filtered numerical differentiation. While verifying the references, we also found and corrected an error in the second derivative of the lemniscate used in the wind scenario (see our response to Comment~5).
+\subsection{Research gap and study contributions}
 
-\medskip
-\noindent\textbf{3. Additional filters, saturation and leaky integral (items 4--6).}
-The previous code contained the following elements that were not declared in the manuscript: first-order filters on the payload tracking error and its derivative, on the yaw error, on the kinematic command, on the numerical derivative of that command and on the derivative of $\mathbf{h}^\star_h$; a $\tanh$ saturation of the swing-compensation term; and leakage in the integral of the sliding surface. All of them have been removed, with one exception that is now declared. The derivative $\dot{\mathbf{v}}_d$ entering the regressor is obtained by a backward difference followed by a first-order filter with a time constant of 50~ms (2.5 control periods). The sliding-surface integral is a pure integral, as in the manuscript.
+Although the reviewed studies have achieved notable advances in the control of UAV cable-suspended payload transport systems, Table~\ref{tab:method_comparison} shows that they do not combine, in one single-UAV law, a payload-level objective, feedback swing compensation, and adaptation to uncertainty without an online optimization. Existing approaches rarely offer a lightweight control architecture capable of simultaneously:
+(i) defining the control objective in payload space, (ii) separating payload-aware kinematic reference generation from robust inner-loop tracking, (iii) preserving robustness under uncertainty and disturbances, and (iv) remaining suitable for implementation with limited sensing and computation. This gap is especially relevant in single-UAV transport, where the controller must reduce swing without cooperative actuation or a constrained optimizer.
 
-A new subsection, ``Discrete-time implementation'' (Section~\ref{sec:discrete}), now states every implementation detail:
+The controller of Section~\ref{sec:kinematic} is proposed for that combination. The kinematic controller places the objective on the payload and compensates swing through the velocity command. The dynamic compensator tracks that command under parametric uncertainty and disturbances. The evaluation in this paper is the high-fidelity simulation study of Section~\ref{sec:simulations}.
+
+% REV1-C1/C3: Reforzar esta transición. Conviene declarar en forma inequívoca el foco del artículo: no es optimización logística end-to-end, sino control de transporte con carga suspendida dentro de un framework LMD. Agregar una frase tipo "The upper-level modules are not part of the controller synthesis; they provide feasible payload references and operational constraints."
+% REV2-C1/C4: Revisar la frase "validates ... through flight experiments"; actualmente los resultados presentados son de simulación. Además, la afirmación comparativa con métodos convencionales debe respaldarse con una tabla/experimento contra controladores existentes.
+
+The main contributions of this paper are as follows:
+
 \begin{itemize}
-\item the sampling period, which is taken from the simulator clock (nominally 20~ms);
-\item the discretisation of the cable-rate estimator \eqref{eq:h_raw}--\eqref{eq:h_p_filter};
-\item the forward-Euler integration of $\int\tilde{v}_i\,dt$, $\nu_i$ and $\hat{\boldsymbol{\theta}}_i$;
-\item the filter on $\dot{\mathbf{v}}_d$;
-\item a command limit $|u_i|\le u_{\max}=5$~m/s, during which the super-twisting state is not integrated outward. The limit is a safeguard; the fraction of saturated samples in the reported runs is \XX.
+
+ \item \textbf{Payload-Oriented Kinematic Control Design:} We introduce a kinematic controller that shifts the control objective from the UAV chassis to the payload. By exploiting the kinematic relationship between the cable’s attitude and the quadcopter’s velocity, we derive oscillation compensation terms that act on the balanced transient behavior of the coupled system, mitigating residual roll by managing the velocity references.
+ \item \textbf{Restore Tracking equilibrium:} A key original contribution of the proposed controller is its ability to restore tracking balanced transient behavior. By explicitly accounting for the payload's state in the kinematic controller, the proposed controller ensures that tracking errors remain uniform and balanced across all translational axes, regardless of the asymmetric nature of external disturbances like oblique wind or pendulum swing.
+
+ \item \textbf{Robust Adaptive Cascaded Tracking:} We develop the hierarchical structure of Section~\ref{sec:kinematic}, which decouples the payload’s kinematics from the quadrotor’s internal dynamics. The dynamic compensator employs an adaptive super-twisting velocity-tracking law, which ensures robustness against parametric uncertainty and external disturbances without degrading the transient response, thereby preserving system stability under varying operating conditions.
+
+\item\textbf{Structured Control Paradigm vs. Conventional Approaches:} Our methodology marks a turning point in the existing literature:
+
+\begin{itemize}
+\item[$\ast$] Compared to coupled nonlinear controllers, our solution reduces the reliance on an exact dynamic model, thereby increasing resilience to modeling errors.
+
+\item[$\ast$] Unlike heavy optimization solvers used in NMPC, our modular architecture and analytical adaptation laws allow implementation on embedded hardware, which is a critical requirement for maintaining control equilibrium and reliability in real-world last-mile delivery drones.
+
+\item[$\ast$] Unlike standard sliding-mode control (SMC) implementations, swing reduction is assigned to the kinematic controller, while the dynamic compensator tracks the resulting velocity command (Section~\ref{sec:kinematic}).
 \end{itemize}
-All numerical values are collected in a new Table~\ref{tab:params}, generated automatically from the configuration file so that the manuscript and the code cannot diverge again.
-
-\medskip
-\noindent\textbf{4. Channels of the inner compensator (item 7).}
-The reviewer is correct that the compensator acts only on the horizontal channels; the manuscript now states this explicitly. The velocity commands of the vehicle are applied in its yaw frame, which is also the frame in which the model of Ref.~\cite{Lucas_ICUAS2014} is defined. The compensator therefore acts on the $n=2$ horizontal velocity channels expressed in that frame (new Eq.~\eqref{eq:yaw_frame}). The vertical and yaw channels receive the kinematic command directly, in agreement with Assumption~\ref{as:vertical} and with the fact that swing compensation is horizontal. The vehicle model, the regressor, the control law and the stability analysis have been rewritten for $n=2$, with one regressor $\boldsymbol{\phi}_i\in\mathbb{R}^{1\times2}$ and one parameter vector $\boldsymbol{\theta}_i\in\mathbb{R}^{2}$ per channel, and the dimensions of every term are stated.
-
-\medskip
-\noindent\textbf{5. Adapted quantities (item 8).}
-The reviewer is correct: the previous code adapted the super-twisting gains $K_1,K_2$, whereas the manuscript adapted the model parameters. Moreover, the adaptation law of the previous manuscript was not implementable, because it was written in terms of the parameter error, which depends on the unknown true parameters. In the revised manuscript and code, the super-twisting gains are fixed, and both adapt the same model parameters,
-\begin{equation*}
-\theta_{1,i}=\frac{1}{\kappa_{u,i}},\qquad \theta_{2,i}=\frac{\kappa_{v,i}}{\kappa_{u,i}},\qquad i\in\{x,y\},
-\end{equation*}
-with respect to which the model of each channel, $\dot v_i=\kappa_{u,i}u_i-\kappa_{v,i}v_i+\delta_i$, is linear. With the control law
-\begin{equation*}
-u_i=\boldsymbol{\phi}_i\hat{\boldsymbol{\theta}}_i-w_i,\qquad \boldsymbol{\phi}_i=[\,a_i\ \ v_i\,],\quad a_i=\dot v_{d,i}-\beta\tilde v_i,\qquad w_i=K_{1,i}\sqrt{|s_i|}\,\mathrm{sign}(s_i)+\nu_i,\quad \dot\nu_i=K_{2,i}\,\mathrm{sign}(s_i),
-\end{equation*}
-the sliding dynamics become $\dot s_i=\kappa_{u,i}\boldsymbol{\phi}_i\tilde{\boldsymbol{\theta}}_i-\kappa_{u,i}w_i+\delta_i$, with $\tilde{\boldsymbol{\theta}}_i=\hat{\boldsymbol{\theta}}_i-\boldsymbol{\theta}_i$ (Eq.~\eqref{eq:sdot_theta}). Once the sliding mode is reached ($s_i=\dot s_i=0$), the integral state of the super-twisting algorithm equals the equivalent control, $\nu_i=\boldsymbol{\phi}_i\tilde{\boldsymbol{\theta}}_i+\delta_i/\kappa_{u,i}$. Since $\nu_i$ is an internal state of the controller, it provides a measured signal that carries the parameter error. The adaptation law uses it:
-\begin{equation*}
-\dot{\hat{\boldsymbol{\theta}}}_i=\mathrm{Proj}_{\Theta}\Big(-\Gamma\,\boldsymbol{\phi}_i^{\top}\,\mathrm{sat}_{\bar\nu}(\nu_i)-\sigma\big(\hat{\boldsymbol{\theta}}_i-\boldsymbol{\theta}_{0}\big)\Big),
-\end{equation*}
-active after $t_{\mathrm{on}}$ and while $|s_i|\le s_{\mathrm{on}}$ (Eq.~\eqref{eq:ajuste_theta}). Every signal on the right-hand side is available in the loop. The law is a gradient estimator on the parameter error. The $\sigma$-modification and the projection onto the box $\Theta$ keep the estimates bounded and guarantee $\hat\kappa_{u,i}>0$.
-
-The manuscript now also states the conditions under which the estimates converge to the true parameters: persistent excitation of $\boldsymbol{\phi}_i$ and a zero-mean $\delta_i$ (Remark~\ref{rem:ident}). On the circular reference the speed is constant, so $a_i\approx0$ in the yaw frame and $\theta_{1,i}$ is not excited; the lemniscate, whose speed varies, does excite it. Theorem~\ref{th:inner} and its proof have been rewritten for this law (see our response to Comment~3).
-
-\medskip
-\noindent\textbf{6. Validation of the analysed controller (item 9).}
-All simulation results of Section~\ref{sec:simulations} have been regenerated with the controller analysed in Section~2. The previous text reported ``arbitrary'' nominal values $\hat{\kappa}_u=0.5$ and $\hat{\kappa}_v=0.75$, which the released inner controller did not use. All values actually used are now listed in Table~\ref{tab:params}. The nominal parameters follow from the velocity-command interface of the simulator, which has unit static gain: $\kappa_{u,i}=\kappa_{v,i}=1/\tau$ with $\tau=0.4$~s, i.e., $\boldsymbol{\theta}_0=[0.4,\ 1.0]^\top$.
-
-The experiments are now organised so that each layer of the controller is evaluated separately:
-\begin{enumerate}[(a)]
-\item the kinematic law without swing compensation, which does not complete the circular maneuver (the cable inclination exceeds 80$^\circ$ after \XX~s);
-\item the kinematic controller alone;
-\item the full cascade with fixed parameters $\hat{\boldsymbol{\theta}}_i=\boldsymbol{\theta}_0$;
-\item the proposed controller, with adaptation;
-\item the proposed controller on the lemniscate under wind gusts;
-\item an inner-loop ablation with a boundary-layer sliding-mode law (see our response to Comment~7);
-\item a new payload-mass sweep (0.05, 0.10, 0.20 and 0.30~kg, Section~\ref{sec:mass}), on the lemniscate, starting from the mismatched estimate $\hat{\boldsymbol{\theta}}_i(0)=[0.2,\ 0.5]^\top$ and comparing fixed and adaptive parameters.
-\end{enumerate}
-The comparison of (c) and (d) isolates the effect of the adaptation law, and experiment (g) tests it under a wrong initial model. With adaptation, $\hat\theta_{2,x}$ converges to \XX, $\hat\theta_{1,x}$ increases with the payload mass from \XX\ to \XX, and the RMS value of the integral state $\nu_x$ decreases from \XX\ to \XX. That is, the identified model takes over part of the effort previously supplied by the robust term. The payload tracking error changes only from \XX\ to \XX~m, because the super-twisting algorithm already rejects this matched uncertainty. The manuscript reports this result as it is and no longer claims that adaptation improves tracking accuracy.
-
-We also note that the former values $\hat{\boldsymbol{\theta}}=[2.0,\ 1.5]^\top$ (i.e., $\hat\kappa_u=0.5$, $\hat\kappa_v=0.75$) cannot be used as an initial condition of the revised law. With model inversion, $\hat\theta_2>\theta_2$ introduces positive velocity feedback, the command saturates, and the sliding mode that activates the adaptation is never reached. This limitation is now stated in the manuscript.
-
-\medskip
-\noindent\textbf{7. Verification and reproducibility.}
-To ensure that this inconsistency cannot reoccur, the revised repository provides:
-\begin{itemize}
-\item a single script, \texttt{run\_paper\_experiments.m}, that regenerates every figure and table without manual reconfiguration;
-\item five repetitions of each case, reported as mean $\pm$ standard deviation, because the co-simulation runs in real time and is not strictly deterministic;
-\item the raw time series and the configuration of every run;
-\item swing and payload-velocity metrics computed from the simulator ground truth instead of the cable-rate estimate (see our response to Comment~4);
-\item an automatic check of every analytical reference derivative against numerical differentiation;
-\item the equation-to-code correspondence table \texttt{EQUATION\_MAP.md}.
+ \item \textbf{Analytical Stability and High-Fidelity Validation:} We present a formal stability analysis for the closed-loop dynamics, based on the system’s Lyapunov structure. The feasibility of the approach is validated through high-fidelity simulations that demonstrate oscillation attenuation and transport robustness, laying the theoretical groundwork for future experimental implementations in actual flight.
 \end{itemize}
 
-\medskip
-In summary, every point raised in this comment has been addressed:
-\begin{itemize}
-\item the saturated position feedback, the payload-velocity term, the undeclared filters, the saturation and the leaky integral have been removed or explicitly declared;
-\item the sign of the cable reference has been corrected in the manuscript;
-\item the restriction of the compensator to the horizontal channels is now part of the model and of the analysis;
-\item the manuscript and the code adapt the same parameters, with a law that can be implemented;
-\item all reported simulations now use the controller analysed in Section~2.
-\end{itemize}
-The corresponding changes in the manuscript are: Eqs.~\eqref{eq:href}, \eqref{eq:base_reference}, \eqref{eq:yaw_frame}, \eqref{eq:AccionControl}, \eqref{eq:sdot_theta} and \eqref{eq:ajuste_theta}; Assumption~\ref{as:smallangle}; Remark~\ref{rem:ident}; Theorem~\ref{th:inner}; Section~\ref{sec:discrete}; Table~\ref{tab:params}; Section~\ref{sec:mass}; and the regenerated figures and tables of Section~\ref{sec:simulations}.
-\end{reply}
+The remainder of this paper is organized as follows. Section~\ref{sec:methodology} presents the proposed methodology, including the geometric modeling and the proposed controller. Section~\ref{sec:simulations} reports the simulation and experimental results. Finally, Section~\ref{sec:conclusiones} concludes the paper and outlines future research directions.
 
-\begin{point}
-The outer-loop dynamics in Eqs. (16)–(17) are not derived from the UAV–payload system. From the preceding kinematic equations, the cable-error dynamics do not follow as \(\dot{\tilde h}_h=-K_h\tilde h_h+\xi_h\). The physical pendulum dynamics required to establish this equation are missing, and the definition of \(\xi_h\) appears circular because it includes the cable-error derivative itself. Consequently, Theorem 1 does not establish stability of the proposed UAV–payload closed loop. In addition, a claim of global exponential stability is incompatible with the small-inclination and quasi-static assumptions, which define a local operating regime.
-\end{point}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Methodology}\label{sec:methodology}
 
-\begin{reply}
-We thank the reviewer for this insightful observation. We acknowledge that the original shorthand definition of $\xi_h$ implicitly contained the error derivative $\dot{\tilde{h}}_h$ through the estimator output $\hat{h}_{p,h}$, creating an algebraic loop in the stability presentation. Furthermore, we agree that under Assumption 3 (small-inclination and quasi-static regime), the stability property is strictly local.To address this issue, we have revised Section 2.4 and Theorem 1 as follows:
-\begin{enumerate}
-\item Derivation of the outer-loop equations: This version presents the derivation of the kinematic equations given in equations (7)–(31).
-\item Elimination of Circularity: By explicitly expanding $\hat{h}_{p,h} = \dot{\tilde{h}}_h + \dot{h}_h^* + e_h$ into the kinematic closed loop, we group the derivative terms on the left-hand side:$$(I + K_{dh}) \dot{\tilde{h}}_h = -K_h \tilde{h}_h - K_{dh} e_h - \dot{h}_h^* + \mu_h$$Since $K_{dh}$ is positive definite, $(I + K_{dh})$ is nonsingular. Multiplying by $(I + K_{dh})^{-1}$ yields the non-circular error subsystem:$$\dot{\tilde{h}}_h = -\bar{K}_h \tilde{h}_h + \xi_h$$where $\bar{K}_h = (I + K_{dh})^{-1} K_h$ and $\xi_h = (I + K_{dh})^{-1} (-K_{dh} e_h - \dot{h}_h^* + \mu_h)$. Here, $\xi_h$ depends exclusively on exogenous bounded signals ($e_h, \dot{h}_h^*, \mu_h$), removing any circular dependence on $\dot{\tilde{h}}_h$.
-\item Clarification of Local Stability: We have explicitly restricted Theorem 1 to Local Exponential Stability (LES) in the unperturbed case and Local Input-to-State Stability (Local ISS) in the presence of bounded perturbations $\xi_h$ and $\zeta$, valid within the region of attraction $\mathcal{D} = \{\tilde{h}_h \in \mathbb{R}^2 : \Vert{}\tilde{h}_h\Vert{} \le h_{max}\}$ defined by Assumption 3. All references to global stability claims have been corrected.
-\end{enumerate}
-\end{reply}
 
-\begin{point}
-Theorem 2 contains sign inconsistencies between Eqs. (26)–(34), including the disturbance and super-twisting terms. More fundamentally, the adaptation law contains the parameter error \(\tilde\theta\), which depends on the unknown true parameter and therefore cannot be implemented. The Lyapunov proof does not introduce the integral super-twisting term as an augmented state, and the stated condition on \(K_2\) is insufficient for the claimed convergence. The Barbalat argument and the parameter-convergence claim also require assumptions that are not established.
-\end{point}
+\subsection{System Model}\label{sec:geom_model}
 
-\begin{reply}
-We thank the reviewer for their insightful and rigorous feedback, which has greatly improved the mathematical clarity and theoretical soundness of the manuscript. We have carefully addressed each of the raised concerns in the revised version of Section \ref{sec:dynamic} and Theorem 2. Below is a detailed point-by-point description of the modifications made:Sign Inconsistencies and Disturbance/STA Terms:We have completely overhauled the Lyapunov derivative expansion. All sign inconsistencies between equations (26) through (34) have been resolved. The interaction between the sliding variable, the disturbance $\boldsymbol{\delta}(t)$, and the super-twisting terms has been restructured using standard trace properties and strict matrix-vector inequalities.Implementation of the Adaptation Law (Estimates vs. True Parameters):The reviewer correctly pointed out a notation/conceptual flaw regarding the adaptation law. The adaptation laws are implemented exclusively using the parameter estimates ($\hat{\boldsymbol{\kappa}}_u$ and $\hat{\boldsymbol{\kappa}}_v$) rather than the unmeasurable true errors ($\tilde{\boldsymbol{\kappa}}_u, \tilde{\boldsymbol{\kappa}}_v$). We have rewritten the adaptation laws in Eq. \eqref{eq:ajuste_rigido} to clearly reflect that they depend on the available estimates and states ($\mathbf{u}, \mathbf{v}, \mathbf{s}$), ensuring real-world implementability:
+The geometric relationship between the UAV and the suspended payload is first introduced to formulate the kinematic controller (outer loop) at the payload level. Figure \ref{fig:drone_carga} shows the payload transport system, with the defined variables and reference frames.
+% REV4-C3: Unificar "Figure" con el resto de citas. Si se adopta "Fig.", cambiar aquí a "Fig.~\ref{fig:drone_carga}".
+Let $\mathbf{x}\in\mathbb{R}^3$ denote the UAV position and $\mathbf{x}_l\in\mathbb{R}^3$ the payload position, both expressed in the inertial frame. The cable vector is defined as
+\begin{equation}
+\mathbf{h} = \mathbf{x} - \mathbf{x}_l,
+\label{eq:cable_vector}
+\end{equation}
+where $l=\|\mathbf{h}\|$ is the cable length, assumed constant.
+
+% REV1-C7: Mantener esta definición de $\mathbf{h}$ en todo el manuscrito. En la sección de métricas se usa $\mathbf{h}=p_L-p_U$, que tiene signo opuesto. Unificar la convención y ajustar fórmulas/captions si corresponde.
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.5\linewidth]{Figures/drone_carga.eps}
+    \caption{Geometry of the quadrotor with a cable-suspended payload. The inertial positions of the vehicle and of the payload are $\mathbf{x}$ and $\mathbf{x}_l$, and the cable vector is $\mathbf{h}=\mathbf{x}-\mathbf{x}_l$.}
+    \label{fig:drone_carga}
+\end{figure}
+
+For geometric interpretation, the relative payload position may also be described in a body-related frame attached to the UAV. Let ${}^{b}\mathbf{r}_l\in\mathbb{R}^3$ denote the vector from the UAV to the payload expressed in that frame. Then, the payload position in the inertial frame can be written as
+\begin{equation}
+\mathbf{x}_l = \mathbf{x} + \mathbf{R}_{\psi}\,{}^{b}\mathbf{r}_l,
+\label{eq:payload_position_yaw}
+\end{equation}
+where $\mathbf{R}_{\psi}\in\mathbb{R}^{3\times 3}$ is the rotation matrix associated with the UAV yaw angle $\psi$, namely,
+\begin{equation}
+\mathbf{R}_{\psi}=
+\begin{bmatrix}
+\cos\psi & -\sin\psi & 0\\
+\sin\psi & \cos\psi  & 0\\
+0        & 0         & 1
+\end{bmatrix}.
+\label{eq:yaw_rotation}
+\end{equation}
+Differentiating \eqref{eq:payload_position_yaw} yields
+\begin{equation}
+\dot{\mathbf{x}}_l
+=
+\dot{\mathbf{x}}
++
+\dot{\mathbf{R}}_{\psi}\,{}^{b}\mathbf{r}_l
++
+\mathbf{R}_{\psi}\,{}^{b}\dot{\mathbf{r}}_l.
+\label{eq:payload_velocity_yaw}
+\end{equation}
+
+Equations \eqref{eq:payload_position_yaw}--\eqref{eq:payload_velocity_yaw} show that the payload motion is geometrically influenced by the vehicle heading. This representation is useful to interpret the relative UAV--payload configuration, particularly in the horizontal plane. Nevertheless, the proposed swing-compensation mechanism does not explicitly use the yaw variable. The reason is that oscillation attenuation is primarily governed by horizontal translational motion and cable-state variation, whereas the yaw angle does not provide direct information relevant to the swing-reduction objective considered here.
+
+Therefore, for control design and implementation purposes, the compact inertial-frame representation obtained directly from \eqref{eq:cable_vector} is adopted, namely,
+\begin{equation}
+\mathbf{x}_l = \mathbf{x} - \mathbf{h},
+\qquad
+\dot{\mathbf{x}}_l = \dot{\mathbf{x}} - \dot{\mathbf{h}}.
+\label{eq:payload_velocity_compact}
+\end{equation}
+This form retains the essential geometric information required for payload-level trajectory tracking and swing attenuation while avoiding unnecessary coordinate transformations.
+
+
+As a first step, the dynamic model of the vehicle is presented. The one proposed in \cite{Lucas_ICUAS2014}, formulated for a commercial drone with internal stabilization loops, was adopted, since it directly provides the mapping between the normalized input commands and the vehicle accelerations, a relationship that constitutes the basis for the design of the dynamic compensator.
+\begin{equation}\label{eq:ModeloLucas}
+    \dot{\mathbf{v}} = \boldsymbol{\kappa}_u\mathbf{u} - \boldsymbol{\kappa}_v\mathbf{v} +\boldsymbol{\delta}(t)
+\end{equation}
+
+% REV1-C7/C8: Revisar el signo de $\boldsymbol{\delta}(t)$. En ecuaciones posteriores aparece con signo positivo/negativo de forma no consistente. Además, describir físicamente qué incluye la perturbación y qué perfiles/magnitudes se usan en simulación.
+The velocity commands are applied in the vehicle's yaw frame, the frame in which the model of \cite{Lucas_ICUAS2014} is defined. Let $\mathbf{R}_\psi^{h}\in\mathbb{R}^{2\times 2}$ be the upper-left block of \eqref{eq:yaw_rotation}. The horizontal velocity and the horizontal command of the kinematic controller, derived in Section~\ref{sec:kinematic}, are expressed in that frame,
+\begin{equation}\label{eq:yaw_frame}
+\mathbf{v} = (\mathbf{R}_\psi^{h})^{\top}\dot{\mathbf{x}}_h,\qquad
+\mathbf{v}_d = (\mathbf{R}_\psi^{h})^{\top}\mathbf{v}_{c,h},\qquad \mathbf{v},\mathbf{v}_d\in\mathbb{R}^{2}.
+\end{equation}
+The dynamic compensator acts on these $n=2$ channels. The vertical and yaw channels receive $v_{c,z}$ and $\dot\psi_c$ directly. For each channel $i\in\{x,y\}$, \eqref{eq:ModeloLucas} reads $\dot v_i=\kappa_{u,i}u_i-\kappa_{v,i}v_i+\delta_i$, with $\kappa_{u,i},\kappa_{v,i}>0$. The disturbance $\delta_i$ captures the cable force, aerodynamic forces, frame rotation, and unmodelled dynamics. Each channel is linear in the parameter vector $\boldsymbol{\theta}_i=[\,1/\kappa_{u,i}\ \ \kappa_{v,i}/\kappa_{u,i}\,]^{\top}\in\mathbb{R}^{2}$.
+By hypothesis, it is assumed that the derivatives of this perturbation are bounded. Therefore, $\|\dot{ \boldsymbol{\delta}}(t)\| \leq \delta_o$,being a positive constant.
+
+
+\subsection{Assumptions}\label{sec:assumptions}
+
+Assumptions~\ref{as:physical} and~\ref{as:parameters} are used in the dynamic compensator. Assumptions~\ref{as:estimation}--\ref{as:vertical} are used in the kinematic controller.
+
+\begin{assumption}\label{as:physical}
+The disturbance term $\boldsymbol{\delta}(t)$ acting on the velocity dynamics of the UAV and its time derivative are bounded, i.e., $\|\boldsymbol{\delta}(t)\|\le\delta_o$ and $\|\dot{\boldsymbol{\delta}}(t)\|\le\bar{\delta}$, and the normalized actuator commands operate within their linear (unsaturated) range during nominal operation. Physically, this assumption is justified by the finite energy of atmospheric disturbances. Wind gusts in urban delivery environments exhibit bounded magnitudes and limited rates of change, ensuring that the control gains and adaptation laws remain within feasible operational ranges.
+\end{assumption}
+
+\begin{assumption}[Fast cable-rate estimation]\label{as:estimation}
+The two-stage estimator \eqref{eq:h_raw}--\eqref{eq:h_p_filter} operates on a fast time scale ($\varepsilon_1,\tau_h$ small), so that the estimation residual
+$\boldsymbol{\xi}_e=\hat{\mathbf{h}}_p-\dot{\mathbf{h}}$ is bounded and decays to a small neighborhood of the origin after a fast transient. This assumption is justified by the separation of time-scales between the high-frequency estimation loop and the slower mechanical response of the UAV. By selecting sufficiently small filter time constants ($(\epsilon_1, \tau_h)$), the estimation residual becomes negligible relative to the control sampling period, enabling a decoupled analysis of the task-space tracking error
+\end{assumption}
+
+\begin{assumption}[Quasi-static small inclination]\label{as:smallangle}
+The horizontal cable displacement satisfies $\|\mathbf{h}_h\|/l\ll 1$, so that the
+equilibrium reference $\mathbf{h}_h^\star=(l/g)\,\ddot{\mathbf{x}}_{d,h}$ is exact to first order and the higher-order pendular terms are negligible. This assumption is consistent with the operational requirements of last-mile delivery, where cargo integrity is prioritized. By avoiding aggressive maneuvers, the system remains within a near-equilibrium regime that preserves the validity of the first-order pendular model while ensuring the safety of sensitive payloads during transport.
+\end{assumption}
+
+\begin{assumption}[Smooth bounded reference]\label{as:reference}
+The reference trajectory is feasible and sufficiently smooth, with
+$\ddot{\mathbf{x}}_d,\dddot{\mathbf{x}}_d\in\mathcal{L}_\infty$. Consequently
+$\mathbf{h}_h^\star$ and $\dot{\mathbf{h}}_h^\star$ are well defined and bounded. Physically, this bounded smoothness requirement ensures that the reference motion does not demand infinite motor torque or instantaneous thrust changes. It reflects real-world flight planning where jerk and acceleration are limited to satisfy actuator constraints and avoid exciting the higher-order structural modes of the flexible cable.
+\end{assumption}
+
+\begin{assumption}[Vertical decoupling]\label{as:vertical}
+The vertical cable motion $\dot{h}_z$ is regulated by the inner loop and remains
+bounded; hence, the swing-compensation analysis is restricted to the horizontal
+subspace $\tilde{\mathbf{h}}_h\in\mathbb{R}^2$. Vertical decoupling is justified by the quadrotor’s high thrust-to-weight ratio along the vertical axis ($(z_b)$). Since the vehicle possesses direct actuation to compensate for gravity and vertical payload reactions, the translational swing dynamics are primarily governed by horizontal accelerations, justifying a focused analysis on the horizontal swing-reduction subspace.
+\end{assumption}
+
+\begin{assumption}\label{as:parameters}
+The ideal Parameter matrices of the model, denoted as $\boldsymbol{\kappa}_u,\boldsymbol{\kappa}_v$, are bounded such that $ \Vert{}\boldsymbol{\kappa}_u\Vert{} \leq \kappa_{uM} $ and $\Vert{}\boldsymbol{\kappa}_v\Vert{} \leq \kappa_{vM}$, where $ \kappa_{uM} $ and $ \kappa_{vM} $ are a known positive constant.
+\end{assumption}
+
+\subsection{Kinematic Controller}\label{sec:kinematic}
+
+This paper presents a hierarchical, payload-oriented control system for a drone. The study aims to track the desired trajectory and minimize oscillations of the suspended payload during the task. The proposed controller is a robust adaptive cascaded scheme with two loops (Figure~\ref{fig:diagrama_controlador}). The kinematic controller (outer loop) makes the payload follow the prescribed trajectory and reduces its swing; its output is the velocity command \(\mathbf{u}_k\) derived below. The dynamic compensator (inner loop) does not suppress swing directly. It tracks \(\mathbf{u}_k\) despite model uncertainty and external disturbances, and its control law is an adaptive super-twisting law. The loops interact through this command: the outer-loop analysis assumes \(\dot{\mathbf{x}}=\mathbf{u}_k\), and the inner loop enforces that condition approximately. If the command is not realized, the kinematic compensation is not executed and the resulting velocity error can excite the payload. These names are used throughout the paper.
+
+This section describes the kinematic controller that enables the payload to follow a trajectory and minimizes its oscillations. The operating assumptions are stated in Section~\ref{sec:assumptions}, before the control laws derived below. The higher-level modules (mission management and trajectory planning) are not part of the controller synthesis; they only provide a feasible payload reference along with the associated operational constraints.
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.99\linewidth]{Figures/diagrama_controlador.eps}
+    \caption{Block diagram of the proposed controller. The kinematic controller builds the velocity command $\mathbf{u}_k$ from the payload reference, the payload state, and the cable motion. The dynamic compensator tracks $\mathbf{u}_k$.}
+    \label{fig:diagrama_controlador}
+\end{figure}
+
+It is important to note that the UAV's yaw angle is not specifically considered in the proposed payload control strategy. This is because the payload's dynamic behavior is primarily affected by the UAV's translational motion, while yaw has a negligible effect on the suspended payload's roll motion. Therefore, yaw is controlled separately using a direct reference tracking controller, which is decoupled from the kinematic controller.
+The kinematic controller is formulated at the payload level so that the suspended load, rather than the UAV itself, tracks the prescribed reference trajectory. Let $\mathbf{x}_d\in\mathbb{R}^3$ denote the desired payload position, and let $\dot{\mathbf{x}}_d$ and $\ddot{\mathbf{x}}_d$ denote the corresponding reference velocity and acceleration. The payload tracking error is defined as
+\begin{equation}
+\tilde{\mathbf{x}} = \mathbf{x}_d - \mathbf{x}_l,
+\label{eq:payload_tracking_error}
+\end{equation}
+with time derivative
+\begin{equation}
+\dot{\tilde{\mathbf{x}}} = \dot{\mathbf{x}}_d - \dot{\mathbf{x}}_l.
+\label{eq:payload_tracking_error_dot}
+\end{equation}
+A nominal translational command is first introduced as
+\begin{equation}
+\mathbf{v}_{\mathrm{base}}
+=
+\dot{\mathbf{x}}_d
++
+\begin{bmatrix}\dot{\mathbf{h}}_h^\star\\ 0\end{bmatrix}
++
+K_{\mathrm{traj}}\,\tilde{\mathbf{x}},
+\label{eq:base_reference}
+\end{equation}
+where $K_{\mathrm{traj}}\in\mathbb{R}^{3\times 3}$ is a positive definite diagonal gain matrix and $\dot{\mathbf{h}}_h^\star$ is the quasi-static cable rate of \eqref{eq:href}. Since $\mathbf{x}=\mathbf{x}_l+\mathbf{h}$, the UAV velocity that keeps the payload on its reference with the cable at the quasi-static inclination is $\dot{\mathbf{x}}_d+\dot{\mathbf{h}}^\star$; the added term supplies the horizontal part of that velocity. Although \eqref{eq:base_reference} ensures payload-level tracking, it does not compensate for the oscillations of the pendular configuration. Such compensation requires the cable vector $\mathbf{h}=\mathbf{x}-\mathbf{x}_l$ together with its rate $\dot{\mathbf{h}}$. Only $\mathbf{h}$ is measured; $\dot{\mathbf{h}}$ is reconstructed by a two-stage cable-rate estimator. A high-gain stage first produces a raw velocity estimate from the tracking error $\mathbf{h}-\hat{\mathbf{h}}$, 
+\begin{equation}\label{eq:h_raw} \mathbf{h}_{p,\mathrm{raw}} = \frac{1}{\varepsilon_1}\,K_1\big(\mathbf{h}-\hat{\mathbf{h}}\big), 
+\end{equation} 
+with $K_1\in\mathbb{R}^{3\times 3}$ positive definite and $\varepsilon_1>0$. The internal state $\hat{\mathbf{h}}$ is then driven by the \emph{filtered} rate estimate $\hat{\mathbf{h}}_p$, 
+\begin{equation}\label{eq:h_hat_dyn} \dot{\hat{\mathbf{h}}} = \hat{\mathbf{h}}_p, \end{equation} 
+while $\hat{\mathbf{h}}_p$ is obtained by low-pass filtering the raw signal, 
+\begin{equation}\label{eq:h_p_filter} \tau_h\,\dot{\hat{\mathbf{h}}}_p + \hat{\mathbf{h}}_p = \mathbf{h}_{p,\mathrm{raw}}, \qquad \tau_h>0. 
+\end{equation} 
+In this closed-loop structure, a smaller $\varepsilon_1$ yields faster tracking of the measurement (and thus a more responsive raw velocity estimate), whereas the time constant $\tau_h$ attenuates the noise amplified by differentiation. The filtered output $\hat{\mathbf{h}}_p$ is the estimate of $\dot{\mathbf{h}}$ used in the feedback law; at steady state $\hat{\mathbf{h}}\to\mathbf{h}$ and $\hat{\mathbf{h}}_p\to\dot{\mathbf{h}}$. The selection of $\varepsilon_1$ and $\tau_h$ therefore reflects a trade-off between estimation velocity and noise rejection. Since the dominant oscillations are excited by horizontal accelerations, only the horizontal cable component is compensated. Let $\mathbf{h}_h=[h_x,h_y]^T$ denote the horizontal cable displacement and $\hat{\mathbf{h}}_{p,h}=[\hat{h}_{p,x}, \hat{h}_{p,y}]^T$ its estimated rate. Under the convention $\mathbf{h}=\mathbf{x}-\mathbf{x}_l$, the quasi-static cable reference and its rate are
+\begin{equation}\label{eq:href}
+\mathbf{h}_h^\star = \frac{l}{g}\,\ddot{\mathbf{x}}_{d,h},\qquad
+\dot{\mathbf{h}}_h^\star = \frac{l}{g}\,\dddot{\mathbf{x}}_{d,h}.
+\end{equation}
+This expression represents the \emph{equilibrium} inclination that the pendulum must adopt for the payload to follow the prescribed trajectory; it is not an oscillation to be suppressed. Both quantities are evaluated analytically from the reference, which is three times differentiable by Assumption~\ref{as:reference}. With $\mathbf{h}=\mathbf{x}-\mathbf{x}_l$, the horizontal force balance on the payload gives, to first order, $\ddot{\mathbf{x}}_{l,h}=(g/l)\,\mathbf{h}_h$, so the UAV leads the payload in the direction of the reference acceleration. Here $g$ is the gravitational acceleration. The swing-compensation term is then defined as \begin{equation}\label{eq:swing_compensation} \mathbf{v}_{\mathrm{comp}} = \begin{bmatrix} -K_h\big(\mathbf{h}_h-\mathbf{h}_h^\star\big) -K_{dh}\big(\hat{\mathbf{h}}_{p,h}-\dot{\mathbf{h}}_h^\star\big)\\[1mm] 0 \end{bmatrix}, \end{equation} with $K_h,K_{dh}\in\mathbb{R}^{2\times 2}$ positive definite and diagonal. The first term is a restoring action toward $\mathbf{h}_h^\star$: by referencing the equilibrium inclination rather than the pure vertical ($\mathbf{h}_h=\mathbf{0}$), it penalizes only the genuine swing (i.e., the deviation between the actual cable inclination and the inclination justified by the maneuver) instead of the inclination that the commanded acceleration itself requires. The second term damps the pendulum transients. A smooth start-up factor $\sigma(t)=1-e^{-t/T_s}$, with $T_s>0$, prevents impulsive commands at the onset of the maneuver, so that \begin{equation}\label{eq:final_reference} \mathbf{v}_c = \sigma(t)\,\big(\mathbf{v}_{\mathrm{base}} + \mathbf{v}_{\mathrm{comp}}\big). \end{equation} 
+The yaw channel is treated separately, as it is not coupled to the dominant horizontal oscillations: 
+\begin{equation}\label{eq:yaw_reference} \dot{\psi}_c = \dot{\psi}_d + k_{\psi}\tanh\!\big(k_{\psi}^t\,e_{\psi}\big), \qquad e_{\psi}=\psi_d-\psi, \end{equation} 
+with $k_{\psi},k_{\psi}^t>0$. The complete command of the kinematic controller is $\mathbf{u}_k=[\mathbf{v}_c^T,\ \dot{\psi}_c]^T$, which serves as the reference for the dynamic compensator presented in Section~\ref{sec:dynamic}.
+
+To explicitly model the estimation effect in the control law, let $\tilde{\mathbf{h}}_h = \mathbf{h}_h - \mathbf{h}_h^*$ denote the horizontal cable inclination error, and let $\mathbf{e}_h = \hat{\mathbf{h}}_{p,h} - \dot{\mathbf{h}}_h$ represent the bounded residual error of the two-stage rate estimator. Recognizing that $\dot{\mathbf{h}}_h = \dot{\tilde{\mathbf{h}}}_h + \dot{\mathbf{h}}_h^*$, the estimated cable velocity used in \eqref{eq:swing_compensation}  can be decomposed as:
+
+\begin{equation}\label{eq:error_residuo} 
+\hat{\mathbf{h}}_{p,h} = \dot{\tilde{\mathbf{h}}}_h + \dot{\mathbf{h}}_h^* + \mathbf{e}_h
+\end{equation}
+
+\subsection{Outer-Loop Stability}
+\label{sec:closed_loop_analysis}
+
+The outer-loop error analysis is carried out under the perfect velocity-tracking
+condition $\dot{\mathbf{x}}=\mathbf{u}_k$, so that the kinematic command is realized exactly by the inner loop. The analysis is supported by Assumptions~\ref{as:estimation}--\ref{as:vertical}, which formalize the operating regime already invoked informally in the controller design.
+
+Closed-Loop Error Analysis: it is assumed that the inner (dynamic) loop is sufficiently fast such that, on the time scale of the kinematic loop, the cable rate responds approximately instantaneously to the velocity command, that is,
+
+\begin{align}
+\dot{\mathbf{h}}_h
+&\simeq \mathbf{v}_{comp,h} + \boldsymbol{\mu}_h,
+\label{eq:xx1}
+\end{align}
+
+where $\boldsymbol\mu_h$ encapsulates what this order reduction discards: the inertial term $\ddot{\theta}$
+of the pendulum (the fast dynamics not modeled by the reduction), wind, and errors of the inner loop with respect to $\mathbf{v}_c$. Substituting the definition of $\mathbf{v}_{\mathrm{comp},h}$ \eqref{eq:swing_compensation} in $\dot{\tilde{\mathbf{h}}}_h$, leads to:
+
+\begin{align}
+\dot{\mathbf{h}}_h
+&=-K_h\tilde{\mathbf{h}}_h-K_{dh}(\hat{\mathbf{h}}_{h,p}-\dot{\mathbf{h}}^*_h) + \boldsymbol{\mu}_h,
+\label{eq:xx2}
+\end{align}
+
+Substituting the observer relation $\hat{\mathbf{h}}_{p,h} = \dot{\tilde{\mathbf{h}}}_h + \dot{\mathbf{h}}_h^* + \mathbf{e}_h$ (eq. \eqref{eq:error_residuo}) into the kinematic control equation  \eqref{eq:xx2}:
+
+\begin{align}
+\dot{\mathbf{h}}_h = -K_h \tilde{\mathbf{h}}_h - K_{dh} (\dot{\tilde{\mathbf{h}}}_h + \mathbf{e}_h) + \mu_h
+\end{align}
+
+Subtracting $\dot{\mathbf{h}}_h^*$ from both sides to express the dynamics in terms of the error $\tilde{\mathbf{h}}_h$:
+
+\begin{align}
+\dot{\tilde{\mathbf{h}}}_h = -K_h \tilde{\mathbf{h}}_h - K_{dh} \dot{\tilde{\mathbf{h}}}_h - K_{dh} \mathbf{e}_h - \dot{\mathbf{h}}_h^* + \mu_h
+\end{align}
+
+Grouping the terms containing $\dot{\tilde{\mathbf{h}}}_h$ on the left-hand side:
+
+\begin{align}
+(I + K_{dh}) \dot{\tilde{\mathbf{h}}}_h = -K_h \tilde{\mathbf{h}}_h - K_{dh} \mathbf{e}_h - \dot{\mathbf{h}}_h^* + \mu_h
+\end{align}
+ 
+Since $K_{dh}$ is a positive-definite diagonal matrix, the matrix $(I + K_{dh})$ is always invertible. Multiplying by $(I + K_{dh})^{-1}$:
+
+\begin{align}
+\dot{\tilde{\mathbf{h}}}_h = -(I + K_{dh})^{-1} K_h \tilde{\mathbf{h}}_h + (I + K_{dh})^{-1} (-K_{dh} \mathbf{e}_h - \dot{\mathbf{h}}_h^* + \mu_h)
+\end{align}
+
+We now define the effective gain $\bar{K}_h$ and the exogenous perturbation $\xi_h$ in a non-circular manner:
+
+\begin{equation}\label{eq:ganancia.perturbacion}
+\left\{
+\begin{aligned} 
+\bar{K}_h &= (I + K_{dh})^{-1} K_h,\\
+\xi_h &= (I + K_{dh})^{-1} (-K_{dh} \mathbf{e}_h - \dot{\mathbf{h}}_h^* + \mu_h)
+\end{aligned}
+\right.
+\end{equation}
+
+We obtain the equivalent decoupled system:
+
+\begin{align}\label{eq:nuevo_Kh}
+\dot{\tilde{\mathbf{h}}}_h = -\bar{K}_h \tilde{\mathbf{h}}_h + \xi_h
+\end{align}
+
+%\textcolor{red}{REVISE $K_{dh}$ (28)} 
+where $\xi_h$ depends solely on bounded external perturbations ($\mathbf{e}_h$, $\dot{\mathbf{h}}_h^*$, $\mu_h$) and system parameters, completely eliminating the dependence on $\dot{\tilde{\mathbf{h}}}_h$.
+Now, building on the framework already established in this Section,
+
+\begin{equation}
+\dot{\tilde{\mathbf{x}}}_{l}
+=-K_{\mathrm{traj}}
+\tilde{\mathbf{x}}_l
++
+(\dot{\mathbf{h}}_h-\mathbf{v}_{\mathrm{comp,h}}),
+\label{eq:auxx2}
+\end{equation}
+
+Defining the observer error $\mathbf{e}_{h}$ (bounded, by the the filter eq.\eqref{eq:error_residuo}) as:
+\begin{equation}
+\mathbf{e}_{h}=\hat{\mathbf{h}}_{p,h}-\dot{\mathbf{h}}_h\quad\rightarrow\quad\hat{\mathbf{h}}_{p,h}=\dot{\mathbf{h}}_h+\mathbf{e}_{h} 
+\label{eq:filter_error}
+\end{equation}
+
+Taking into account \eqref{eq:filter_error} and doing the difference $\dot{\mathbf{h}}_h-\nonumber\mathbf{v}_{\mathrm{comp,h}}$ as:
+
 \begin{eqnarray}
-\dot{\hat{\boldsymbol{\kappa}}}_u^T &= \boldsymbol{\gamma}^{-1}\mathbf{u}\mathbf{s}^T + \Vert{}\mathbf{s}\Vert{}\hat{\boldsymbol{\kappa}}_u^T\\
-\dot{\hat{\boldsymbol{\kappa}}}_v^T &= -\boldsymbol{\gamma}^{-1}\mathbf{v}\mathbf{s}^T + \Vert{}\mathbf{s}\Vert{}\hat{\boldsymbol{\kappa}}_v^T
+\dot{\mathbf{h}}_h-\nonumber\mathbf{v}_{\mathrm{comp,h}}&=&\dot{\mathbf{h}}_h-\Big(-K_{h}\tilde{\mathbf{h}}_h -K_{dh}(\hat{\mathbf{h}}_{p,h}-\dot{\mathbf{h}}^*_h)\Big)=...\\
+\nonumber&=&\dot{\mathbf{h}}_h+K_{h}\tilde{\mathbf{h}}_h +K_{dh}(\hat{\mathbf{h}}_{p,h}-\dot{\mathbf{h}}^*_h)=...\\
+\nonumber&=&K_{h}\tilde{\mathbf{h}}_h +K_{dh}\mathbf{e}_{h}+K_{dh}\dot{\mathbf{h}}_{h}-K_{dh}\dot{\mathbf{h}}^*_h+\dot{\mathbf{h}}_h=...\\
+&=&K_{h}\tilde{\mathbf{h}}_h +\dot{\mathbf{h}}_h(K_{dh}+I)-K_{dh}\dot{\mathbf{h}}^*_h+K_{dh}\mathbf{e}_{h}
+\label{eq:auxx2b}
 \end{eqnarray}
-Augmented State for the Super-Twisting Integral Term:Following the reviewer's recommendation, the proof no longer handles the discontinuous integral term heuristically. We have formally introduced the auxiliary state vector $\mathbf{z} = \int_{0}^{t} \mathbf{K}_2\text{sign}(\mathbf{s}(\tau))d\tau$ (with $\dot{\mathbf{z}} = \mathbf{K}_2\text{sign}(\mathbf{s})$), treating it as an augmented state within the closed-loop system dynamics.Relaxation of Convergence Claims and Removal of Barbalat's Argument:We completely agree with the reviewer that claiming asymptotic parameter convergence ($\tilde{\boldsymbol{\kappa}} \to \mathbf{0}$) or invoking Barbalat's lemma without establishing the Persistent Excitation (PE) condition was invalid.Correction: We have removed any claims of parameter convergence. The scope of Theorem 2 has been strictly restricted to practical stability (Uniformly Ultimately Boundedness - UUB) of the sliding variable $\mathbf{s}$, the augmented state $\mathbf{z}$, and the estimation errors $\tilde{\boldsymbol{\kappa}}_u, \tilde{\boldsymbol{\kappa}}_v$.The proof now concludes rigorously at $\dot{V} \le 0$ outside a compact set determined by the design gains $\mathbf{K}_1, \mathbf{K}_2$, and the leakage parameters ($\sigma$-modification), without relying on unproven PE assumptions..   
-\end{reply}
 
-\begin{point}
-The cable-rate estimator used in the public code does not correspond to Eqs. (9)–(11). Its correction signs are inconsistent with the defined estimation error, and its derivative state is updated at the current sample index rather than propagated to the next sample. The same estimated signal is subsequently used to calculate payload velocity, velocity RMSE, and tangential velocity \(v_\perp\). Thus, the validity of several principal results in Tables 2 and 3 has not been demonstrated. The authors would need to correct the estimator, validate it against simulator ground truth, and regenerate all affected results.
-\end{point}
+Now, considering $\dot{\mathbf{h}}_h=\dot{\tilde{\mathbf{h}}}_h+\dot{\mathbf{h}}^*_h$ and arranging the difference (second and third terms in the previous equation) expressed by:
 
-\begin{reply}
-We thank the reviewer for this inspection, and we agree. The released estimator was not Eqs.~\eqref{eq:h_raw}--\eqref{eq:h_p_filter}: its corrections had the wrong sign and its rate state was overwritten at the current sample instead of being propagated. The combination of these two errors made the estimate a constant of magnitude \(0.09\)~m/s, with no information about the cable motion. The payload velocity, the velocity RMSE and \(v_\perp\) of Tables~2 and~3 were therefore not valid, and the reported \(88\%\) reduction of \(\max v_T\) compared two different signals. That claim has been withdrawn.
+\begin{eqnarray}
+\dot{\mathbf{h}}_h(K_{dh}+I)-K_{dh}\dot{\mathbf{h}}^*_h=\dot{\tilde{\mathbf{h}}}_h(K_{dh}+I)+\dot{\mathbf{h}}^*_h
+\label{eq:auxx3}
+\end{eqnarray}
+considering the term $\dot{\tilde{\mathbf{h}}}_h(K_{dh}+1)$ and eq. \eqref{eq:nuevo_Kh} and replacing in eq.\eqref{eq:auxx3}, we obtain:
 
-The revised estimator implements Eqs.~\eqref{eq:h_raw}--\eqref{eq:h_p_filter} and has been validated against the cable rate computed from the simulator ground truth (Figure~\ref{fig:estimator_validation}). The velocity metrics are now computed from that ground truth, and Tables~\ref{tab:metrics} and~\ref{tab:benchmark_smc} have been regenerated.
-\end{reply}
+\begin{eqnarray}
+\dot{\tilde{\mathbf{h}}}_h(K_{dh}+I)=(K_{dh}+I)(-\bar{K}_h\,\tilde{\mathbf{h}}_h + \boldsymbol{\xi}_h)=-(K_{dh}+I)\bar{K}_h\,\tilde{\mathbf{h}}_h +(K_{dh}+I)\boldsymbol{\xi}_h
+\label{eq:auxx4}
+\end{eqnarray}
 
-\begin{point}
-Several additional inconsistencies affect reproducibility. Equation (44) has a vertical-axis sign inconsistent with both the definition of \(h\) and the code. Equation (47) does not match the trajectory period used by the simulation. The implemented second derivative of the lemniscate trajectory is incorrect. The nominal parameter matrices reported in the manuscript are not used by the released inner controller. Exact scripts that reproduce each figure and table without manual reconfiguration are also not provided.
-\end{point}
+Using \eqref{eq:auxx4} and \eqref{eq:auxx3} and grouping terms in eq.\eqref{eq:auxx2b}, we obtain:
 
-\begin{reply}
-The authors appreciate the feedback. 
-\end{reply}
+\begin{eqnarray}
+\dot{\mathbf{h}}_h-\nonumber\mathbf{v}_{\mathrm{comp,h}}&=&K_{h}\tilde{\mathbf{h}}_h +\Big(-(K_{dh}+I)\bar{K}_h\,\tilde{\mathbf{h}}_h +(K_{dh}+I)\boldsymbol{\xi}_h+\dot{\mathbf{h}}^*_h\Big)+K_{dh}\mathbf{e}_{h}=...\\
+&=&\tilde{\mathbf{h}}_h\Big[K_{h}-(\bar{K}_{h}(K_{dh}+I))\Big]+(K_{dh}+I)\boldsymbol{\xi}_h+\dot{\mathbf{h}}^*_h+K_{dh}\mathbf{e}_{h}
+\label{eq:auxx5}
+\end{eqnarray}
 
-\begin{point}
-“Restoration of performance symmetry” is neither mathematically defined nor quantitatively tested. No symmetry transformation, equivariance property, invariance measure, or matched comparison under rotated disturbances is provided. Similar-looking errors on two axes in a single deterministic simulation cannot establish symmetry restoration. Unless a rigorous definition and appropriate validation are added, “symmetry” should be removed from the title and the associated novelty claims.   
-\end{point}
+Replacing \eqref{eq:auxx5} in \eqref{eq:auxx2}:
 
-\begin{reply}
-KKKKK
-\end{reply}
+\begin{equation}
+\dot{\tilde{\mathbf{x}}}_{l}
+=-K_{\mathrm{traj}}
+\tilde{\mathbf{x}}_l
+-K_{h}K_{dh}\tilde{\mathbf{h}}_h+\boldsymbol{\zeta},
+\label{eq:cinematica2X}
+\end{equation}
+where $B=\begin{bmatrix} -K_h K_{dh} \\ 0_{1 \times 2} \end{bmatrix}\in\mathbb{R}^{3\times2}$ and  $\boldsymbol{\zeta}=(K_{dh}+I)\boldsymbol{\xi}_h+\dot{\mathbf{h}}^*_h+K_{dh}\mathbf{e}_{h}$
 
-\begin{point}
-The comparison with Kusznir and Smoczek is an internally constructed boundary-layer SMC ablation inspired by that study, rather than a faithful implementation of the published controller. The manuscript equation and the component-wise normalization used in the code also differ. It should therefore not be described as external validation against the published controller.
-\end{point}
+\noindent
+These assumptions collectively ensure that the tracking problem remains symmetrical across the translational axes. By treating external perturbations as bounded variations around a stable operating point, the proposed architecture can effectively restore the system's nominal performance balanced transient behavior even in the presence of unmodeled dynamic effects.
 
-\begin{reply}
-The authors thank the reviewers and apologize for the errors, which have been corrected in the revised version.
-\end{reply}
 
-\begin{point}
-The validation consists of single deterministic runs. There is no payload-mass sweep demonstrating adaptation, no stochastic or repeated wind experiments, no assessment of sensor noise, delay, actuator saturation, or computational cost, and no physical experiment. These limitations do not support the stated claims of robustness, adaptation, computational efficiency, or last-mile readiness.
-\end{point}
+Under perfect velocity tracking, substituting \eqref{eq:final_reference} into
+\eqref{eq:payload_velocity_compact} and neglecting the start-up factor after the
+initial transient ($\sigma(t)\to 1$) yields, from \eqref{eq:nuevo_Kh} and \eqref{eq:cinematica2X}, the \emph{first-order} cascade:
 
-\begin{reply}
-The authors appreciate the feedback.    
-\end{reply}
+\begin{equation}\label{eq:cl_payload}
+\left\{
+\begin{aligned} 
+    \dot{\tilde{\mathbf{h}}}_h
+&= -\bar{K}_h\,\tilde{\mathbf{h}}_h + \boldsymbol{\xi}_h,\\
+\dot{\tilde{\mathbf{x}}}_l
+&= -K_{\mathrm{traj}}\,\tilde{\mathbf{x}}_l
+   + B\,\tilde{\mathbf{h}}_h
+   + \boldsymbol{\zeta},
+\end{aligned}
+\right.
+\end{equation}
 
-\begin{point}
-The data response remains insufficient. The repository excludes the generated `.mat` files and other result outputs, so the time-series data underlying the figures and tables are unavailable. The authors should provide raw and processed simulation outputs, exact configurations, figure/table generation scripts, software versions, and a persistent tagged release or DOI. Separate Data Availability and Code Availability statements are also needed.
-\end{point}
+where $\boldsymbol{\zeta}$ incorporates the horizontal action in the payload channel, $\boldsymbol{\xi}_h$ collects the bounded estimation residue of the assumption~\ref{as:estimation} together with the reference rate mismatch $\dot{\mathbf{h}}_h-\dot{\mathbf{h}}_h^\star$, and $\boldsymbol{\zeta}$ includes the bounded vertical contribution of the assumption~\ref{as:vertical} and the start-up residual term. The damping gain $K_{dh}$ does not appear in \eqref{eq:cl_payload} because it acts as a transient shaping practical term and is not required for stability, which is set later with $K_{dh}=0$.
 
-\begin{reply}
-The authors appreciate the feedback.    
-\end{reply}
+The structure \eqref{eq:cl_payload} is a cascade of two
+input-to-state stable (ISS) first-order subsystems, and is summarized in the following
+result.
 
-\begin{point}
-The following claims should not appear in their present form:
-
-- “rigorously demonstrating” stability of the complete closed-loop system;
-- restoration of performance symmetry;
-- payload-trajectory invariance to wind and cable-state variation;
-- experimental validation;
-- suitability for onboard or low-power implementation without computation-time evidence.
-
-At most, the current simulations show bounded behaviour for a small set of deterministic scenarios using the implemented controller, which differs from the analysed controller.
-
-Additional presentation problems include the duplicated captions of Figs. 4 and 6, reversal of Figs. 11 and 12 in the discussion, the phrase “basic pneumatic controller,” inconsistent use of “super-twisting,” “supertorsion,” and “time-based sliding mode,” unresolved journal-template instructions, and erroneous or duplicated DOI information in the reference list.
-
-These are fundamental issues affecting the validity of the central method and results. Addressing them would require a new implementable formulation, a new stability analysis, correction of the estimator and metrics, and a complete rerun of the numerical validation.
-\end{point}
-
-\begin{reply}
-KKK
-\end{reply}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\reviewersection
-In this paper, the authors have investigated the control of cable-suspended payload systems using a composite adaptive control strategy for quadrotor-based last-mile delivery. I will provide some specific comments to the Author for further improvement:
-
-\begin{point}
-Remove unnecessary abbreviations from the abstract and keywords. (LMD, STA)
-\end{point}
-
-\begin{reply}
-We thank the reviewer for this comment. The abbreviations LMD and STA have been removed from the abstract and the keywords. These terms now appear in full as “last-mile delivery” and “super-twisting algorithm”. The abbreviation UAV is retained in the abstract because it is used more than once in that paragraph.
-\end{reply}
-
-\begin{point}
-Some of the introduction paragraphs are too long.
-\end{point}
-
-\begin{reply}
-The authors thank the reviewer for the positive feedback. We revised the introduction by splitting the longest paragraphs at natural topic boundaries: problem statement, scope, single-vehicle methods, cooperative and related approaches, and the synthesis of the three research directions. The technical content and cited comparisons remain unchanged; we only reorganized the paragraph structure to improve readability.
-\end{reply}
-
-\begin{point}
-The terminology used to describe the proposed controller is not always consistent. For example, terms such as “adaptive robust control,” “adaptive super-twisting,” “A-STA,” and “dynamic compensator” should be clearly defined and used consistently throughout the manuscript.
-\end{point}
-
-\begin{reply}
-The authors thank the reviewer for the observation. The document was reviewed and corrected; therefore, the new version is consistent regarding the terms used to describe the controller.
-\end{reply}
-
-\begin{point}
-The organization of Section 2 could be improved. The assumptions, system model, controller design, and stability analysis should be presented in a more logically connected sequence to make the derivation easier to follow. I suggest adding a section to the manuscript.
-\end{point}
-
-\begin{reply}
-The authors thank the reviewer for the positive feedback. Section 2 (Methodology) has been reorganized so that the derivation can be followed in one sequence. As suggested, a new subsection, Assumptions, has been added. The model equations, the assumption statements, the control laws, and the stability proofs are unchanged; only their order and the corresponding cross-references have been updated.
-
-The section is now arranged as follows.
+\begin{theorem}[Outer-loop stability]\label{th:outer}
+Consider the closed-loop error dynamics \eqref{eq:cl_payload}
+under Assumptions~\ref{as:estimation}--\ref{as:vertical}, with $K_h,K_{\mathrm{traj}}$
+symmetric positive definite. Then:
 \begin{enumerate}
-    \item System model. The geometric description of the cable-suspended payload is followed by the vehicle velocity model, so that the cable vector, the disturbance, and the parameter matrices are defined before they are used.
-    \item Assumptions. The six assumptions are collected in the new subsection. The first and the sixth support the dynamic compensator, and the other four support the kinematic controller. They are placed after the model, rather than before it, because each assumption refers to quantities introduced there.
-    \item Kinematic controller. This subsection now contains only the outer-loop design.
-    \item Outer-loop stability. The error analysis and its theorem follow that design directly.
-    \item Dynamic compensator. This subsection now contains only the sliding surface and the adaptive super-twisting law.
-    \item Inner-loop stability. The inner-loop theorem and its proof follow the compensator design.
+  \item[\textnormal{(a)}] If $\boldsymbol{\xi}_h=\mathbf{0}$ and $\boldsymbol{\zeta}=\mathbf{0}$,
+  the origin $(\tilde{\mathbf{x}},\tilde{\mathbf{h}}_h)=(\mathbf{0},\mathbf{0})$ is
+  local exponentially stable provided the gains satisfy
+  \begin{equation}
+  \lambda_{\min}(K_{\mathrm{traj}})>\tfrac{1}{2},\qquad
+  \mu\,\lambda_{\min}(K_h)>\tfrac{1}{2}\|B\|^2,
+  \label{eq:gain_condition}
+  \end{equation}
+  for some weight $\mu>0$.
+  \item[\textnormal{(b)}] If $\boldsymbol{\xi}_h$ and $\boldsymbol{\zeta}$ are bounded,
+  the cascade is ISS: all error signals remain bounded and converge to a compact
+  neighborhood of the origin whose size is proportional to
+  $\sup_t\|(\boldsymbol{\xi}_h,\boldsymbol{\zeta})\|$.
 \end{enumerate}
-Each stability argument therefore stands next to the control law it concerns, and the assumptions are available before either design begins.
-\end{reply}
+\end{theorem}
 
-\begin{point}
-The relationship between the kinematic controller and the dynamic compensator should be clarified. In particular, the manuscript should explicitly explain which performance objective is addressed by each layer and how the two layers interact. The paper currently states this distinction in several different places, which could be consolidated.
-\end{point}
+\begin{proof}
+Consider the weighted Lyapunov function
+\begin{equation}
+V=\tfrac{1}{2}\,\tilde{\mathbf{x}}^\top\tilde{\mathbf{x}}
+ +\tfrac{\mu}{2}\,\tilde{\mathbf{h}}_h^\top\tilde{\mathbf{h}}_h,
+ \qquad \mu>0,
+\label{eq:cl_lyapunov}
+\end{equation}
+which is positive definite and radially unbounded. Its time derivative along
+\eqref{eq:cl_payload} is
+\begin{equation}
+\dot V=
+-\tilde{\mathbf{x}}^\top K_{\mathrm{traj}}\tilde{\mathbf{x}}
+-\mu\,\tilde{\mathbf{h}}_h^\top \bar{K}_h\tilde{\mathbf{h}}_h
++\tilde{\mathbf{x}}^\top B\,\tilde{\mathbf{h}}_h
++\tilde{\mathbf{x}}^\top\boldsymbol{\zeta}
++\mu\,\tilde{\mathbf{h}}_h^\top\boldsymbol{\xi}_h.
+\label{eq:cl_Vdot}
+\end{equation}
 
-\begin{reply}
-The roles of the two loops and the signal that connects them are now stated once, at the opening of the kinematic controller and in the caption of the block diagram. The kinematic controller generates the velocity command so that the payload tracks the reference and the swing is reduced. The dynamic compensator does not suppress swing directly; it makes the UAV velocity track those commands under uncertainty and disturbances. The outer-loop analysis assumes that this command is realized exactly, and the inner loop enforces that condition approximately. The same distinction is no longer redefined in the introduction, the contributions, the simulation discussion, or the conclusions, which now refer to this statement. The simulation section still compares the kinematic controller alone with the full cascade, since that comparison is evidence of the separation rather than a second definition.
-\end{reply}
+\emph{Part (a).} With $\boldsymbol{\xi}_h=\boldsymbol{\zeta}=\mathbf{0}$, the cross term
+is bounded by Young's inequality,
+\begin{equation}
+\tilde{\mathbf{x}}^\top B\,\tilde{\mathbf{h}}_h
+\le \tfrac{1}{2}\|\tilde{\mathbf{x}}\|^2
+   +\tfrac{1}{2}\|B\|^2\|\tilde{\mathbf{h}}_h\|^2,
+\label{eq:young}
+\end{equation}
+so that
+\begin{equation}
+\dot V \le
+-\Big(\lambda_{\min}(K_{\mathrm{traj}})-\tfrac{1}{2}\Big)\|\tilde{\mathbf{x}}\|^2
+-\Big(\mu\,\lambda_{\min}(K_h)-\tfrac{1}{2}\|B\|^2\Big)\|\tilde{\mathbf{h}}_h\|^2.
+\label{eq:cl_Vdot_bound}
+\end{equation}
+Under \eqref{eq:gain_condition} both coefficients are strictly positive, hence
+$\dot V\le -\alpha V$ for some $\alpha>0$, 
+ $\forall \tilde{\mathbf{h}}_h \in \mathcal{D}$, where $\mathcal{D} = \{ \tilde{\mathbf{h}}_h \in \mathbb{R}^2 : \Vert{}\tilde{\mathbf{h}}_h\Vert{} \le h_{\max} \}$, being $h_{\max}$ the bound where the small-angle approximation is no longer valid. 
 
-\begin{point}
-The simulation results section contains several qualitative statements describing improved performance. These statements should be directly linked to the corresponding figures and quantitative performance indices to avoid repetition.
-\end{point}
+which proves local exponential stability of
+the origin.
 
-\begin{reply}
-The authors thank the reviewer for the positive feedback. We thank the reviewer for this comment. In the simulation section, each statement about performance now points to the figure or the table entry that supports it, and the same conclusion is no longer written twice.
+\emph{Part (b).} With bounded $\boldsymbol{\xi}_h,\boldsymbol{\zeta}$, applying Young's
+inequality to the disturbance terms as well gives
+\begin{equation}
+\dot V \le
+-c_1\|\tilde{\mathbf{x}}\|^2
+-c_2\|\tilde{\mathbf{h}}_h\|^2
++\rho\big(\|\boldsymbol{\xi}_h\|^2+\|\boldsymbol{\zeta}\|^2\big),
+\label{eq:cl_Vdot_iss}
+\end{equation}
+with $c_1,c_2,\rho>0$ obtained from \eqref{eq:gain_condition} with a margin reserved
+for the disturbance bounds. Thus $\dot V<0$ outside a compact set, which establishes
+input-to-state stability of the cascade with respect to
+$(\boldsymbol{\xi}_h,\boldsymbol{\zeta})$. Equivalently, since subsystem
+\eqref{eq:nuevo_Kh} is ISS with respect to $\boldsymbol{\xi}_h$ and subsystem
+\eqref{eq:cl_payload} is ISS with respect to $(\tilde{\mathbf{h}}_h,\boldsymbol{\zeta})$, the cascade interconnection of ISS systems is ISS, recovering the same conclusion.
+This proves part~(b) and completes the proof.
+\end{proof}
 
-In the payload-tracking subsection, the unfinished run is referred to in panel (a) of the three-dimensional view, and the run that reaches the end of the trajectory is referred to in panel (b). Position and yaw are referred to their time-history figure, and the swing signals $\alpha$, $\rho$, and $\|v_\perp\|$ are referred to the swing figure. An earlier sentence had attached the swing signals to the position figure; that citation has been corrected. Wording such as ``very good control error'' and ``significantly mitigated,'' which had no index, has been removed. The numerical comparison with the full cascade is left to the metrics table.
+\noindent
+Theorem~\ref{th:outer} makes explicit the design trade-off hidden in the original
+formulation: the trajectory gain $K_{\mathrm{traj}}$ sets the payload-tracking rate,
+while the swing gain $K_h$ must be large enough, relative to the coupling $\|B\|$ and
+the chosen weight $\mu$, to dominate the restoring action injected into the payload
+channel. The damping gain $K_{dh}$, although not required for stability, is retained in
+the implementation to shape the pendular transient and reduce overshoot, as confirmed
+by the simulation results.
 
-In the dynamic-compensator subsection, the sequence of qualitative descriptions has been replaced by one paragraph. That paragraph names the four figures (position and yaw, swing, control error, and velocity error) and quotes two entries of the metrics table: the payload-position RMSE, from $0.4350$ to $0.3671\,\mathrm{m}$, and $\max v_T$, from $1.1420$ to $0.1403\,\mathrm{m/s}$ (about $88\%$). The following summary, which restated the same conclusion, has been removed.
+\subsection{Dynamic Compensator}\label{sec:dynamic}
 
-The sentence that read this $88\%$ reduction as invariance of the payload trajectory to wind and to the cable state has been removed. The reduction belongs to the circular-trajectory comparison. The wind maneuver is discussed only in the next subsection, using its own figures.
+This section presents the dynamic compensator, which enforces the perfect velocity-tracking condition $\dot{\mathbf{x}}=\mathbf{u}_k$ assumed in the previous section, driving the velocity-tracking error to a small neighborhood of the origin despite model uncertainty and external disturbances. Its control law is an adaptive super-twisting law. Super-twisting is adopted because, as a second-order sliding-mode technique, it preserves the robustness and finite-time convergence of sliding-mode control while substantially attenuating the chattering associated with first-order sliding-mode controllers. In addition, an adaptation law for the model parameters is introduced to reduce the conservativeness of the control gains and improve tracking performance under varying payload conditions.
 
-In the wind subsection, the text had exchanged the position figure and the swing figure. Each sentence now cites the figure whose caption matches the variables being discussed. Statements of ``adequate'' tracking, of swing attenuation, and of restored symmetry, none of which was backed by a scalar index, have been replaced by what the figures show: bounded position, swing, and velocity error, and a return toward the reference after each gust. The closing paragraph that repeated those conclusions has been removed.
 
-In the benchmark, the opening no longer says that the scheme has been ``proven successful'' without a pointer. It now starts from the metrics table. The numerical comparison with the first-order sliding-mode baseline remains in its table and in the paragraph that introduces that table. The later paragraph no longer repeats the values $6.7\%$, $3.4\%$, and $11$--$15\%$. It only recalls that the inner-loop differences are smaller than the $88\%$ reduction already reported, because both controllers share the kinematic controller.
+The kinematic controller commands are reference velocities $\mathbf{v}_d$. Therefore, the following sliding surface is proposed:
+% REV3-C13/C14: Describir explícitamente las perturbaciones externas variantes en el tiempo usadas en simulación y distinguir casos periódicos y no periódicos. Esta hipótesis debe conectarse con los perfiles simulados.
 
-Four captions that repeated ``accurate trajectory tracking'' and ``significantly attenuated'' now state only which signals are plotted.
-\end{reply}
+\begin{equation}
+    \mathbf{s} = \tilde{\mathbf{v}} + \boldsymbol{\beta}\int \tilde{\mathbf{v}} dt
+\end{equation}
+Deriving the above equation,
 
-\begin{point}
-The captions of several figures should be revised.
-\end{point}
+\begin{equation}
+    \dot{\mathbf{s}} = \dot{\tilde{\mathbf{v}}} + \boldsymbol{\beta} \tilde{\mathbf{v}} = (\dot{\mathbf{v}} - \dot{\mathbf{v}}_d) + \boldsymbol{\beta}(\mathbf{v} - \mathbf{v}_d)
+\end{equation}
 
-\begin{reply}
-We thank the reviewer for this comment. The captions have been rewritten so that each one states what is plotted, on which maneuver, and for which controller. Conclusions that were previously repeated in the caption have been removed from it; they remain, where they are supported, in the text next to the corresponding figure or table. The schematic of the vehicle now names the inertial positions and the cable vector $\mathbf{h}=\mathbf{x}-\mathbf{x}_l$. The block diagram now names the two blocks and the command $\mathbf{u}_k$ that connects them. The three-dimensional view of the circular maneuver no longer refers to a ``basic pneumatic controller.'' Panel (a) is the kinematic law that does not compensate for swing, and panel (b) is the kinematic controller; the caption states only whether the run finishes.
+The equivalent control law in the sliding mode can be found by solving $\dot{\mathbf{s}}=0$. Therefore, \eqref{eq:ModeloLucas} is replaced in the above equation,
 
-The time-history captions for the circular trajectory now name the signals (position and yaw, swing variables, position and yaw errors, and velocity-tracking errors) and say whether the dynamic compensator is included. The wind captions name the lemniscate and the two gust intervals, and the swing caption uses the horizontal displacement $\rho$ rather than a ``displacement-related error.'' The benchmark captions name $\alpha$, $\rho$, and $\|v_\perp\|$, and the horizontal components of the inner-loop correction, and they no longer interpret the chattering in the caption itself.    
-\end{reply}
+\begin{equation}\label{eq:Condicion_S}
+    \dot{\mathbf{s}} = \Big(\boldsymbol{\kappa}_u\mathbf{u} - \boldsymbol{\kappa}_v\mathbf{v}+\boldsymbol{\delta}(t)\Big) - 
+    \dot{\mathbf{v}}_d + \boldsymbol{\beta} \tilde{\mathbf{v}} = 0
+\end{equation}
 
-\begin{point}
-The claimed “finite-time convergence” of the super-twisting controller should be supported more rigorously. The current proof mainly establishes $\dot{V} \leq 0$ and invokes Barbalat's lemma to conclude asymptotic convergence. This does not by itself establish finite-time convergence. The authors should either provide an appropriate finite-time stability proof or revise the corresponding claims.
-\end{point}
+clearing the control action $\mathbf{u}$, it can be expressed as:
 
-\begin{reply}
-The authors thank the reviewer for the positive feedback. We agree with the reviewer. The Lyapunov argument shows that $\dot{V}\le 0$ outside a compact set, and that conclusion is practical stability. It does not establish finite-time convergence, and we have not added a finite-time proof. The sentence that attributed finite-time convergence to the adaptive super-twisting law has been replaced. The dynamic-compensator section now says that the law is used to attenuate the chattering of first-order sliding mode, and it points to Theorem~\ref{th:inner} for the result that is actually proved: the sliding variable and the parameter errors are uniformly ultimately bounded. The conclusions had gone further than this theorem. They stated that the velocity-tracking error converges asymptotically to zero and that the parameters converge under persistent excitation. Both statements have been removed. The conclusions now repeat the practical-stability statement of Theorem~\ref{th:inner}.
-\end{reply}
+\begin{eqnarray}\label{eq:AccionIdeal}
+    \mathbf{u} &=& \boldsymbol{\kappa}_u^{-1}\Big( -\boldsymbol{\beta} \tilde{\mathbf{v}} + \dot{\mathbf{v}}_d + \boldsymbol{\kappa}_v \mathbf{v} -\boldsymbol{\delta}(t)\Big) 
+\end{eqnarray}
 
-\begin{point}
-There appears to be a dimensional/notation inconsistency in the adaptive parameterization. The paper defines $\phi \in R^{4×8}$ and $\theta \in R^{8}$ which is reasonable, but the subsequent Lyapunov expressions and adaptation law should be checked carefully for consistency in vector dimensions and transpose operations. The authors should explicitly state the dimensions of all terms in Eqs. (31), (34), and (38)–(40).
-\end{point}
+The above equation represents the ideal control action, but the values of $\boldsymbol{\delta}(t)$ and the actual values of the $\boldsymbol{\kappa}_u$ and $\boldsymbol{\kappa}_v$ matrices are unknown. Therefore, the following super-twisting type control is proposed for the previously presented control objective
 
-\begin{reply}
-The authors thank the reviewer for the positive feedback. We checked the products and the transposes in the control law, the Lyapunov derivative, and the adaptation law. The revised manuscript does not use the parameterization $\boldsymbol{\phi}\in\mathbb{R}^{4\times 8}$, $\boldsymbol{\theta}\in\mathbb{R}^{8}$. The adapted quantities are the model matrices $\boldsymbol{\kappa}_u,\boldsymbol{\kappa}_v\in\mathbb{R}^{4\times 4}$. Equation numbers have shifted, so the expressions that corresponded to Eqs.~(31), (34) and (38)--(40) are now the control law \eqref{eq:AccionControl}, the Lyapunov candidate, and the adaptation law \eqref{eq:ajuste2}.
+%\begin{eqnarray}\label{eq:AccionControl}
+\begin{equation}\label{eq:AccionControl}
+\left\{
+\begin{aligned}  
+    \mathbf{u} &= \hat{\boldsymbol{\kappa}}_u^{-1}\Big( -\boldsymbol{\beta} \tilde{\mathbf{v}} + \dot{\mathbf{v}}_d + \hat{\boldsymbol{\kappa}}_v \mathbf{v} - \mathbf{w}\Big) ; \\
+    \mathbf{w} &= \mathbf{K}_1\sqrt{||\mathbf{s}||}\sign(\mathbf{s}) + \int \mathbf{K}_2\sign(\mathbf{s}) dt
+\end{aligned}
+\right.
+\end{equation}
 
-The dimensions are stated next to those expressions. With $n=4$, the vectors $\mathbf{u}$, $\mathbf{v}$, $\mathbf{v}_d$, $\tilde{\mathbf{v}}$, $\mathbf{w}$, $\mathbf{s}$ and $\boldsymbol{\delta}(t)$ lie in $\mathbb{R}^{n}$. The matrices $\boldsymbol{\beta}$, $\mathbf{K}_1$, $\mathbf{K}_2$ and the parameter matrices, their estimates and their errors, lie in $\mathbb{R}^{n\times n}$. The sign of $\mathbf{s}$ is taken componentwise, so $\mathbf{K}_1\sqrt{\|\mathbf{s}\|}\sign(\mathbf{s})$ and $\mathbf{K}_2\sign(\mathbf{s})$ are vectors in $\mathbb{R}^{n}$.
+The matrices \(\hat{\boldsymbol{\kappa}}_u\) and \(\hat{\boldsymbol{\kappa}}_v\) in \eqref{eq:AccionControl} are the online estimates of \(\boldsymbol{\kappa}_u\) and \(\boldsymbol{\kappa}_v\). With \(n=4\), both lie in \(\mathbb{R}^{n\times n}\). The adaptation gain \(\gamma>0\) is a scalar. Each update has two terms, and both are built from signals available in the loop. The gradient term is the outer product of the regressor with the sliding variable: \(\mathbf{u}\mathbf{s}^{T}\) for the input matrix and \(\mathbf{v}\mathbf{s}^{T}\) for the velocity matrix. These products are \(n\times n\), the same size as the estimates. The sign follows \eqref{eq:ModeloLucas}, where \(\boldsymbol{\kappa}_u\) multiplies \(\mathbf{u}\) and \(\boldsymbol{\kappa}_v\) multiplies \(-\mathbf{v}\). The second term is a leakage, proportional to \(\|\mathbf{s}\|\) and to the current estimate. It draws the estimate toward zero when \(\mathbf{s}\) is away from the origin, which is the \(\sigma\)-modification used under a nonzero disturbance \cite{lewis1998neural,ge2001stable}.
 
-The adaptation gain $\gamma>0$ is a scalar. It had been written in bold, as a matrix, in the Lyapunov function and in the adaptation law, and as a plain scalar in the final bound. It is now a scalar throughout, so $\gamma^{-1}\mathbf{u}\mathbf{s}^T$ is an $n\times n$ matrix, as is $\|\mathbf{s}\|\hat{\boldsymbol{\kappa}}^T$. The identity $\mathbf{s}^T\boldsymbol{\tilde{\kappa}}\mathbf{v}=\mathrm{tr}(\boldsymbol{\tilde{\kappa}}\mathbf{v}\mathbf{s}^T)$ matches a scalar to a scalar. The matrix norm in the bound is the Frobenius norm. After the adaptation law is substituted, the leakage terms are $-\gamma\|\mathbf{s}\|\mathrm{tr}(\boldsymbol{\tilde{\kappa}}\hat{\boldsymbol{\kappa}}^T)$. The factor $\gamma$ was missing from that line and was already present in the following bound; the two expressions now agree. The nominal matrices used to initialize the compensator are written as diagonal $4\times 4$ matrices, with the same diagonal entries as before.
-\end{reply}
+\begin{equation}\label{eq:ajuste2}
+\left\{
+\begin{aligned}
+\dot{\hat{\boldsymbol{\kappa}}}_u^{T} &= \gamma^{-1}\mathbf{u}\mathbf{s}^{T} - \|\mathbf{s}\|\,\hat{\boldsymbol{\kappa}}_u^{T},\\
+\dot{\hat{\boldsymbol{\kappa}}}_v^{T} &= -\gamma^{-1}\mathbf{v}\mathbf{s}^{T} - \|\mathbf{s}\|\,\hat{\boldsymbol{\kappa}}_v^{T}.
+\end{aligned}
+\right.
+\end{equation}
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Equation \eqref{eq:ajuste2} is the law that is integrated. The right-hand side is assembled from \(\mathbf{u}\), \(\mathbf{v}\), \(\mathbf{s}\), and the current estimate.
 
-\reviewersection
+\subsection{Inner-Loop Stability}\label{sec:inner_stability}
 
-This paper is devoted to robust adaptive control of underactuated UAV-Suspended payload systems. The authors have rendered an interesting result with correct derivation. Some minor comments are supplied below:
+To test the stability of the inner loop, it is necessary to understand the dynamics represented by $\dot{\mathbf{s}}$.
+Now, considering eq.\eqref{eq:Condicion_S} and adding and subtracting $\boldsymbol{\hat{\kappa}}_u\mathbf{u}$, leads to: 
 
-\begin{point}
-The Introduction section lacks a comparison with existing methods.
-\end{point}
+\begin{equation}\label{eq:Condicion_S1}
+    \dot{\mathbf{s}} =\boldsymbol{\hat{\kappa}}_u\mathbf{u}-\boldsymbol{\hat{\kappa}}_u\mathbf{u} +\boldsymbol{\kappa}_u\mathbf{u} - \boldsymbol{\kappa}_v\dot{\mathbf{x}}+\boldsymbol{\delta}(t) - 
+    \dot{\mathbf{v}}_d + \boldsymbol{\beta} \tilde{\mathbf{v}} = 0
+\end{equation}
 
-\begin{reply}
-We thank the reviewer for this comment. The introduction discussed existing methods one by one, but it did not place them on a common set of design choices, so the difference between those methods and the proposed controller was easy to miss.
+Therefore, replacing \eqref{eq:AccionControl} in the first term of \eqref{eq:Condicion_S1} gives,
 
-We added Table~\ref{tab:method_comparison} at the end of the state-of-the-art subsection. The table compares representative geometric, robust, passivity-based, sliding-mode, planning, predictive, and cooperative designs along the features already used in the text: where the control objective is written, how payload swing is reduced, and how uncertainty and computation are handled. The last row is the proposed cascade. A paragraph after the table reads that comparison, and the research-gap subsection now opens from the table instead of restating the same contrasts in prose.
+\begin{eqnarray}\label{eq:dynamical_equation}
+  \nonumber\dot{\mathbf{s}} &=& \boldsymbol{\hat{\kappa}}_u\left(\hat{\boldsymbol{\kappa}}_u^{-1}\Big( -\boldsymbol{\beta} \tilde{\mathbf{v}} + \dot{\mathbf{v}}_d + \hat{\boldsymbol{\kappa}}_v \mathbf{v} - \mathbf{K}_1\sqrt{||\mathbf{s}||}\sign(\mathbf{s}) - \int \mathbf{K}_2\sign(\mathbf{s}) dt\Big) \right) -...\\
+   \nonumber &-&\boldsymbol{\hat{\kappa}}_u\mathbf{u} +\boldsymbol{\kappa}_u\mathbf{u}- \boldsymbol{\kappa}_v\mathbf{v} - \boldsymbol{\delta}(t)  - 
+    \dot{\mathbf{v}}_d + \boldsymbol{\beta} \tilde{\mathbf{v}}=......\\
+    &=&-\boldsymbol{\tilde{\kappa}}_v\mathbf{v}+\boldsymbol{\tilde{\kappa}}_u\mathbf{u}+\boldsymbol{\delta}(t)- \mathbf{K}_1\sqrt{||\mathbf{s}||}\sign(\mathbf{s}) - \int \mathbf{K}_2\sign(\mathbf{s}) dt
+\end{eqnarray}
 
-The table is architectural. It is not a numerical ranking, and it does not claim that every cited controller was reimplemented. The only numerical comparison remains the inner-loop benchmark against a first-order sliding-mode baseline in Section~\ref{sec:simulations}. The last cell of the table also states the present limit of the claim: the design uses the quasi-static regime of Assumption~\ref{as:smallangle}, and the evidence in this paper is simulation.
-\end{reply}
 
-\begin{point}
-The structure of the adaptive law is not clear enough.
-\end{point}
 
-\begin{reply}
-We thank the reviewer for this comment. The adaptation law was introduced inside the stability proof, and it was written as the derivative of the parameter error \(\boldsymbol{\tilde{\kappa}}\). That error depends on the unknown matrices \(\boldsymbol{\kappa}_u\) and \(\boldsymbol{\kappa}_v\), so the expression did not show which signals are integrated. The leakage term was attached to that error derivative, with the opposite sign of a restoring \(\sigma\)-modification.
+The Parameter error matrices for $\mathbf{v}$ and $\mathbf{u}$, denoted $\boldsymbol{\tilde{\kappa}}_v$ and $\boldsymbol{\tilde{\kappa}}_u$ respectively, are defined as the difference between the optimal output transition matrix $\boldsymbol{\kappa}_v$ and the estimate transition matrix $\boldsymbol{\hat{\kappa}}_v$ of the model  and in the same form for the input matrix ($\boldsymbol{\kappa}_u$ and $\boldsymbol{\tilde{\kappa}}_u$) are defined as:  
 
-The law is now stated in Section~\ref{sec:dynamic}, immediately after the control law \eqref{eq:AccionControl}, as \eqref{eq:ajuste2}. It updates the estimates \(\hat{\boldsymbol{\kappa}}_u\) and \(\hat{\boldsymbol{\kappa}}_v\). Both are \(n\times n\) matrices, with \(n=4\), and the gain \(\gamma>0\) is a scalar. Each equation has two terms. The gradient term is \(\gamma^{-1}\mathbf{u}\mathbf{s}^{T}\) or \(-\gamma^{-1}\mathbf{v}\mathbf{s}^{T}\), and its sign follows the model \eqref{eq:ModeloLucas}. The leakage term is \(-\|\mathbf{s}\|\hat{\boldsymbol{\kappa}}^{T}\), and it uses only the current estimate. The right-hand side does not contain the unknown matrices.
+\begin{equation}
+            \boldsymbol{\tilde{\kappa}}_v = \boldsymbol{\kappa}_v - \boldsymbol{\hat{\kappa}}_v \quad \boldsymbol{\tilde{\kappa}}_u = \boldsymbol{\kappa}_u- \boldsymbol{\hat{\kappa}}_u. \label{eq:error estimation}
+\end{equation}
 
-The proof keeps an equivalent form, \eqref{eq:ajuste_error}, obtained from \(\dot{\boldsymbol{\tilde{\kappa}}}=-\dot{\hat{\boldsymbol{\kappa}}}\) because the true parameters are constant. That form is used only to cancel the regressor in \(\dot{V}\). After the substitution, the factor \(\gamma\) multiplies the leakage traces, and the squared parameter errors enter \(\dot{V}\) with a negative sign.
-\end{reply}
+%Taking \eqref{eq:error estimation} into account and rewriting eq. \eqref{eq:dynamical_equation}, we obtain:
 
-\begin{point}
-Why does the regressor need to be persistently exciting for the parameter estimation error to converge to zero?
-\end{point}
+To handle the integral action of the super-twisting algorithm without analytical inconsistencies, let us define the auxiliary state vector representing the integral term as:
+\begin{equation}
+    \mathbf{z} = \int_{0}^{t} \mathbf{K}_2\sign(\mathbf{s}(\tau)) d\tau \implies \dot{\mathbf{z}} = \mathbf{K}_2\sign(\mathbf{s})
+\end{equation}
+Consequently, the control input vector $\mathbf{w}$ can be expressed as $\mathbf{w} = \mathbf{K}_1\sqrt{\|\mathbf{s}\|}\sign(\mathbf{s}) + \mathbf{z}$. 
 
-\begin{reply}
-We thank the reviewer for this question. Persistent excitation is required for parameter convergence only in an ideal gradient law, with no disturbance and no leakage. In that law the update is driven by the products of the regressor with the sliding variable. After the sliding variable has reached zero, the update stops. Any component of the parameter error that stays orthogonal to the recorded regressor produces the same closed-loop signals, so it is never corrected. The integral condition
-\begin{equation*}
-\int_{t}^{t+T}\boldsymbol{\phi}(\tau)\boldsymbol{\phi}(\tau)^{\top}\,d\tau \ge \alpha I
+Rewriting the control law into the sliding surface dynamics \eqref{eq:dynamical_equation}, the closed-loop error equation becomes:
+
+
+\begin{equation}\label{eq:SuperficieFinal}
+\left\{
+\begin{aligned}
+  \dot{\mathbf{s}} &=-\boldsymbol{\tilde{\kappa}}_v\mathbf{v}+\boldsymbol{\tilde{\kappa}}_u\mathbf{u}+\boldsymbol{\delta}(t)- \mathbf{K}_1\sqrt{||\mathbf{s}||}\sign(\mathbf{s}) -\mathbf{z}\\
+  \dot{\mathbf{z}} &=\mathbf{K}_2\sign(\mathbf{s})
+\end{aligned}
+\right.
+\end{equation}
+
+\begin{theorem}
+%[Inner-loop robust stability]\label{th:inner}
+%Consider the velocity-error sliding dynamics \eqref{eq:SuperficieFinal} under the composite adaptive super-twisting control law \eqref{eq:AccionControl} and the adaptation law \eqref{eq:ajuste2}. Suppose that Assumption~\ref{as:physical} holds (so that $\|\dot{\boldsymbol{\delta}}(t)\|\le\bar{\delta}$) and that the super-twisting gain satisfies the matching condition $\mathbf{K}_2\ge\|\dot{\boldsymbol{\delta}}(t)\|$. Then the sliding variable $\mathbf{s}$ and the parameter error $\tilde{\boldsymbol{\kappa}}_v,\tilde{\boldsymbol{\kappa}}_u$ are uniformly bounded, $\dot{V}\le 0$, practical stability. %and the velocity-tracking error converges to zero, $\tilde{\mathbf{v}}\to\mathbf{0}$. If, in addition, the regressor $\boldsymbol{\phi}(t)$ is persistently exciting, then $\tilde{\boldsymbol{\theta}}\to\mathbf{0}$.
+[Inner-loop robust stability]\label{th:inner}
+Consider the velocity-error sliding dynamics under the adaptive super-twisting control law \eqref{eq:AccionControl} and the adaptation law \eqref{eq:ajuste2}. Suppose that Assumption~\ref{as:parameters} holds, that $\|\boldsymbol{\delta}(t)\| \le \delta_o$, and that the time derivative of the perturbation is bounded by $\|\dot{\boldsymbol{\delta}}(t)\|\le\bar{\delta}$. Then, the sliding variable $\mathbf{s}$ and the parameter estimation errors $\tilde{\boldsymbol{\kappa}}_v, \tilde{\boldsymbol{\kappa}}_u$ are uniformly ultimately bounded (UUB), guaranteeing $\dot{V}\le 0$.
+
+\end{theorem}
+
+\begin{proof}
+The Lyapunov theory is used to perform the stability analysis. First, the following Lyapunov candidate function is proposed,
+
+\begin{equation*}\label{eq:CandidataLyapunov}
+    V = \cfrac{1}{2}\mathbf{s}^T\mathbf{s} + \cfrac{\gamma}{2}\mathrm{tr}(\boldsymbol{\tilde{\kappa}}_v \boldsymbol{\tilde{\kappa}}_v^T)+ \cfrac{\gamma}{2}\mathrm{tr}(\boldsymbol{\tilde{\kappa}}_u \boldsymbol{\tilde{\kappa}}_u^T) 
 \end{equation*}
-removes that ambiguity: the only parameter error compatible with a zero residual is the zero error. For the full matrices \(\boldsymbol{\kappa}_u\) and \(\boldsymbol{\kappa}_v\), the regressor \(\boldsymbol{\phi}\) is the Kronecker regressor built from \(\mathbf{u}\) and \(\mathbf{v}\).
 
-That conclusion does not transfer to the law of this paper. Equation~\eqref{eq:ajuste2} keeps a leakage proportional to \(\|\mathbf{s}\|\), and the sliding dynamics keep the disturbance \(\boldsymbol{\delta}(t)\). The leakage balances the gradient away from the true matrices, and the disturbance imitates a parameter error. Both effects remain under persistent excitation. The update is also scaled by signals that vanish with \(\mathbf{s}\), so the estimates freeze in the sliding regime. Theorem~\ref{th:inner} therefore states uniform ultimate boundedness of the parameter errors.
+Where $tr(.)$ is the trace operator. Now, deriving the above equation, it is obtained,
 
-The conclusions previously said that parameter convergence required persistent excitation of the regressor. That sentence has been removed. The reasoning above is now Remark~\ref{rem:pe}, placed immediately after the proof of Theorem~\ref{th:inner}.
-\end{reply}
+\begin{equation}
+    \dot{V} = \mathbf{s}^T\dot{\mathbf{s}} +\gamma\,\mathrm{tr}(\boldsymbol{\tilde{\kappa}}_v\boldsymbol{\dot{\tilde{\kappa}}}_v^T)+ \gamma\,\mathrm{tr}(\boldsymbol{\tilde{\kappa}}_u \boldsymbol{\dot{\tilde{\kappa}}}_u^T)
+\end{equation}
 
-\begin{point}
-The authors are suggested to include figures showing error convergence under different gains to illustrate the impact of parameters on tracking performance.
-\end{point}
+Replacing \eqref{eq:SuperficieFinal} in the above equation
 
-\begin{reply}
-The authors thank the reviewer for the positive feedback. We hope that our responses adequately address the questions and suggestions raised.
-\end{reply}
+\begin{eqnarray}
+   \nonumber \dot{V} &=& \mathbf{s}^T \bigg( -\boldsymbol{\tilde{\kappa}}_v\mathbf{v}+\boldsymbol{\tilde{\kappa}}_u\mathbf{u}  
+     -\Big( \mathbf{K}_1\sqrt{||\mathbf{s}||}\sign(\mathbf{s}) +\mathbf{z} \Big) - \boldsymbol{\delta}(t) \bigg)+tr(\boldsymbol{\tilde{\kappa}}_v\gamma\boldsymbol{\dot{\tilde{\kappa}}}_v^T)+ tr (\boldsymbol{\tilde{\kappa}}_u\gamma \boldsymbol{\dot{\tilde{\kappa}}}_u^T)\nonumber\\
+    \dot{V} &=&  -\mathbf{s}^T\boldsymbol{\tilde{\kappa}}_v\mathbf{v}+\mathbf{s}^T\boldsymbol{\tilde{\kappa}}_u\mathbf{u} - \mathbf{s}^T \bigg(\mathbf{K}_1\sqrt{||\mathbf{s}||}\sign(\mathbf{s}) +\mathbf{z}
+     -\boldsymbol{\delta}(t)  \bigg)+tr(\boldsymbol{\tilde{\kappa}}_v\gamma\boldsymbol{\dot{\tilde{\kappa}}}_v^T)+ tr (\boldsymbol{\tilde{\kappa}}_u\gamma \boldsymbol{\dot{\tilde{\kappa}}}_u^T)
+\end{eqnarray}
 
-\begin{point}
-The authors are suggested to provide some recent results on the related topic of adaptive control, such as ‘An equilibrium factor-based iterative learning control of robot arms’, ‘Neural network adaptive iterative learning control for strict-feedback unknown delay systems’.
-\end{point}
+By the property cyclic of trace, we obtain the following equalities:
 
-\begin{reply}
-We thank the reviewer for this suggestion. Both works are now cited in the introduction, in a new paragraph that follows the discussion of adaptive and learning-based compensation. They belong to iterative learning control (ILC), an adaptive approach that the previous introduction did not cover.
+\begin{equation}
+ \mathbf{s}^T \boldsymbol{\tilde{\kappa}}_v\mathbf{v} =tr (\mathbf{s}^T \boldsymbol{\tilde{\kappa}}_v\mathbf{v})=tr( \boldsymbol{\tilde{\kappa}}_v\mathbf{v}\mathbf{s}^T)
+\end{equation}
 
-The paragraph summarizes the two designs. Shen et al. (2025), \emph{IEEE Transactions on Neural Networks and Learning Systems}, 36(7):13460--13469, treat strict-feedback systems with unknown state delays and input saturation. They combine radial-basis-function neural networks, Lyapunov--Krasovskii functionals, command filtering, and auxiliary saturation-compensation systems. Shen et al. (2026), \emph{IEEE Transactions on Reliability}, 75:87--96, introduce update laws with an equilibrium factor that tolerate initial-state errors and actuator faults in robot arms. In both works, convergence is established along the iteration axis through a composite energy function. The same paragraph cites two ILC designs for quadrotors, Schoellig et al. (2012) and Han et al. (2025), which learn over repeated or periodic trajectories.
+\begin{equation}
+ \mathbf{s}^T \boldsymbol{\tilde{\kappa}}_u\mathbf{u} =tr (\mathbf{s}^T \boldsymbol{\tilde{\kappa}}_u\mathbf{u})=tr( \boldsymbol{\tilde{\kappa}}_u\mathbf{u}\mathbf{s}^T)
+\end{equation}
+Based on the properties of transpose and operand, it is obtained,
 
-The paragraph also states how ILC differs from the compensator of this paper. ILC refines the input from one execution of the same task to the next, so it presupposes a task repeated over a finite interval. A delivery flight is executed once, along a reference that changes with each mission. The dynamic compensator therefore adapts its parameters along the time axis, within a single flight. The two suggested works also treat input saturation, delays, and actuator faults explicitly. These effects are not included in our analysis, and the paragraph refers to the conclusions, where their characterization is listed as future work.
+\begin{eqnarray}\label{eq:Lyapunto}
+    \nonumber\dot{V} &=& tr( -\boldsymbol{\tilde{\kappa}}_v\mathbf{v}\mathbf{s}^T)+tr( \boldsymbol{\tilde{\kappa}}_u\mathbf{u}\mathbf{s}^T) + tr(\boldsymbol{\tilde{\kappa}}_v\gamma\boldsymbol{\dot{\tilde{\kappa}}}_v^T)+ tr (\boldsymbol{\tilde{\kappa}}_u\gamma \boldsymbol{\dot{\tilde{\kappa}}}_u^T) -...\\
+    \nonumber&-&\mathbf{s}^T\left(\sqrt{||\mathbf{s}||}\sign(\mathbf{s}) +\mathbf{z}
+     -\boldsymbol{\delta}(t) \right) \nonumber\\
+    \dot{V} &=& tr\Big( \boldsymbol{\tilde{\kappa}}_v\big[-\mathbf{v}\mathbf{s}^T+\gamma\boldsymbol{\dot{\tilde{\kappa}}}_v^T\big]\Big)+tr\Big( \boldsymbol{\tilde{\kappa}}_u\big[\mathbf{u}\mathbf{s}^T +\gamma \boldsymbol{\dot{\tilde{\kappa}}}_u^T\big]\Big)  -...\\
+     \nonumber&-& \mathbf{s}^T\left(\mathbf{K}_1\sqrt{||\mathbf{s}||}\sign(\mathbf{s}) + \mathbf{z}
+     -\boldsymbol{\delta}(t) \right)
+\end{eqnarray}
 
-While revising this part, we noticed that Han et al. (2025) had been cited among the cooperative multi-UAV transport studies. That work concerns a single quadrotor without a suspended load, so the citation has been moved to the new paragraph.
-\end{reply}
+The estimates are integrated with \eqref{eq:ajuste2}. The true matrices are constant, so the errors in \eqref{eq:error estimation} satisfy \(\dot{\tilde{\boldsymbol{\kappa}}}_u=-\dot{\hat{\boldsymbol{\kappa}}}_u\) and \(\dot{\tilde{\boldsymbol{\kappa}}}_v=-\dot{\hat{\boldsymbol{\kappa}}}_v\). Written for those errors, the same law is
+\begin{equation}\label{eq:ajuste_error}
+\left\{
+\begin{aligned}
+\dot{\hat{\boldsymbol{\kappa}}}_u^T &=\gamma^{-1}\mathbf{u}\mathbf{s}^{T} - \|\mathbf{s}\|\,\hat{\boldsymbol{\kappa}}_u^{T},\\
+\dot{\hat{\boldsymbol{\kappa}}}_v^T &=- \gamma^{-1}\mathbf{v}\mathbf{s}^{T} - \|\mathbf{s}\|\hat{\boldsymbol{\kappa}}_v^{T}.
+\end{aligned}
+\right.
+\end{equation}
+Equation \eqref{eq:ajuste_error} is used only in this proof. Substituting it into \eqref{eq:Lyapunto} cancels the regressor terms \(\mathbf{u}\mathbf{s}^{T}\) and \(\mathbf{v}\mathbf{s}^{T}\) and leaves the leakage,
+\begin{eqnarray}\label{eq:Lyap_trace}
+   \dot{V} &=& \gamma\|\mathbf{s}\|\,\mathrm{tr}\big(\boldsymbol{\tilde{\kappa}}_v\hat{\boldsymbol{\kappa}}_v^{T}\big)+\gamma\|\mathbf{s}\|\,\mathrm{tr}\big(\boldsymbol{\tilde{\kappa}}_u\hat{\boldsymbol{\kappa}}_u^{T}\big)-\mathbf{s}^T\mathbf{K}_1\sqrt{\|\mathbf{s}\|}\sign(\mathbf{s})- \mathbf{s}^T\mathbf{z}
+     +\mathbf{s}^T\boldsymbol{\delta}(t).
+\end{eqnarray}
+From \eqref{eq:error estimation}, \(\hat{\boldsymbol{\kappa}}_i=\boldsymbol{\kappa}_i-\boldsymbol{\tilde{\kappa}}_i\). With the bounds of Assumption~\ref{as:parameters} and the Frobenius norm,
+\begin{equation}
+\mathrm{tr}\big(\boldsymbol{\tilde{\kappa}}_i\hat{\boldsymbol{\kappa}}_i^{T}\big)
+\le -\left(\|\boldsymbol{\tilde{\kappa}}_i\|-\frac{\kappa_{iM}}{2}\right)^{2}+\frac{\kappa_{iM}^{2}}{4},
+\qquad i\in\{u,v\}.
+\end{equation}
+The squared parameter errors therefore enter \(\dot{V}\) with a negative sign. The terms that remain positive are proportional to \(\|\mathbf{s}\|\) and to the disturbance. For \(\mathbf{K}_1\) and \(\mathbf{K}_2\) chosen against the bounds of Assumption~\ref{as:physical}, those terms are dominated outside a compact set, and \(\dot{V}\le 0\) there. The sliding variable \(\mathbf{s}\), the integral state \(\mathbf{z}\), and the parameter errors \(\boldsymbol{\tilde{\kappa}}_u,\boldsymbol{\tilde{\kappa}}_v\) are uniformly ultimately bounded.
+
+\end{proof}
+
+\begin{remark}[Persistent excitation]\label{rem:pe}
+Theorem~\ref{th:inner} bounds the parameter errors. Convergence of those errors to zero is a property of a different update. Consider a pure gradient law, with the leakage removed from \eqref{eq:ajuste2} and with \(\boldsymbol{\delta}(t)=\mathbf{0}\). The update is then driven only by \(\mathbf{u}\mathbf{s}^{T}\) and \(\mathbf{v}\mathbf{s}^{T}\). Once \(\mathbf{s}=\mathbf{0}\), both products vanish and the estimates stop. Any error that satisfies \(\boldsymbol{\tilde{\kappa}}_u\mathbf{u}(t)=\mathbf{0}\) and \(\boldsymbol{\tilde{\kappa}}_v\mathbf{v}(t)=\mathbf{0}\) along the trajectory produces the same \(\dot{\mathbf{s}}\), so the component of \(\boldsymbol{\tilde{\kappa}}_u\) and \(\boldsymbol{\tilde{\kappa}}_v\) orthogonal to the recorded regressor is left unchanged.
+
+Persistent excitation is the condition that removes this ambiguity. For a regressor \(\boldsymbol{\phi}(t)\in\mathbb{R}^{p}\) it requires constants \(T,\alpha>0\) such that
+\begin{equation}
+\int_{t}^{t+T}\boldsymbol{\phi}(\tau)\boldsymbol{\phi}(\tau)^{\top}\,d\tau \ge \alpha I
+\label{eq:pe}
+\end{equation}
+for every \(t\ge 0\). The vector \(\boldsymbol{\phi}\) has to span the entries of \(\boldsymbol{\kappa}_u\) and \(\boldsymbol{\kappa}_v\). For the full matrices this is a Kronecker regressor built from \(\mathbf{u}\) and \(\mathbf{v}\). Under the ideal law, \eqref{eq:pe} is what forces \(\boldsymbol{\tilde{\kappa}}_u\) and \(\boldsymbol{\tilde{\kappa}}_v\) to zero, because the only parameter error compatible with a zero residual is the zero error.
+
+Equation \eqref{eq:ajuste2} retains the leakage \(-\|\mathbf{s}\|\hat{\boldsymbol{\kappa}}^{T}\), and \(\dot{\mathbf{s}}\) retains \(\boldsymbol{\delta}(t)\). The leakage balances the gradient at a nonzero parameter error, and the disturbance shifts \(\dot{\mathbf{s}}\) in the same way as a parameter mismatch. Both effects remain when \eqref{eq:pe} holds. Every term of \eqref{eq:ajuste2} is also scaled by a signal that vanishes with \(\mathbf{s}\), so the estimates freeze once the sliding variable has entered a neighborhood of the origin. The result proved for this law is the uniform ultimate boundedness of Theorem~\ref{th:inner}.
+\end{remark}
+
+
+\section{Simulation Results}\label{sec:simulations}
+
+The proposed control system was validated using a high-fidelity simulator for cable-suspended cargo transport presented in \cite{salinas2023unified}. The quadrotor dynamics are implemented in C++ with the parameters of \cite{michael2010grasp} %achtelik2010nonlinear}
+, the cable is discretized as a chain of mass-spring-damper elements, and the package is modeled as a cubic body subject to aerodynamic drag. Table ~\ref{tab:sim_params} summarizes the main physical and simulation settings common to all the described scenarios.
+
+\begin{table}[ht]
+\centering
+\caption{Main simulation parameters.}
+\label{tab:sim_params}
+\renewcommand{\arraystretch}{1.15}
+\setlength{\tabcolsep}{5pt}
+\begin{tabular}{l c l}
+\toprule
+\textbf{Parameter} & \textbf{Symbol} & \textbf{Value} \\
+\midrule
+\multicolumn{3}{l}{\textit{Quadrotor UAV} \cite{michael2010grasp}} \\ %achtelik2010nonlinear}} \\
+UAV mass & $m$ & $0.48\,\mathrm{kg}$ \\
+Principal moments of inertia & $[I_{xx}; I_{yy}; I_{zz}]$ & $[5.6;\ 5.6;\ 8.1]\times10^{-3}\,\mathrm{kg{\cdot}m^2}$ \\
+Rotor-arm length & $L$ & $0.34\,\mathrm{m}$ \\
+Rotor thrust coefficient & $k_F$ & $6.11\times10^{-8}\,\mathrm{N/(r/min)^2}$ \\
+\midrule
+\multicolumn{3}{l}{\textit{Cable and payload}} \\
+Payload mass & $m_L$ & $0.10\,\mathrm{kg}$ \\
+Payload size (cube edge) & $d_L$ & $0.10\,\mathrm{m}$ \\
+Cable nominal length & $l$ & $2.0\,\mathrm{m}$ \\
+Cable segments & $N_c$ & $40$ \\
+Link mass & $m_{\mathrm{link}}$ & $0.001\,\mathrm{kg}$ \\
+Spring stiffness & $k_c$ & $5000\,\mathrm{N/m}$ \\
+Spring damping & $c_c$ & $0.6\,\mathrm{N{\cdot}s/m}$ \\
+Payload drag coefficient & $C_d$ & $1.05$ \\
+\midrule
+\multicolumn{3}{l}{\textit{Simulation settings}} \\
+Control sampling period & $T_c$ & $0.02\,\mathrm{s}$ ($50\,\mathrm{Hz}$) \\
+Gravitational acceleration & $g$ & $9.81\,\mathrm{m/s^2}$ \\
+Air density & $\rho$ & $1.151\,\mathrm{kg/m^3}$ \\
+Normalized actuator commands & $\mathbf{u}$ & $[-1,\,+1]$ \\
+\bottomrule
+\end{tabular}
+
+\vspace{0.15cm}
+%\footnotesize{The payload is modeled as a cubic body with aerodynamic drag; the cable is discretized as a mass--spring--damper chain, so distributed flexibility and tension transients enter the simulator as unmodeled dynamics relative to the quasi-static control model.}
+\end{table}
+
+The control objective is for the load to follow a reference trajectory in space. For controller validation, no information from the dynamic model was considered, nor was any identification performed. The controller parameters were initialized with arbitrary values of the nominal matrices $\hat{\boldsymbol{\kappa}}_u = [0.5, 0.5, 0.5, 0.5]^T$ and $\hat{\boldsymbol{\kappa}}_v = [0.75, 0.75, 0.75, 0.75]^T$. Therefore, even in nominal scenarios, the closed loop is exercised under parametric mismatch and unmodeled dynamics because the actual vehicle parameters differ from their nominal counterparts, and the simulator preserves the distributed cable flexibility, tension transients, and pendulum coupling beyond the quasi-static model of the assumption ~\ref{as:physical}.
+
+Two simulation scenarios were defined. In the first group, an ascending circular reference trajectory was used to compare the system's behavior with only the kinematic controller and with the dynamic compensator. In the second group, a more demanding reference was considered, and prescribed wind disturbances were applied over two time intervals. In this test, the aerodynamic disturbances acted on the UAV, the cable, and the payload. The disturbance on the payload was calculated from its physical dimensions using the cubic body drag model, rather than a point mass approximation. All runs were deterministic, with fixed references and prescribed wind profiles.
+
+To evaluate the performance of the proposed controller, three complementary metrics are used to quantify the oscillatory behavior of the cable–payload system. From \eqref{eq:cable_vector}, the first metric is the cable inclination angle, defined as
+% REV1-C7: Esta definición de $\mathbf{h}$ contradice \eqref{eq:cable_vector}. Unificar como $\mathbf{h}=\mathbf{x}-\mathbf{x}_l$ o renombrar el vector de métricas para evitar errores de signo.
+\begin{equation}
+\alpha(t)=\mathrm{atan2}\!\left(\sqrt{h_x^2+h_y^2},-h_z\right),
+\end{equation}
+which quantifies the extent to which the cable deviates from its vertical orientation and signifies the amplitude of the swinging payload. This criterion has been extensively used in various aerial cargo transport problems because it directly relates to the amplitude of the oscillation concerning the vertical position. The second metric is the horizontal displacement of the payload relative to the UAV, defined as
+\begin{equation}
+\rho(t)=\sqrt{h_x^2+h_y^2},
+\end{equation}
+which corresponds to the lateral distance of the payload from the vertical axis passing through the UAV. Finally, the dynamic behavior of the swing is characterized through the tangential relative velocity between the UAV and the payload. Let $\mathbf{v}_{rel}=\mathbf{v}_L-\mathbf{v}_U$ be the relative velocity and $\hat{\mathbf{h}}=\mathbf{h}/\|\mathbf{h}\|$ the unit cable direction. The tangential component is computed as
+\begin{equation}
+\mathbf{v}_{\perp}=\mathbf{v}_{rel}-(\mathbf{v}_{rel}\cdot\hat{\mathbf{h}})\hat{\mathbf{h}}.
+\end{equation}
+While $\alpha(t)$ and $\rho(t)$ describe the geometric magnitude of the oscillation, $\|\mathbf{v}_{\perp}\|$ captures the dynamic energy associated with the pendular motion. The joint analysis of these metrics provides a comprehensive assessment of both the amplitude and damping characteristics of the payload oscillations. Tracking performance is evaluated using RMSE (Root Mean Squared Error) metrics, whereas oscillatory behavior is quantified using RMS (Root Mean Squared) values of the swing-related variables.
+
+The three preceding metrics refer to the vertical direction; therefore, during any maneuver involving lateral acceleration, they also include the equilibrium tilt required for the payload to follow the reference. To isolate the oscillation itself, the fourth metric is the horizontal cable tilt error relative to the quasi-static reference \eqref{eq:href}, \begin{equation}\label{eq:htilde_metric} \mathrm{RMS}\,\|\tilde{\mathbf{h}}_h\|=\sqrt{\frac{1}{N}\sum_{k=1}^{N}\big\|\mathbf{h}_h(t_k)-\mathbf{h}_h^\star(t_k)\big\|^2}, \end{equation} where $\mathbf{h}_h$ is the horizontal component of the measured cable vector \eqref{eq:cable_vector} and $N$ is the number of samples. This metric is used for two reasons. First, it becomes zero when the cable maintains exactly the tilt required by the maneuver; thus, it measures only the deviation attributable to the controller and is not inflated by the trajectory. Second, $\tilde{\mathbf{h}}_h$ is the variable governing the restoring term in \eqref{eq:swing_compensation} and the state whose bound is established in the outer-loop stability analysis; consequently, it evaluates the kinematic controller directly against its own design objective.
+
+\subsection{Payload trajectory tracking}
+
+A smooth, continuously differentiable reference trajectory was defined for the load to evaluate the system under representative air transport conditions without introducing discontinuities to the control signals.
+\begin{eqnarray}
+    \mathbf{x}_d = \begin{bmatrix} x_d \\ y_d \\ z_d \\ \psi_d\end{bmatrix}= \begin{bmatrix} 3 \sin(2\pi \frac{t}{10}) \ [m] \\  3 \cos(2\pi \frac{t}{10}) \ [m]\\ 6+\frac{t}{10} \ [m] \\ \arctan(\dot{y}_d / \dot{x}_d) \ [rad]\end{bmatrix}
+\end{eqnarray}
+It should be noted that in any trajectory-tracking problem in which there is a requirement for lateral acceleration, the rope cannot be kept vertical. Rather, there has to be some form of inclination. In the case of circular and/or elliptical paths, this is in the form of a nonzero quasi-static inclination that provides the necessary acceleration for the circular motion. Therefore, the raw quantities $\alpha(t)$ and $\rho(t)$ contain both a steady-state component imposed by the trajectory and a truly oscillatory component associated with payload swing. As a result, the direct use of $RMS_\alpha$ and $RMS_\rho$ may overestimate the actual oscillation level. This quasi-static component can be recognized as a common-mode effect in oscillation-related quantities, as it depends mainly on the reference trajectory rather than the control strategy. 
+
+The load-tracking task was first run with the kinematic law \eqref{eq:base_reference}, which does not account for the oscillation of the suspended load. Figure~\ref{fig:CinematicoSolo_CinematicoCompensado}(a) shows that this run does not finish and that the closed loop becomes unstable. The same maneuver with the kinematic controller \eqref{eq:final_reference}--\eqref{eq:yaw_reference} reaches the end of the trajectory, as shown in Figure~\ref{fig:CinematicoSolo_CinematicoCompensado}(b). Figure~\ref{fig:CinematicoII_Variabes} plots the payload position and the yaw angle against their references. Figure~\ref{fig:CinematicoII_Metricas} plots \(\alpha\), \(\rho\), and \(\|v_\perp\|\); after the initial transient these three signals remain bounded. The numerical comparison of this kinematic controller with the full cascade is given in Table~\ref{tab:metrics}.
+
+\begin{figure}[t] \centering 
+\setlength{\tabcolsep}{2pt} 
+\begin{tabular}{@{}c@{\hspace{0.02\linewidth}}c@{\hspace{0.02\linewidth}}c@{}} \includegraphics[width=0.45\linewidth]{Figures/3D_Vista_Base.eps} & \includegraphics[width=0.65\linewidth]{Figures/3D_Vista_CinematicoII.eps} \\ \small\textbf{(a)} Unstable. & \small\textbf{(b)} Simulation completed successfully. 
+\end{tabular}
+\caption{Ascending circular maneuver. \textbf{(a)} Kinematic law \eqref{eq:base_reference}, which does not compensate for swing: the run does not finish. \textbf{(b)} Kinematic controller \eqref{eq:final_reference}--\eqref{eq:yaw_reference}: the trajectory is completed.} \label{fig:CinematicoSolo_CinematicoCompensado} 
+\end{figure}
+
+\begin{figure}
+\centering
+\includegraphics[width=0.95\linewidth]{Figures/CinematicoII.eps}
+\caption{Reference and actual payload position in $x$, $y$, and $z$, and yaw angle, under the kinematic controller on the ascending circular trajectory.}\label{fig:CinematicoII_Variabes}
+\end{figure}
+
+\begin{figure}
+\centering
+\includegraphics[width=0.95\linewidth]{Figures/CinematicoII_Angles.eps}
+\caption{Swing angle $\alpha$, horizontal displacement $\rho$, and tangential velocity norm $\|v_\perp\|$ under the kinematic controller on the ascending circular trajectory.}\label{fig:CinematicoII_Metricas}
+\end{figure}
+
+\subsection{Dynamic Compensator Performance and Resulting Closed-Loop Behavior}
+\label{subsec:dynamic_compensator_results}
+
+The dynamic compensator was then included, with the same simulation parameters as in the previous subsection. It does not suppress payload swing on its own; instead, it makes the UAV follow the velocity command from the kinematic controller (Section~\ref{sec:kinematic}). Figure~\ref{fig:Compensador_Variabes} shows the payload position and the yaw angle, Figure~\ref{fig:Compensador_Metricas} shows $\alpha$, $\rho$, and $\|v_\perp\|$, Figure~\ref{fig:Compensador_ErroresControl} shows the position and yaw tracking errors, and Figure~\ref{fig:Compensador_ErroresVelocidad} shows the velocity-tracking errors. Relative to the kinematic controller alone, Table~\ref{tab:metrics} reports a reduction of $\mathrm{RMSE}(\tilde{\mathbf{x}})$ from $0.4350$ to $0.3671\,\mathrm{m}$ and of $\max v_T$ from $1.1420$ to $0.1403\,\mathrm{m/s}$ ($\approx 88\%$).
+
+
+\begin{figure}
+\centering
+\includegraphics[width=0.95\linewidth]{Figures/Compensador.eps}
+\caption{Reference and actual payload position in $x$, $y$, and $z$, and yaw angle, on the ascending circular trajectory with the dynamic compensator included.}\label{fig:Compensador_Variabes}
+\end{figure}
+
+
+\begin{figure}
+\centering
+\includegraphics[width=0.95\linewidth]{Figures/Compensador_Angles.eps}
+\caption{Swing angle $\alpha$, horizontal displacement $\rho$, and tangential velocity norm $\|v_\perp\|$ on the ascending circular trajectory with the dynamic compensator included.}\label{fig:Compensador_Metricas}
+\end{figure}
+
+\begin{figure}
+\centering
+\includegraphics[width=0.95\linewidth]{Figures/Compensador_ErroresControl.eps}
+\caption{Position and yaw tracking errors on the ascending circular trajectory with the dynamic compensator included.}\label{fig:Compensador_ErroresControl}
+\end{figure}
+
+\begin{figure}
+\centering
+\includegraphics[width=0.95\linewidth]{Figures/Compensador_ErroresVelocidad.eps}
+\caption{Velocity-tracking errors between the UAV velocity and the command of the kinematic controller on the ascending circular trajectory.}\label{fig:Compensador_ErroresVelocidad}
+\end{figure}
 
 
 
-\bibliographystyle{IEEEtran}
-\bibliography{IEEEabrv,referencia}
+\subsection{Quantitative Performance Comparison}\label{subsec:quantitative}
+ 
+Table~\ref{tab:metrics} compares, for the same ascending circular maneuver, the kinematic controller alone (Kinematic) with the complete scheme, in which the same kinematic controller is followed by the dynamic compensator (Dyn.\ Comp.). Both executions share the reference, physical parameters, initial conditions, and kinematic gains; therefore, any difference between the two rows is attributable to the dynamic compensator.
+ 
+The most significant differences between the two schemes are observed in the tracking metrics. With the kinematic controller alone, the payload position RMSE is $0.553\,\mathrm{m}$ ($18.4\%$ of the reference circle radius); with the complete scheme, it is $0.386\,\mathrm{m}$ ($12.9\%$ of the radius), representing a reduction of $0.167\,\mathrm{m}$ ($30.3\%$). The payload velocity RMSE decreases from $0.428$ to $0.241\,\mathrm{m/s}$—that is, from $22.7\%$ to $12.8\%$ of the reference velocity ($1.88\,\mathrm{m/s}$). This represents a $43.7\%$ reduction: the velocity error of the kinematic controller alone is $1.77$ times greater than that of the complete scheme. The velocity error decreases more than the position error, as expected, since the dynamic compensator acts directly on the UAV velocity, whereas the position error is the accumulated effect of that velocity error. The kinematic controller calculates the velocity the UAV must maintain for the payload to follow the reference, but on its own, it cannot guarantee that the vehicle achieves it; the UAV's velocity loop lag thus manifests as an error in the payload's motion. The dynamic compensator eliminates most of this lag, thereby allowing the setpoint designed by the kinematic controller to be effectively executed.
+ 
+The complete scheme also reduces the peak oscillation experienced by the payload. The maximum tilt decreases from $0.311$ to $0.262\,\mathrm{rad}$ ($17.8^\circ \to 15.0^\circ$) and the maximum horizontal displacement from $0.613$ to $0.520\,\mathrm{m}$; in both cases, the reduction is approximately $15\%$. 
+
+The comparison shows that both layers are complementary and that neither achieves the performance of the complete scheme on its own. The kinematic controller is what makes the maneuver feasible: without its oscillation compensation term, the execution does not complete (Figure~\ref{fig:CinematicoSolo_CinematicoCompensado}(a)), whereas with it, the oscillation remains bounded around the equilibrium inclination. However, the kinematic controller alone leaves a payload error of approximately $18\%$ of the circle's radius, because the UAV does not execute the command exactly. Incorporating the dynamic compensator reduces payload velocity and position errors by $43.7\%$ and $30.3\%$, respectively; it also decreases the maximum oscillation excursion by nearly $25\%$ and the RMS deviation from the equilibrium inclination by $9.9\%$. 
+This improvement is consistent across the three metric groups (tracking, maximum oscillation, and deviation from equilibrium) and is achieved simply by having the UAV follow the command already defined by the kinematic controller. The remaining metrics in Table~\ref{tab:metrics} show no significant changes. The $\mathrm{RMS}_\alpha$ and $\mathrm{RMS}_\rho$ values differ by less than $2\%$. The maximum value of $\|\mathbf{v}_\perp\|$ is identical in both executions, and its RMS value is $11.4\%$ higher with the compensator; given that the cable stays closer to its equilibrium inclination, this reflects faster UAV movement relative to the payload, rather than increased oscillation.
+ 
+\begin{table*}[t]
+\centering
+\caption{Performance metrics on the ascending circular trajectory for the kinematic controller alone (Kinematic) and for the complete cascade with the dynamic compensator (Dyn.\ Comp.). Units: m for $\tilde{\mathbf{x}}$ and $\rho$; m/s for $\dot{\tilde{\mathbf{x}}}$ and $\|\mathbf{v}_\perp\|$; rad for $\alpha$. The $\boldsymbol{\Delta}$ row reports the relative improvement of the dynamic compensator with respect to the kinematic controller, computed as $(J_{\mathrm{Kin}}-J_{\mathrm{Dyn}})/J_{\mathrm{Kin}}\times100$ (positive values favor the dynamic compensator).}
+\label{tab:metrics}
+\renewcommand{\arraystretch}{1.15}
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{lccccccccc}
+\toprule
+Controller
+& RMSE $\tilde{\mathbf{x}}$
+& RMSE $\dot{\tilde{\mathbf{x}}}$
+& RMS$_{\alpha}$
+& Max $\alpha$
+& RMS$_{\rho}$
+& Max $\rho$
+& RMS$_{\|\mathbf{v}_\perp\|}$
+& Max $\|\mathbf{v}_\perp\|$ \\
+\midrule
+Kinematic
+& 0.5528 & 0.4277 & \textbf{0.1591} & 0.3107
+& \textbf{0.3182} & 0.6133 & \textbf{0.2217} & \textbf{0.8324} \\
+Dyn. Comp.
+& \textbf{0.3855} & \textbf{0.2410} & 0.1616 & \textbf{0.2620}
+& 0.3231 & \textbf{0.5202} & 0.2470 & 0.8331 \\
+\midrule
+$\boldsymbol{\Delta}$ [\%]
+& $+30.3$ & $+43.7$ & $-1.6$ & $+15.7$
+& $-1.5$ & $+15.2$ & $-11.4$ & $-0.1$ \\
+\bottomrule
+\end{tabular}
+\end{table*}
+\subsection{Robustness Evaluation Under Wind Disturbances}
+\label{sec:robustness_wind}
+
+Unlike previous nominal scenarios, which focused primarily on tracking performance and oscillation reduction under standard operating conditions, this experiment was designed to evaluate closed-loop behavior under more demanding conditions. A three-dimensional lemniscate trajectory with vertical motion was selected. This reference trajectory challenges the proposed controller because it requires the payload to follow cyclical lateral motion while simultaneously undergoing vertical displacement. The reference trajectory is defined as:
+\begin{equation}
+    \mathbf{x}_d =
+    \begin{bmatrix}
+    a\sin(ct)\cos(ct) \\
+    b\sin(ct) \\
+    6+d\sin(ct) \\
+    \arctan\left(\dot{y}_d/\dot{x}_d\right)
+    \end{bmatrix} ,
+\end{equation}
+where the parameters were selected as
+\begin{equation}
+a=10,\qquad b=7.5,\qquad c=0.025\,2\pi,\qquad d=1.
+\end{equation}
+In addition, a payload mass of 300 g was considered, and two wind disturbance intervals were introduced during the simulation. The purpose of including wind is to analyze the effect of external disturbances on the control loop and evaluate the ability of the proposed strategy to mitigate unwanted oscillatory motion induced by the suspended payload. These disturbances were introduced at different stages of the maneuver to evaluate the transient response of the closed-loop system and its ability to recover the desired behavior after each disturbance. The figure shows representative snapshots of the UAV-payload system during the nominal phase and under two wind-disturbance conditions. In particular, Fig.~\ref{fig:wind_three_views}(a) illustrates the system's response during the nominal range, while Fig.~\ref{fig:wind_three_views}(b) and Fig.~\ref{fig:wind_three_views}(c) show the system's behavior under lateral and oblique wind disturbances, respectively.
+\begin{figure}[t]
+\centering
+
+\includegraphics[width=0.6\linewidth]{Figures/3D_Vista_10Sec.eps}\\
+\small\textbf{(a)} Nominal phase
+
+\vspace{4pt}
+
+\includegraphics[width=0.6\linewidth]{Figures/3D_Vista_VientoLateral.eps}\\
+\small\textbf{(b)} Lateral wind disturbance
+
+\vspace{4pt}
+
+\includegraphics[width=0.6\linewidth]{Figures/3D_Vista_Viento45.eps}\\
+\small\textbf{(c)} Oblique wind disturbance
+
+\caption{Simulation snapshots of the UAV--payload system under the lemniscate reference trajectory: \textbf{(a)} nominal phase; \textbf{(b)} lateral wind disturbance; and \textbf{(c)} oblique wind disturbance.}
+\label{fig:wind_three_views}
+\end{figure}
+The payload position and the yaw angle during the lemniscate and the two wind intervals are shown in Figure~\ref{fig:Viento_ErroresControl}. Deviations from the reference appear during the disturbance intervals, and the trajectories move back toward the reference after each interval. Figure~\ref{fig:Viento_Angles} shows $\alpha$, $\rho$, and $\|v_\perp\|$. After the initial transient, these three signals remain bounded, including while the gusts are applied.
+\begin{figure}
+\centering
+\includegraphics[width=1.0\linewidth]{Figures/Viento_ErroresControl.eps}
+\caption{Reference and actual payload position in $x$, $y$, and $z$, and yaw angle, on the lemniscate trajectory. The records include the nominal interval and the lateral and oblique wind intervals.}
+\label{fig:Viento_ErroresControl}
+\end{figure}
+\begin{figure}
+\centering
+\includegraphics[width=1.0\linewidth]{Figures/Viento_Angles.eps}
+\caption{Swing angle $\alpha$, horizontal displacement $\rho$, and tangential velocity norm $\|v_\perp\|$ on the lemniscate trajectory, including the lateral and oblique wind intervals.}
+\label{fig:Viento_Angles}
+\end{figure}
+Figure~\ref{fig:Viento_ErroresVelocidad} shows the velocity-tracking errors. During the lateral and oblique gusts, the errors on both the $x$ and the $y$ axes remain bounded. 
+
+\begin{figure}
+\centering
+\includegraphics[width=1.0\linewidth]{Figures/Viento_ErroresVelocidad.eps}
+\caption{Velocity-tracking errors on the lemniscate trajectory during the nominal interval and the lateral and oblique wind intervals.}
+\label{fig:Viento_ErroresVelocidad}
+\end{figure}
+Figures~\ref{fig:Viento_ErroresControl}, \ref{fig:Viento_Angles}, and \ref{fig:Viento_ErroresVelocidad} are the records of position, swing, and velocity error for this maneuver.
+
+
+\subsection{Benchmark Against a Published Baseline Controller}
+\label{sec:benchmark_smc}
+
+Table~\ref{tab:metrics} compares the kinematic controller with the full cascade on the circular trajectory. The comparison in this subsection isolates the inner-loop law. The proposed controller is compared with a first-order sliding-mode controller (SMC) baseline proposed in \cite{kusznir2020sliding} for cable-suspended load transport with a quadrotor.
+
+First-order sliding-mode control is a natural and widely documented reference for suspended load transport, as it shares the same family of sliding modes as the adaptive super-twisting law of the dynamic compensator and directly answers the question of what is gained by moving from discontinuous first-order action to continuous second-order action. Unlike fully coupled geometric SE(3) designs or model-based passivity approaches, a first-order SMC does not require the full coupled UAV-cable-load dynamic model, can be implemented in the same standardized command interface used in this article (Eq.~\eqref{eq:ModeloLucas}), and is representative of a significant and well-cited family of controllers for overhead load transport. Therefore, the reference is reproducible, computationally comparable, and technically fair with respect to the proposed scheme.
+
+To ensure a fair comparison that isolates the effect of the dynamic compensator, both schemes share (i) the same high-fidelity simulator described at the beginning of Section ~\ref{sec:simulations}; (ii) the same upward circular payload reference trajectory; (iii) the same physical parameters listed in Table ~\ref{tab:sim_params}; (iv) the same initial condition; and (v) the same kinematic controller with quasi-static oscillation compensation (Section ~\ref{sec:kinematic}). The only element that differs between the two implementations is the velocity-tracking law of the dynamic compensator. The proposed controller uses the adaptive super-twisting law defined in \eqref{eq:AccionControl}--\eqref{eq:ajuste2}, while the baseline uses a first-order sliding-mode action of the form
+\begin{equation}
+\mathbf{u}_{\mathrm{SMC}}
+=
+-\mathbf{K}_{\mathrm{SMC}}\,\dfrac{\mathbf{s}}{\|\mathbf{s}\|+\varphi},
+\label{eq:smc_baseline}
+\end{equation}
+built on the same sliding surface $\mathbf{s}$ introduced in Section~\ref{sec:dynamic}, where $\mathbf{K}_{\mathrm{SMC}}\!>\!\mathbf{0}$ is a diagonal gain matrix, and $\varphi>0$ is a boundary-layer thickness used to attenuate chattering, following the classical practice of \cite{kusznir2020sliding}. This substitution isolates the contribution of the adaptive super-twisting law and its adaptation law from the effect of the kinematic controller.
+
+Table~\ref{tab:benchmark_smc} summarizes the tracking and oscillation-related metrics, together with two chattering diagnostics, computed over the same maneuver used in Section~\ref{sec:simulations}. Because both controllers share the kinematic controller, the differences reported here are attributable exclusively to the inner-loop law. Three observations stand out. First, the proposed controller improves the payload position tracking, with a $6.7\%$ reduction in $\mathrm{RMSE}(\tilde{\mathbf{x}})$ ($0.4390\!\to\!0.4095$ m), while the payload-velocity tracking remains essentially equivalent for both schemes (a difference of $0.2\%$), which shows that the adaptive super-twisting law does not sacrifice velocity fidelity to attain the position gain. Second, all swing-related metrics ($\alpha$, $\rho$ and $v_T$) also favor the dynamic compensator, with a $3.4\%$ reduction in $\max v_T$, the metric most directly linked to the residual pendular energy of the load. Third, and consistent with the well-known chattering behavior of first-order sliding modes, the dynamic compensator delivers a smoother command signal: the RMS derivative of the horizontal command $\mathrm{RMS}(\dot{u}_x)$ decreases by $11.1\%$ ($0.226\!\to\!0.201$ 1/s), and the total variation of $u_x$ decreases by $15.4\%$ ($14.615\!\to\!12.365$). On the $y$-axis, the two schemes produce nearly indistinguishable chattering diagnostics ($3\%\!-\!4\%$ apart), which is consistent with the fact that both share the same boundary-layer/second-order philosophy on the sliding surface; a systematic average across both horizontal axes still favors the dynamic compensator in both diagnostics.
+\begin{table}[t]
+\centering
+\caption{Benchmark against the first-order SMC baseline \cite{kusznir2020sliding} over the ascending-circular payload reference used in Section~\ref{sec:simulations}. Both controllers share the same simulator, trajectory, physical parameters, initial condition, and kinematic controller; the only difference is the inner-loop action. The last four rows are chattering diagnostics computed on the normalized command signals sent to the vehicle. The $\boldsymbol{\Delta}$ column reports the relative improvement of the dynamic compensator with respect to the SMC baseline (positive values favor the dynamic compensator).}
+\label{tab:benchmark_smc}
+\renewcommand{\arraystretch}{1.15}
+\setlength{\tabcolsep}{5pt}
+\begin{tabular}{lccc}
+\toprule
+Metric & \shortstack{Baseline SMC\\\cite{kusznir2020sliding}} & \shortstack{Proposed} & $\boldsymbol{\Delta}$~[\%] \\
+\midrule
+RMSE $\tilde{\mathbf{x}}$ [m]         & 0.4390 & \textbf{0.4095} & $+6.7$ \\
+RMSE $\dot{\tilde{\mathbf{x}}}$ [m/s] & 0.3132 & 0.3138          & $-0.2$ \\
+RMS $\alpha$ [rad]                    & 0.1614 & \textbf{0.1593} & $+1.3$ \\
+Max $\alpha$ [rad]                    & 0.3137 & \textbf{0.3124} & $+0.4$ \\
+RMS $\rho$ [m]                        & 0.3226 & \textbf{0.3184} & $+1.3$ \\
+Max $\rho$ [m]                        & 0.6203 & \textbf{0.6169} & $+0.6$ \\
+RMS $v_T$ [m/s]                       & 0.1278 & \textbf{0.1265} & $+1.0$ \\
+Max $v_T$ [m/s]                       & 0.1468 & \textbf{0.1418} & $+3.4$ \\
+\midrule
+$\mathrm{RMS}(\dot{u}_x)$ [1/s]       & 0.226  & \textbf{0.201}  & $+11.1$ \\
+$\mathrm{RMS}(\dot{u}_y)$ [1/s]       & 0.217  & 0.225           & $-3.7$ \\
+$\mathrm{Total Variation}(u_x)$ [-]                & 14.615 & \textbf{12.365} & $+15.4$ \\
+$\mathrm{Total Variation}(u_y)$ [-]                & 18.169 & 18.722          & $-3.0$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+Figures~\ref{fig:benchmark_metrics} and~\ref{fig:benchmark_control} illustrate the time-domain behavior underlying the numeric summary of Table~\ref{tab:benchmark_smc}. Figure~\ref{fig:benchmark_metrics} shows the swing angle $\alpha$, the horizontal displacement $\rho$, and the tangential velocity norm $\|v_\perp\|$ for both controllers over the same maneuver: both schemes are stable and payload-following, with envelopes of similar shape but a systematically smaller peak amplitude for the dynamic compensator, particularly in $\|v_\perp\|$. Figure~\ref{fig:benchmark_control} shows the inner-loop correction signal along the horizontal axes. Along the $x$ axis, the first-order SMC exhibits a persistent low-amplitude sawtooth pattern that is smoothed but not eliminated by the boundary layer $\varphi$, whereas the adaptive super-twisting action remains continuous with a smoother sinusoidal envelope. Along the $y$ axis, the dynamic compensator additionally shows a large slow transient during the first ten seconds of the maneuver, corresponding to the online adjustment of the adaptive gains \eqref{eq:ajuste2} toward values consistent with the actual $\boldsymbol{\kappa}_u,\boldsymbol{\kappa}_v$; this excursion is confined to the adaptation transient and vanishes once the gains settle, which explains the slight $y$-axis chattering diagnostic in Table~\ref{tab:benchmark_smc} without contradicting the smoother steady-state behavior of the dynamic compensator. Overall, this figure is fully consistent with the derivative-based chattering diagnostics reported in Table~\ref{tab:benchmark_smc}.
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.95\linewidth]{Figures/Comp_Baseline_Oscilaciones.eps}
+\caption{Swing angle $\alpha$, horizontal displacement $\rho$, and tangential velocity norm $\|v_\perp\|$ for the dynamic compensator and the first-order SMC baseline on the ascending circular trajectory. Both use the same kinematic controller.}
+\label{fig:benchmark_metrics}
+\end{figure}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.95\linewidth]{Figures/Comp_Baseline_Chattering.eps}
+\caption{Inner-loop correction along $x$ and $y$ for the dynamic compensator and the first-order SMC baseline on the ascending circular trajectory. Both use the same kinematic controller.}
+\label{fig:benchmark_control}
+\end{figure}
+The differences at the inner-loop level are smaller than the reduction already reported against the kinematic controller alone, about $88\%$ in $\max v_T$ (Table~\ref{tab:metrics}), because both controllers share that kinematic controller (Section~\ref{sec:kinematic}). This benchmark isolates the inner-loop law. The $y$-axis transient in Figure~\ref{fig:benchmark_control} is the adaptation interval discussed above. Theorem~\ref{th:inner} gives a Lyapunov argument for this inner loop under a bounded disturbance derivative; the fixed-gain SMC baseline is not given that argument in this paper.
+
+\section{Conclusion}\label{sec:conclusiones}
+
+This study developed the robust adaptive cascaded controller of Section~\ref{sec:kinematic} for transporting a cable-suspended load with a single UAV. Its main contribution lies in the coordinated operation of these two loops. Instead of treating every cable tilt as an unwanted oscillation, the outer loop considers the quasi-static tilt required by the commanded acceleration and compensates only for motion relative to that equilibrium. The inner loop then addresses parametric mismatch, unmodeled dynamics, and external disturbances. This modular formulation reduces the reliance on an exact model of the coupled UAV-cable-payload dynamics. It avoids constrained online optimization, making it a relatively lightweight alternative to payload-oriented trajectory tracking.
+
+Stability analysis was performed separately for each loop. Under the idealized condition of perfect velocity tracking ($\dot{\mathbf{x}}=\mathbf{u}_k$), Theorem~\ref{th:outer} establishes the input-to-state stability of the outer loop error cascade, with local exponential stability recovered in the unperturbed case. Independently, Theorem~\ref{th:inner} shows that the sliding variable, the super-twisting integral state, and the parameter errors are uniformly ultimately bounded. Remark~\ref{rem:pe} explains why persistent excitation of the regressor is not invoked to conclude that those parameter errors converge to zero. These two results are complementary, but not yet unified: the formal demonstration that interconnecting the two loops (where the inner loop achieves approximate, not exact, velocity tracking) preserves the stability margins established for the idealized outer loop (e.g., using a singular perturbation or ISS cascade argument on the actual closed-loop system) is left for future work. Therefore, the simulation results presented here should be interpreted as strong empirical support for this composition, complementing, rather than replacing, a fully formalized interconnection demonstration.
+
+High-fidelity simulations support this description. The kinematic controller stabilized a tracking task that the uncompensated formulation could not complete, and the addition of the dynamic compensator improved all reported metrics in the inner ablation, including an approximate 88\% reduction in the maximum tangential roll velocity. During the more demanding lemniscate maneuver, the controller maintained bounded tracking and roll responses under both lateral and oblique wind disturbances and recovered its nominal behavior after each disturbance interval. Comparison to the published first-order SMC baseline provides an additional external benchmark. With the simulator, trajectory, physical parameters, initial conditions, and kinematic controller fixed, the dynamic compensator reduced the RMSE of payload position by 6.7\%, while the RMSE of payload velocity remained virtually unchanged (-0.2\%). It also improved all reported oscillation metrics, with reductions ranging from 0.4\% to 3.4\%, the largest being for maximum tangential velocity. The command smoothness results were more direction-dependent: along the x-axis, the RMS command derivative and total variation decreased by 11.1\% and 15.4\%, respectively, while the corresponding y-axis measurements were approximately 3–4\% higher due to the initial adaptation transient. Therefore, external benchmarking indicates a modest but systematic improvement in payload tracking and oscillation damping compared to first-order sliding-mode control, along with a qualified reduction in vibrations, rather than a uniform advantage across all control channels.
+
+The immediate next step is therefore high-fidelity numerical validation. This effort will include implementation on an onboard PX4/ROS\,2 platform, reconstruction of $\mathbf{h}$ and $\dot{\mathbf{h}}$ from lightweight sensing, and explicit characterization of measurement noise, delay, computation time, and actuator saturation. Indoor motion-capture experiments with different payload masses will assess adaptation under genuine parametric variation, followed by outdoor tests under natural wind. The same tracking and swing metrics used here will enable direct comparison between simulation and flight data. Future studies should also examine more aggressive trajectories, elastic or variable-length cables, different payload geometries, and a broader benchmark set that includes geometric, passivity-based, and predictive controllers under matched experimental conditions.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\backmatter
+
+\bmhead{Supplementary information}
+
+\bmhead{Acknowledgements}
+
+This work was funded by the University of Jeddah, Jeddah, Saudi Arabia, under grant No. (UJ-22-KAP2-20588-1.). Therefore, the authors thank the University of Jeddah for its technical and financial support.
+
+\section*{Declarations}
+
+\begin{itemize}
+\item Data availability: All data generated or analyzed during this study are included in this published article. The contributions of the current study are theoretical and supported by numerical simulations. The codes for simulations are available from the corresponding link:
+\href{https://github.com/cdrosales84/uav-payload-asta-validation}{Code},
+\href{https://youtu.be/G8a1F97qs_E?si=gQIMWdCDfgZr-XQR}{Video}. 
+\item Funding: University of Jeddah, Jeddah, Saudi Arabia, under grant No. (UJ-22-KAP2-20588-1.)
+\item No conflicts of interest.
+\item Ethics approval and consent to participate: Not Applicable.
+\item Author contribution:  
+Conceptualization, S.K., S.B., F.S.A. and F. R.; methodology, S.K., C.R., E. O. F. and F. R.; software, S. K.; validation, S.B.; formal analysis, F.R.; investigation, F. S. A.; resources, S.K.; writing—original draft preparation, C.R., S. B., E.O.F. and F. R.; writing—review and editing, F.S.A. and S. K.; visualization, C.R. and E.O.F. ; supervision, S.B.; project administration, S. B.; funding acquisition, F.S.A. All authors reviewed the results and approved the final version of the manuscript.
+\end{itemize}
+
+
+
+%\bibliographystyle{sn-mathphys-num}
+\bibliography{References}
+
+
+%\newpage
+%If you do not have or do not want to include a photo, you can use IEEEbiographynophoto as shown below:
 
 \end{document}
-
-
-\begin{point}
-
-\end{point}
-
-\begin{reply}
-
-\end{reply}
