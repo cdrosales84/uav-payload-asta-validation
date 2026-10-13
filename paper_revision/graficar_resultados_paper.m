@@ -5,8 +5,8 @@
 clear; close all; clc;
 
 %% ================= Configuración =================
-%CarpetaResultados  = 'C:\Repositorios\uav-payload-asta-validation\paper_revision\results\20261010_011019\raw';
-CarpetaResultados = 'C:\Users\claud\GitHub\uav-payload-asta-validation\paper_revision\results\E4_circ_asta\raw';
+CarpetaResultados  = 'C:\Repositorios\uav-payload-asta-validation\paper_revision\results\20261013_163051\raw';
+% CarpetaResultados = 'C:\Users\claud\GitHub\uav-payload-asta-validation\paper_revision\results\E1_circ_sin_swing\raw';
 CarpetaFiguras     = fullfile(CarpetaResultados, 'figuras');
 ExportarFiguras    = true;   % guarda .fig y .png de cada figura
 ExportarPDF        = false;  % además .pdf vectorial (recomendado para el paper)
