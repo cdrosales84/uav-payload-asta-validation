@@ -6,9 +6,6 @@ function R = sim_payload_asta(cfg)
 % El lazo lee la planta, evalua la referencia en el tiempo del simulador, llama a
 % controlador_paso (que contiene todas las ecuaciones de la Secc. 2) y envia el
 % comando. Devuelve todas las senales en R; R.cfg es la configuracion usada.
-% Con cfg.planta.grafico_en_linea = true, cada grafico_cada muestras dibuja el UAV
-% (Nquadrotor), la cuerda y la carga en una figura 3D, como el lazo de
-% simulations/CompensacionConsiderandoCarga_STMejorado_8_Graficas_7_4_2026.m.
 %
 % [CORR] Con el simulador en tiempo real (backend 'simquad'), la posicion de la carga
 % a veces llega con un frame de atraso respecto de la del UAV (quad1 y rope1 se leen
@@ -24,7 +21,6 @@ Nmax   = ceil(1.2*cfg.planta.T/dt0) + 10;
 r0 = referencia_carga(0, cfg.ref);
 x0 = r0.p + [0; 0; cfg.planta.l];                     % carga en la referencia, cable vertical
 planta('iniciar', cfg, x0, r0.psi);
-if grafica_en_linea(cfg), graficar_en_linea('iniciar', cfg); end
 
 Z = @(n) nan(n, Nmax);
 L = struct('t',Z(1),'dt',Z(1),'x',Z(3),'v',Z(3),'psi',Z(1),'xl',Z(3), ...
@@ -66,7 +62,6 @@ while true
     end
 
     rr = referencia_carga(t, cfg.ref);
-    if grafica_en_linea(cfg), graficar_en_linea('paso', m, rr.p, t); end
     [u, st, lg] = controlador_paso(cfg, st, m, rr, t, dtk);
 
     w = viento(t, cfg.viento.bloques);
@@ -107,10 +102,6 @@ w = [0;0;0];
 for i = 1:size(B,1)
     if t >= B(i,1) && t < B(i,2), w = B(i,3:5).'; end
 end
-end
-
-function si = grafica_en_linea(cfg)
-si = isfield(cfg.planta, 'grafico_en_linea') && cfg.planta.grafico_en_linea;
 end
 
 function e = entorno()

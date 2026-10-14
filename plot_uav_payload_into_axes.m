@@ -127,11 +127,11 @@ xmin = L(1); xmax = L(2); ymin = L(3); ymax = L(4); zmin = L(5); zmax = L(6);
 
 xlim(ax, [xmin xmax]);
 ylim(ax, [ymin ymax]);
-zlim(ax, [6 17]);
+zlim(ax, [0 10]);
 
 % plano de referencia (suelo, o el piso de la vista si el suelo queda fuera)
 [Xg, Yg] = meshgrid(linspace(xmin, xmax, 2), linspace(ymin, ymax, 2));
-Zg = zmin * ones(size(Xg));
+Zg = 0 * ones(size(Xg));
 surf(ax, Xg, Yg, Zg, ...
     'FaceColor', [0.96 0.96 0.96], ...
     'EdgeColor', [0.85 0.85 0.85], ...

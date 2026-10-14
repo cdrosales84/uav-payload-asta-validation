@@ -23,11 +23,7 @@ switch op
         out = [];
     case 'leer'
         out.t = S.t; out.x = S.p; out.v = S.v; out.psi = S.psi; out.r = S.r;
-        out.att = [0; 0; S.psi];
-        out.xl = S.pl + C.sust.ruido_h*randn(3,1);
-        s = linspace(0, 1, 14).';
-        out.rope = (1 - s) * S.p.' + s * out.xl.';
-        out.ok = true;
+        out.xl = S.pl + C.sust.ruido_h*randn(3,1); out.ok = true;
     case 'comandar'
         u = varargin{1}(:);
         S.buf = [u, S.buf(:,1:end-1)];

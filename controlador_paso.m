@@ -13,17 +13,9 @@ function [u, st, lg] = controlador_paso(cfg, st, m, r, t, dt)
 %   lg  : senales internas para registro
 %
 % Cada bloque lleva la etiqueta de la ecuacion que implementa (ver EQUATION_MAP.md).
-% No hay otros terminos que los listados: sin saturacion tanh en el lazo externo,
-% sin termino de velocidad de la carga, sin fuga en las integrales.
-%
-% Correspondencia con Paper/SN_Payload.tex. El lazo externo ya es el impreso
-% (Ecs. cable_vector, h_raw, h_p_filter, h_hat_dyn, payload_tracking_error,
-% href, base_reference, swing_compensation, final_reference, yaw_reference,
-% yaw_frame). El lazo interno impreso no: eq:AccionControl, eq:ajuste2 y
-% eq:smc_baseline. Los comentarios [TEX] dicen la sustitucion que igualaria
-% ese texto. No cambian la ley que corre. El parrafo del modelo (~l. 349)
-% ya describe esta implementacion (n = 2, theta, z y yaw sin compensador);
-% igualar eq:AccionControl contradice ese parrafo.
+% No hay otros terminos que los listados: sin saturacion tanh en el lazo externo y
+% sin fuga en las integrales. El lazo externo incluye un termino de velocidad de la
+% carga (Kv) y un washout sobre el termino Kh (tau_w), ambos lineales.
 
 g = cfg.planta.g; l = cfg.planta.l;
 E = cfg.ext; P = cfg.int; A = cfg.ad; F = cfg.filt;
@@ -40,11 +32,7 @@ if isempty(st)
     st.Iv     = zeros(2,1);        % integral de v_tilde (canales x,y)
     st.nu     = zeros(2,1);        % estado integral del super-twisting
     st.theta  = repmat(A.theta_ini(:), 1, 2);   % columnas: canal x, canal y
-    % [TEX] La seccion de simulacion inicializa kappa_u_hat = 0.5 y
-    % kappa_v_hat = 0.75 en cuatro canales, o sea theta = [2; 1.5].
-    % Para igualar: n = 4 y theta_ini = [1/0.5; 0.75/0.5]. Aqui theta_ini
-    % llega de cfg (nominal [0.4; 1]) y solo hay columnas x e y.
-    st.u_prev = zeros(4,1);
+    st.ehw    = zeros(2,1);        % componente lenta de (h_h - h*_h) en marco de yaw (washout)
 end
 
 %% Estimador de dos etapas de hdot (Ecs. h_raw, h_p_filter, h_hat_dyn)
@@ -73,16 +61,28 @@ hsd_h = (l/g) * r.j(1:2);                                         % hdot*_h, ana
 switch E.ley
     case 'completo'
         if isfield(E, 'seguimiento') && strcmp(E.seguimiento, 'abril')
-            % [TEX] Esta rama (tanh del error y de la velocidad de la carga) no esta en el articulo.
             v_base = r.v + E.Ktraj_abril*tanh(E.Ktrajt*ex) + E.Kvload*tanh(E.Kvloadt*exd);
         else
             ff     = [E.usar_ff_hdot*hsd_h; 0];
-            v_base = r.v + ff + E.Ktraj*ex;                       % Ec. base_reference
+            % Ec. base_reference + termino de velocidad de la carga (amortigua el modo
+            % pendular; exd usa la estimacion hp, por eso va despues del estimador)
+            v_base = r.v + ff + E.Ktraj*ex + E.Kv*exd;
         end
-        v_comp = [-E.Kh*(h(1:2) - hs_h) - E.Kdh*(hp(1:2) - hsd_h); 0];   % Ec. swing_compensation
+        % Washout del termino proporcional de swing (Ec. swing_compensation).
+        % El arrastre de la carga produce una inclinacion permanente del cable, constante
+        % en el marco de yaw. Sin washout, Kh la "corrige" frenando al UAV y la convierte
+        % en error de seguimiento: x_tilde ~ (Kh/Ktraj)*h_arrastre. El pasaaltos (tau_w)
+        % deja pasar el pendulo (~1.6-2.8 rad/s en ese marco) y elimina la parte lenta.
+        eh = h(1:2) - hs_h;
+        if E.tau_w > 0
+            Rt_w = [cos(m.psi) sin(m.psi); -sin(m.psi) cos(m.psi)];
+            if t > E.t_w_on                                   % no absorber el arranque
+                st.ehw = st.ehw + (1 - exp(-dt/E.tau_w))*(Rt_w*eh - st.ehw);
+            end
+            eh = eh - Rt_w.'*st.ehw;
+        end
+        v_comp = [-E.Kh*eh - E.Kdh*(hp(1:2) - hsd_h); 0];   % Ec. swing_compensation
     case 'sin_swing'
-        % [TEX] La corrida sin compensacion del articulo es eq:base_reference,
-        % que conserva [hdot*_h; 0]. Esta rama tambien lo quita.
         v_base = r.v + E.Ktraj*ex;                                % ley sin compensacion (Fig. 6a)
         v_comp = zeros(3,1);
     otherwise
@@ -101,18 +101,9 @@ v_h  = Rt*m.v(1:2);                                               % velocidad me
 vd_h = uk_h(1:2);                                                 % v_d de los canales x,y
 
 %% Compensador dinamico (Secc. dynamic), canales x,y
-% [TEX eq:AccionControl] Para igualar la ley impresa, este bloque pasa a n = 4
-% (x, y, z, yaw) y la accion queda dentro de la inversa, con la norma del vector:
-%   w     = K1*sqrt(norm(s))*sign(s) + nu
-%   nudot = K2*sign(s)
-%   u     = kappa_u_hat \ (vdot_d - beta*v_tilde + kappa_v_hat*v - w)
-% con kappa_u_hat, kappa_v_hat en R^{4x4}. Reescrita en theta, esa ecuacion es
-% u_i = phi_i*theta_i - theta_1,i*w_i. Lo que corre es u_i = phi_i*theta_hat_i - w_i
-% en dos canales, con sqrt(|s_i|) por componente y w fuera de la inversion.
 vt = v_h - vd_h;                                                  % v_tilde
 if isempty(st.vd_prev), vdot_raw = zeros(2,1); else, vdot_raw = (vd_h - st.vd_prev)/dt; end
 st.vd_prev = vd_h;
-% [TEX] eq:AccionControl usa vdot_d; no declara el filtro tau_vdot = 0.05 s.
 [vdot_d, st.vdot_f] = filtro1(vdot_raw, st.vdot_f, F.tau_vdot, dt);   % derivada numerica filtrada de v_d
 a_reg = vdot_d - P.beta*vt;                                       % a = vd_dot - beta*v_tilde
 
@@ -128,18 +119,12 @@ switch P.ley
             phith(i) = phi_i * st.theta(:,i);                     % phi_i*theta_hat_i
         end
         if strcmp(P.ley, 'smc')
-            % [TEX eq:smc_baseline] u = -K_SMC * s / (norm(s) + phi), sin phi*theta.
             u_xy = phith - P.K_smc .* s ./ (abs(s) + P.phi_smc);  % ablacion, normalizacion por componente
         else
-            % [TEX] sign(s) puro y sqrt(norm(s)) comun a los cuatro canales.
-            % phi_bl > 0 aproxima el signo y no esta en el articulo (cfg lo deja en 0).
             sg   = sgn(s, P.phi_bl);
-            w1   = P.K1 .* sqrt(abs(s)) .* sg;                    % K1*sqrt|s|*sign(s), por canal
+            w1   = P.K1 .* sqrt(abs(s)) .* sg;                    % K1*sqrt|s|*sign(s)
             nu_n = st.nu + P.K2 .* sg * dt;                       % nu_dot = K2*sign(s)
-            % Forma que corre: u = phi*theta_hat - w. No es la eq:AccionControl impresa.
-            u_try = phith - (w1 + nu_n);
-            % [TEX] El articulo supone comandos en rango lineal: no hay u_max
-            % ni esta integracion condicional de nu.
+            u_try = phith - (w1 + nu_n);                          % Ec. AccionControl: u = phi*theta_hat - w
             for i = 1:2                                           % integracion condicional (anti-windup)
                 sat(i) = abs(u_try(i)) > P.u_max;
                 if ~(sat(i) && u_try(i)*(-sg(i)) > 0)
@@ -149,15 +134,7 @@ switch P.ley
             w    = w1 + st.nu;
             u_xy = phith - w;
 
-            %% Ley de adaptacion. El .tex no tiene eq:ajuste_theta; la impresa es eq:ajuste2.
-            % [TEX eq:ajuste2] Siempre activa. Gradiente con s y fuga hacia cero:
-            %   d/dt kappa_u_hat.' = (1/gamma)*u*s.' - norm(s)*kappa_u_hat.'
-            %   d/dt kappa_v_hat.' = -(1/gamma)*v*s.' - norm(s)*kappa_v_hat.'
-            % Para igualar hay que integrar esas matrices, no theta. La fuga del
-            % codigo, -sigma*(theta_hat - theta_prior), y la proyeccion a Theta
-            % no estan. eq:ajuste2 se apaga cuando s entra en un entorno de 0;
-            % la compuerta de abajo se enciende ahi (t > t_on y |s_i| <= s_on)
-            % y el gradiente usa sat(nu), no s.
+            %% Ley de adaptacion (Ec. ajuste_theta)
             if strcmp(P.ley, 'asta') && t > A.t_on
                 for i = 1:2
                     if abs(s(i)) <= A.s_on
@@ -173,17 +150,13 @@ switch P.ley
     otherwise
         error('controlador_paso:int', 'Ley interna desconocida: %s', P.ley);
 end
-% [TEX] eq:AccionControl no recorta u a u_max.
 u_xy = min(max(u_xy, -P.u_max), P.u_max);
 
 %% Comando al simulador: x,y del compensador; z y yaw reciben el comando cinematico
-% [TEX eq:AccionControl] Con el n = 4 de ese parrafo, z y yaw tambien pasan
-% por el compensador. El modelo (~l. 349) y esta linea los dejan en v_c,z y psid_c.
 u = [u_xy; uk_h(3); uk_h(4)];
-st.u_prev = u;
 
 %% Registro
-lg.h = h; lg.hp = hp; lg.hs_h = hs_h; lg.hsd_h = hsd_h; lg.ex = ex; lg.epsi = epsi;
+lg.ehw = st.ehw; lg.h = h; lg.hp = hp; lg.hs_h = hs_h; lg.hsd_h = hsd_h; lg.ex = ex; lg.epsi = epsi;
 lg.v_c = v_c; lg.uk_h = uk_h; lg.v_h = v_h; lg.vt = vt; lg.s = s; lg.nu = st.nu; lg.w = w;
 lg.phith = phith; lg.theta = st.theta(:); lg.ad_on = ad_on; lg.sat = sat; lg.u = u; lg.sigma = sig;
 end
@@ -198,6 +171,5 @@ y = ys;
 end
 
 function y = sgn(s, phi)
-% [TEX] eq:AccionControl y eq:ajuste2 usan sign(s). La rama phi > 0 no esta en el articulo.
 if phi > 0, y = s ./ (abs(s) + phi); else, y = sign(s); end
 end

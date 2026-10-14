@@ -2,8 +2,7 @@ function out = planta_simquad(op, varargin)
 % PLANTA_SIMQUAD  Interfaz con el simulador de alta fidelidad (SimQuad1.exe + mex, Windows).
 %
 %   planta_simquad('iniciar', cfg, x0, psi0)
-%   m = planta_simquad('leer')           -> m.t, m.x, m.v, m.psi, m.att, m.r, m.xl, m.rope, m.ok
-%                                       m.att = [roll; pitch; yaw], m.rope = particulas (40 x 3)
+%   m = planta_simquad('leer')           -> m.t, m.x, m.v, m.psi, m.r, m.xl, m.rope, m.ok
 %   planta_simquad('comandar', u)        -> u = [v_xh v_yh v_zh w_zh] (marco de yaw, m/s y rad/s)
 %   planta_simquad('viento', w)          -> w = [wx wy wz] aplicado al UAV, la cuerda y la carga
 %   planta_simquad('cerrar')
@@ -39,10 +38,8 @@ switch op
         out.x   = q(1:3);
         out.v   = q(4:6);
         out.psi = q(15);
-        out.att = q(13:15);                        % roll, pitch, yaw (solo para la vista 3D)
         out.r   = q(23);
         out.xl  = rp(end,:).';
-        out.rope = rp;                             % particulas de la cuerda, ultima = carga
         out.ok  = logical(simulation1);
     case 'comandar'
         quad1(1, varargin{1}(:).');
