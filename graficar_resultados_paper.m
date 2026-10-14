@@ -5,14 +5,9 @@
 clear; close all; clc;
 
 %% ================= Configuración =================
-<<<<<<< Updated upstream:graficar_resultados_paper.m
 %CarpetaResultados  = 'C:\Repositorios\uav-payload-asta-validation\paper_revision\results\20261010_011019\raw';
-CarpetaResultados = 'C:\Users\claud\GitHub\paper_revision\results\E5_lemn_viento\raw';
-=======
+CarpetaResultados = 'C:\Repositorios\uav-payload-asta-validation\results\E5_lemn_viento\raw';
 % CarpetaResultados  = 'C:\Repositorios\uav-payload-asta-validation\paper_revision\results\20261013_163051\raw';
-% CarpetaResultados = 'C:\Users\claud\GitHub\uav-payload-asta-validation\paper_revision\results\E1_circ_sin_swing\raw';
-CarpetaResultados  = 'C:\Dropbox\paper_revision\results\20261014_124725\raw';
->>>>>>> Stashed changes:paper_revision/graficar_resultados_paper.m
 CarpetaFiguras     = fullfile(CarpetaResultados, 'figuras');
 ExportarFiguras    = true;   % guarda .fig y .png de cada figura
 ExportarPDF        = false;  % además .pdf vectorial (recomendado para el paper)
