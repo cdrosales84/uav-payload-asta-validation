@@ -33,6 +33,13 @@ switch cfgref.tipo
         r.v = [ a*c0*c2;           b*c0*c1;       d*c0*c1];
         r.a = [-2*a*c0^2*s2;      -b*c0^2*s1;    -d*c0^2*s1];
         r.j = [-4*a*c0^3*c2;      -b*c0^3*c1;    -d*c0^3*c1];
+    case 'pasos'                         % solo para ajustar_omar: escalones de posicion
+        % cfg.ref.pasos.t (1 x n) instantes; cfg.ref.pasos.p (3 x n) posicion desde cada instante.
+        % Maniobra de "travel flight" de Omar (2022), Secc. 5.2. No se usa en el paper.
+        tp = cfgref.pasos.t; pp = cfgref.pasos.p;
+        r.p = zeros(3, N);
+        for k = 1:N, r.p(:,k) = pp(:, find(tp <= t(k), 1, 'last')); end
+        r.v = zeros(3, N); r.a = zeros(3, N); r.j = zeros(3, N);
     otherwise
         error('referencia_carga:tipo', 'Tipo de referencia desconocido: %s', cfgref.tipo);
 end
