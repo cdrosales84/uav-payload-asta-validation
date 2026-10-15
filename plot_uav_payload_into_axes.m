@@ -127,7 +127,11 @@ xmin = L(1); xmax = L(2); ymin = L(3); ymax = L(4); zmin = L(5); zmax = L(6);
 
 xlim(ax, [xmin xmax]);
 ylim(ax, [ymin ymax]);
-zlim(ax, [0 10]);
+if strcmp(axesMode, 'local')
+    zlim(ax, [zmin zmax]);              % el recuadro zoom sigue a UAV + carga
+else
+    zlim(ax, [0, max(zmax, 1)]);        % vista global: suelo visible, sin recortar la trayectoria
+end
 
 % plano de referencia (suelo, o el piso de la vista si el suelo queda fuera)
 [Xg, Yg] = meshgrid(linspace(xmin, xmax, 2), linspace(ymin, ymax, 2));
