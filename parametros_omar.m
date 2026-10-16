@@ -1,29 +1,29 @@
 function P = parametros_omar(cfg, varargin)
-% PARAMETROS_OMAR  Parametros del baseline de Omar (Appl. Sci. 2022) para cfg.omar.
+% PARAMETROS_OMAR  Parameters of the Omar baseline (Appl. Sci. 2022) for cfg.omar.
 %
-%   P = parametros_omar(cfg)                      % usa omar_ajuste.mat si existe
+%   P = parametros_omar(cfg)                      % uses omar_ajuste.mat if it exists
 %   P = parametros_omar(cfg, 'K', 0.6, 'tau_TL', 0.1, 'signo', +1)
-%   P = parametros_omar(cfg, 'activo', false)    % solo el seguidor tipo PX4 (sin ASC)
+%   P = parametros_omar(cfg, 'activo', false)    % PX4-type tracker only (no ASC)
 %
-% Valores:
-%   K       ganancia de las Ecs. (1)-(2). Omar usa K_sx = K_sy = 0.6 (Secc. 5.1),
-%           multiplicada por L en la ecuacion.
-%   tau     retardo t_sx = t_sy [s]. El articulo dice que se elige por minimo ISH
-%           (Ec. 4) y solo usa T_L (Ec. 3). El desfase util es el TOTAL, retardo
-%           mas el atraso del lazo de posicion y velocidad del UAV (~0.28 T_L a la
-%           frecuencia del pendulo con Kp = 0.95). Por eso el retardo agregado es
-%           chico: sin ajuste, tau = 0.1 T_L y signo +1 (prueba de hover en la
-%           planta sustituta: ISH -51 % respecto de sin ASC).
-%           ajustar_omar.m hace la busqueda por ISH (signo, K, tau) y guarda
-%           omar_ajuste.mat, que esta funcion carga automaticamente.
-%   Kp      lazo de posicion de PX4, valores por defecto MPC_XY_P = 0.95, MPC_Z_P = 1.0.
+% Values:
+%   K       gain of Eqs. (1)-(2). Omar uses K_sx = K_sy = 0.6 (Sec. 5.1),
+%           multiplied by L in the equation.
+%   tau     delay t_sx = t_sy [s]. The paper says it is chosen to minimize ISH
+%           (Eq. 4) and only uses T_L (Eq. 3). The useful phase lag is the TOTAL,
+%           the delay plus the lag of the UAV position and velocity loops (~0.28 T_L
+%           at the pendulum frequency with Kp = 0.95). That is why the added delay
+%           is small: without tuning, tau = 0.1 T_L and sign +1 (hover test on the
+%           surrogate plant: ISH -51% relative to no ASC).
+%           ajustar_omar.m searches by ISH (sign, K, tau) and saves
+%           omar_ajuste.mat, which this function loads automatically.
+%   Kp      PX4 position loop, default values MPC_XY_P = 0.95, MPC_Z_P = 1.0.
 
 op = struct('K', [], 'tau_TL', [], 'signo', [], 'activo', true, 'archivo', '');
 for i = 1:2:numel(varargin), op.(varargin{i}) = varargin{i+1}; end
 
 g = cfg.planta.g; l = cfg.planta.l;
-P.TL = 2*pi / sqrt(g/l);                         % Ec. (3)
-P.K = 0.6;                                       % Omar, Secc. 5.1
+P.TL = 2*pi / sqrt(g/l);                         % Eq. (3)
+P.K = 0.6;                                       % Omar, Sec. 5.1
 P.tau_TL = 0.10;
 P.signo = +1;
 P.origen = 'por defecto (K = 0.6 del articulo, tau = 0.1 T_L, sin ajuste en SimQuad)';

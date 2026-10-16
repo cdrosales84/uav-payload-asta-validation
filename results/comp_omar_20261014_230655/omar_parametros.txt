@@ -1,0 +1,8 @@
+Baseline Omar (2022), Appl. Sci. 12(3):1706
+Origen de K y tau: por defecto (K = 0.6 del articulo, tau = 0.1 T_L, sin ajuste en SimQuad)
+K_sx = K_sy = 0.600
+T_L = 2*pi/sqrt(g/L) = 2.8370 s (L = 2.00 m)
+t_sx = t_sy = 0.100 T_L = 0.2837 s
+Lazo de posicion tipo PX4: Kp = diag(0.95, 0.95, 1.00)
+Signo de la correccion: +1 (convencion en controlador_omar.m)
+Comunes con el propuesto: rampa sigma(t), Ts = 5.0 s; ley de yaw; u_max = 5.0 m/s

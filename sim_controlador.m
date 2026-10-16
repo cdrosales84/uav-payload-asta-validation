@@ -1,13 +1,13 @@
 function R = sim_controlador(fh, cfg)
-% SIM_CONTROLADOR  Una corrida con el controlador fh sobre la planta de cfg.
+% SIM_CONTROLADOR  One run of controller fh on the plant in cfg.
 %
 %   R = sim_controlador(@controlador_paso, cfg)
 %   R = sim_controlador(@controlador_omar, cfg)
 %
-% Es el lazo de sim_payload_asta.m sin el grafico en linea: misma lectura de la
-% planta, misma correccion de la lectura atrasada de la carga, misma referencia
-% evaluada en el tiempo del simulador, mismo viento y mismo corte por divergencia.
-% Los dos controladores corren exactamente en el mismo banco de pruebas.
+% This is the loop of sim_payload_asta.m without the online plot: the same plant
+% reading, the same correction of the delayed payload reading, the same reference
+% evaluated at the simulator time, the same wind, and the same divergence cutoff.
+% Both controllers run on exactly the same test bench.
 
 planta = str2func(['planta_' cfg.planta.backend]);
 es_rt = strcmp(cfg.planta.backend, 'simquad');
@@ -15,6 +15,9 @@ dt0 = cfg.planta.dt;
 Nmax = ceil(1.2*cfg.planta.T/dt0) + 10;
 r0 = referencia_carga(0, cfg.ref);
 x0 = r0.p + [0; 0; cfg.planta.l];
+if isfield(cfg.exp, 'x0_offset') && ~isempty(cfg.exp.x0_offset)
+    x0 = x0 + cfg.exp.x0_offset(:);           % initial error (barrido_ganancias); without the field, no change
+end
 planta('iniciar', cfg, x0, r0.psi);
 
 Z = @(n) nan(n, Nmax);

@@ -1,26 +1,26 @@
 function [Y, malo, ev] = marcar_lecturas_atrasadas(R, Y, ventana, umbral)
-% MARCAR_LECTURAS_ATRASADAS  Quita de una senal ya guardada los picos causados por
-% lecturas de la carga atrasadas un frame (ver corregir_lectura_carga.m).
+% MARCAR_LECTURAS_ATRASADAS  Removes, from an already saved signal, the spikes caused
+% by payload readings delayed by one frame (see corregir_lectura_carga.m).
 %
 %   [Y, malo, ev] = marcar_lecturas_atrasadas(R, Y)
 %   [Y, malo, ev] = marcar_lecturas_atrasadas(R, Y, ventana, umbral)
 %
-%   R       : resultado de sim_payload_asta (se usan R.t, R.x, R.xl)
-%   Y       : senal a limpiar, nxN (p.ej. R.vt, R.ukh, R.hp). Si se pasa [] solo se
-%             devuelven malo y ev.
-%   ventana : segundos reemplazados a partir de cada evento (por defecto 0.1 s, que
-%             cubre el pico y su caida). Con ventana = 0 se reemplaza solo la muestra
-%             del evento por el promedio de la anterior y la siguiente.
-%   umbral  : salto de h que se considera lectura atrasada (por defecto 0.01 m)
+%   R       : result of sim_payload_asta (uses R.t, R.x, R.xl)
+%   Y       : signal to clean, n x N (e.g. R.vt, R.ukh, R.hp). If [] is passed, only
+%             malo and ev are returned.
+%   ventana : seconds replaced after each event (default 0.1 s, which covers the
+%             spike and its decay). With ventana = 0 only the event sample is
+%             replaced by the average of the previous and the next sample.
+%   umbral  : jump in h treated as a delayed reading (default 0.01 m)
 %
-%   Y    : senal con los tramos marcados reemplazados por interpolacion lineal entre
-%          la ultima muestra buena anterior y la primera buena posterior (para una
-%          sola muestra, es el promedio de la anterior y la siguiente). Sin NaN.
-%   malo : 1xN logico, muestras reemplazadas
-%   ev   : indices de las muestras con la lectura atrasada
+%   Y    : signal with the marked segments replaced by linear interpolation between
+%          the last good sample before and the first good sample after (for a single
+%          sample, that is the average of the previous and the next). No NaNs.
+%   malo : 1 x N logical, replaced samples
+%   ev   : indices of the samples with the delayed reading
 %
-%   Nota: si R.t tiene instantes repetidos, entre las muestras buenas con el mismo
-%   tiempo se usa la ultima como ancla de la interpolacion.
+%   Note: if R.t has repeated instants, among the good samples at the same time
+%   the last one is used as the interpolation anchor.
 
 if nargin < 2, Y = []; end
 if nargin < 3 || isempty(ventana), ventana = 0.1;   end
@@ -28,7 +28,7 @@ if nargin < 4 || isempty(umbral),  umbral  = 0.010; end
 
 t = R.t(:).';  N = numel(t);
 
-% 1) detectar eventos
+% 1) detect events
 st = []; ev = [];
 for k = 1:N
     m.x = R.x(:, k); m.xl = R.xl(:, k);
@@ -36,21 +36,21 @@ for k = 1:N
     if c, ev(end+1) = k; end %#ok<AGROW>
 end
 
-% 2) marcar el evento y la ventana posterior
+% 2) mark the event and the following window
 malo = false(1, N);
 malo(ev) = true;
 for k = ev
     malo(t >= t(k) & t < t(k) + ventana) = true;
 end
-malo([1 N]) = false;                    % los extremos se conservan (anclas de la interpolacion)
+malo([1 N]) = false;                    % the endpoints are kept (interpolation anchors)
 
-% 3) reemplazar por interpolacion lineal entre vecinos buenos
+% 3) replace by linear interpolation between good neighbors
 if ~isempty(Y) && any(malo)
-    if size(Y, 2) ~= N, Y = Y.'; end    % aceptar vectores columna
+    if size(Y, 2) ~= N, Y = Y.'; end    % accept column vectors
     iBueno = find(~malo);
 
-    % interp1 exige tiempos unicos: si hay instantes repetidos entre las
-    % muestras buenas, se conserva la ultima lectura de cada instante
+    % interp1 requires unique times: if good samples share an instant,
+    % the last reading at that instant is kept
     [tb, iu] = unique(t(iBueno), 'last');
     iBueno   = iBueno(iu);
 

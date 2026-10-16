@@ -1,25 +1,24 @@
 %% graficar_resultados_paper.m
-% Regenera las figuras del artículo a partir de los .mat de experimentos
-% (estructuras R = series temporales, M = métricas).
-% Recorre todos los .mat de la carpeta de resultados.
+% Regenerates the paper figures from the experiment .mat files
+% (structures R = time series, M = metrics).
+% Walks every .mat file in the results folder.
 clear; close all; clc;
 
-%% ================= Configuración =================
+%% ================= Configuration =================
 %CarpetaResultados  = 'C:\Repositorios\uav-payload-asta-validation\paper_revision\results\20261010_011019\raw';
-CarpetaResultados = 'C:\Repositorios\uav-payload-asta-validation\results\E5_lemn_viento\raw';
-% CarpetaResultados  = 'C:\Repositorios\uav-payload-asta-validation\paper_revision\results\20261013_163051\raw';
+CarpetaResultados = 'C:\Users\claud\GitHub\paper_revision\results\E6_circ_smc\raw';
 CarpetaFiguras     = fullfile(CarpetaResultados, 'figuras');
-ExportarFiguras    = true;   % guarda .fig y .png de cada figura
-ExportarPDF        = false;  % además .pdf vectorial (recomendado para el paper)
-Resolucion         = 300;    % dpi del .png
-CerrarTrasExportar = true;   % cierra las figuras de cada caso tras exportarlas
+ExportarFiguras    = true;   % saves .fig and .png of each figure
+ExportarPDF        = false;  % also a vector .pdf (recommended for the paper)
+Resolucion         = 300;    % dpi of the .png
+CerrarTrasExportar = true;   % closes each case's figures after exporting them
 
-% Formato de las figuras del artículo
+% Format of the paper figures
 F.LinAncho = 2.0;
 F.FntSize  = 14;
 F.colors   = lines(4);
 
-%% ================= Procesar archivos =================
+%% ================= Process files =================
 archivos = dir(fullfile(CarpetaResultados, '*.mat'));
 if isempty(archivos)
     error('No se encontraron archivos .mat en %s', CarpetaResultados);
@@ -61,12 +60,12 @@ end
 
 %% =====================================================================
 function D = calcularDerivadas(R, M)
-    % Copia R y añade las señales que el artículo grafica pero no se guardan
+    % Copies R and adds the signals the paper plots but that are not stored
     D = R;
     t = R.t;
 
-    % Velocidad verdadera de la carga. Convencion del codigo: h = x - x_l,
-    % por lo que v_l = v - hdot. Se usa M.serie.vl (derivada de R.xl) si existe.
+    % True payload velocity. Code convention: h = x - x_l,
+    % so v_l = v - hdot. M.serie.vl (derivative of R.xl) is used if it exists.
     serie0 = getf(M, 'serie', struct());
     if isfield(serie0, 'vl') && size(serie0.vl, 2) == numel(t)
         D.vl = serie0.vl;
@@ -74,14 +73,14 @@ function D = calcularDerivadas(R, M)
         D.vl = [diff(R.xl, 1, 2) ./ diff(t), zeros(3,1)];
     end
 
-    % Señales de oscilación: se toman de M.serie si existen, si no se
-    % calculan del vector cuerda h = x - x_l
+    % Swing signals: taken from M.serie if present, otherwise computed
+    % from the cable vector h = x - x_l
     serie = getf(M, 'serie', struct());
     h  = R.h;   hp = R.hp;
     L2 = sum(h.^2, 1);
-    D.alpha = atan2(vecnorm(h(1:2,:)), abs(h(3,:)));            % ángulo respecto a la vertical
-    D.rho   = vecnorm(h(1:2,:));                                % desplazamiento horizontal
-    D.vperp = vecnorm(hp - (sum(hp.*h,1)./L2).*h);              % velocidad relativa ⟂ a la cuerda
+    D.alpha = atan2(vecnorm(h(1:2,:)), abs(h(3,:)));            % angle from the vertical
+    D.rho   = vecnorm(h(1:2,:));                                % horizontal displacement
+    D.vperp = vecnorm(hp - (sum(hp.*h,1)./L2).*h);              % relative velocity perpendicular to the cable
     D.fuente_osc = 'calculada de R.h';
     camposSerie = {'alpha','rho','vperp'};
     for c = camposSerie
@@ -92,7 +91,7 @@ function D = calcularDerivadas(R, M)
         end
     end
 
-    % Velocidad de yaw para el error de velocidad
+    % Yaw rate for the velocity error
     D.psip = gradient(unwrap(R.psi), t);
 end
 
@@ -106,7 +105,7 @@ function [figs, nombres] = graficarCaso(D, F, experimento)
     lg = @(varargin) legend(varargin{:},'Interpreter','Latex','FontSize',FntSize);
     tituloFig = @(f) set(f, 'Name', experimento, 'NumberTitle', 'off');
 
-    %% 1) Errores de posición de la carga
+    %% 1) Payload position errors
     f = nuevaFig(); tituloFig(f);
     etq   = {'$\tilde{X}$ [m]','$\tilde{Y}$ [m]','$\tilde{Z}$ [m]','$\tilde{\psi}$ [rad]'};
     datos = {D.ex(1,:), D.ex(2,:), D.ex(3,:), D.epsi};
@@ -118,9 +117,9 @@ function [figs, nombres] = graficarCaso(D, F, experimento)
     lx('Time [s]');
     [figs, nombres] = agregar(Bv, figs, nombres, f, 'error_posicion');
 
-    %% 2) Error de velocidad.
-    % R.ev es la serie del script de SimQuad: [v; psi_dot] - u, con psi_dot medido.
-    % Si no está, se usa v_d - v_l y la derivada del yaw (corridas de paper_revision).
+    %% 2) Velocity error.
+    % R.ev is the SimQuad script series: [v; psi_dot] - u, with measured psi_dot.
+    % If it is absent, v_d - v_l and the yaw derivative are used (paper_revision runs).
     if isfield(D, 'ev') && size(D.ev, 1) >= 4 && size(D.ev, 2) == numel(t)
         TE = D.ev(1:4, :);
     else
@@ -137,7 +136,7 @@ function [figs, nombres] = graficarCaso(D, F, experimento)
     lx('Time [s]');
     [figs, nombres] = agregar(Bv, figs, nombres, f, 'error_velocidad');
 
-    %% 3) Ángulo de oscilación, rho y velocidad tangencial
+    %% 3) Swing angle, rho, and tangential velocity
     f = nuevaFig(); tituloFig(f);
     subplot(3,1,1); hold on; grid on;
     plot(t, D.alpha, 'LineWidth', LinAncho, 'Color', colors(1,:));
@@ -150,21 +149,21 @@ function [figs, nombres] = graficarCaso(D, F, experimento)
     ly('$||v_\perp||$ [m/s]'); lx('Time [s]'); lg('$||v_\perp(t)||$');
     [figs, nombres] = agregar(Bv, figs, nombres, f, 'oscilacion');
 
-    f = nuevaFig(); tituloFig(f);
-    subplot(3,1,1); hold on; grid on;
-    plot(t, D.alpha, 'LineWidth', LinAncho, 'Color', colors(1,:));
-    ly('$\alpha$ [rad]'); lg('$\alpha_\ell$');
-    subplot(3,1,2); hold on; grid on;
-    plot(t, D.rho, 'LineWidth', LinAncho, 'Color', colors(1,:));
-    ly('$\rho$ [m]'); lg('$\rho(t)$');
-    subplot(3,1,3); hold on; grid on;
-    [vt, malo, ev] = marcar_lecturas_atrasadas(D, D.vt);    
-    plot(D.t, vt, 'LineWidth', LinAncho, 'Color', colors(1,:));
-%     plot(t, D.vperp, 'LineWidth', LinAncho, 'Color', colors(1,:));
-    ly('$||v_\perp||$ [m/s]'); lx('Time [s]'); lg('$||v_\perp(t)||$');
-    [figs, nombres] = agregar(Bv, figs, nombres, f, 'oscilacion');
+%     f = nuevaFig(); tituloFig(f);
+%     subplot(3,1,1); hold on; grid on;
+%     plot(t, D.alpha, 'LineWidth', LinAncho, 'Color', colors(1,:));
+%     ly('$\alpha$ [rad]'); lg('$\alpha_\ell$');
+%     subplot(3,1,2); hold on; grid on;
+%     plot(t, D.rho, 'LineWidth', LinAncho, 'Color', colors(1,:));
+%     ly('$\rho$ [m]'); lg('$\rho(t)$');
+%     subplot(3,1,3); hold on; grid on;
+%     [vt, malo, ev] = marcar_lecturas_atrasadas(D, D.vt);    
+%     plot(D.t, vt, 'LineWidth', LinAncho, 'Color', colors(1,:));
+% %     plot(t, D.vperp, 'LineWidth', LinAncho, 'Color', colors(1,:));
+%     ly('$||v_\perp||$ [m/s]'); lx('Time [s]'); lg('$||v_\perp(t)||$');
+%     [figs, nombres] = agregar(Bv, figs, nombres, f, 'oscilacion');
 
-    %% 4) Plano XY: deseada vs carga
+    %% 4) XY plane: desired vs payload
     f = nuevaFig(); tituloFig(f);
     comp = {'x','y'};
     for j = 1:2
@@ -177,7 +176,7 @@ function [figs, nombres] = graficarCaso(D, F, experimento)
     lx('Time [s]');
     [figs, nombres] = agregar(Bv, figs, nombres, f, 'seguimiento_xy');
 
-    %% 5) Posiciones X, Y, Z y yaw de la carga
+    %% 5) Payload X, Y, Z positions and yaw
     f = nuevaFig(); tituloFig(f);
     legd = {'$x_d$','$y_d$','$z_d$','$\psi_d$'};
     leg  = {'$x_\ell$','$y_\ell$','$z_\ell$','$\psi_\ell$'};
@@ -196,7 +195,7 @@ function [figs, nombres] = graficarCaso(D, F, experimento)
     lx('Time [s]');
     [figs, nombres] = agregar(Bv, figs, nombres, f, 'posiciones');
 
-    %% 6) Parámetros adaptativos theta
+    %% 6) Adaptive parameters theta
     f = nuevaFig(); tituloFig(f); hold on; grid on;
     n = size(D.theta,1);
     for c = 1:n
@@ -206,7 +205,7 @@ function [figs, nombres] = graficarCaso(D, F, experimento)
     lg(etqT{:}); ly('$\hat{\theta}$'); lx('Time [s]');
     [figs, nombres] = agregar(Bv, figs, nombres, f, 'parametros_theta');
 
-    %% 7) Superficie deslizante
+    %% 7) Sliding surface
     f = nuevaFig(); tituloFig(f); hold on; grid on;
     etqS = {'$s_x$','$s_y$','$s_z$','$s_{\psi}$'};
     n = size(D.s,1);
@@ -216,7 +215,7 @@ function [figs, nombres] = graficarCaso(D, F, experimento)
     lg(etqS{1:n}); lx('Time [s]');
     [figs, nombres] = agregar(Bv, figs, nombres, f, 'superficie');
 
-    %% 8) Referencia vs dron vs carga (posiciones)
+    %% 8) Reference vs drone vs payload (positions)
     f = nuevaFig(); tituloFig(f);
     etq = {'X [m]','Y [m]','Z [m]'};
     for j = 1:3
@@ -230,7 +229,7 @@ function [figs, nombres] = graficarCaso(D, F, experimento)
     lx('Time [s]');
     [figs, nombres] = agregar(Bv, figs, nombres, f, 'ref_dron_carga_pos');
 
-    %% 9) Referencia vs dron vs carga (velocidades)
+    %% 9) Reference vs drone vs payload (velocities)
     f = nuevaFig(); tituloFig(f);
     etq = {'$\dot{x}$ [m/s]','$\dot{y}$ [m/s]','$\dot{z}$ [m/s]'};
     for j = 1:3
@@ -244,7 +243,7 @@ function [figs, nombres] = graficarCaso(D, F, experimento)
     lx('Time [s]');
     [figs, nombres] = agregar(Bv, figs, nombres, f, 'ref_dron_carga_vel');
 
-    %% 10) Señales de control
+    %% 10) Control signals
     f = nuevaFig(); tituloFig(f);
     etq = {'$u_1$','$u_2$','$u_3$','$u_4$'};
     for j = 1:size(D.u,1)
@@ -258,7 +257,7 @@ end
 
 function imprimirMetricas(D, M)
     fprintf('  Oscilación: %s\n', D.fuente_osc);
-    % Comprobación: lo calculado debe coincidir con las métricas guardadas
+    % Check: the computed values should match the stored metrics
     chk = {'rms_alpha', rms(D.alpha); 'max_alpha', max(abs(D.alpha));
            'rms_rho',   rms(D.rho);   'max_rho',   max(D.rho);
            'rms_vperp', rms(D.vperp); 'max_vperp', max(D.vperp)};
@@ -273,7 +272,7 @@ function imprimirMetricas(D, M)
     end
 end
 
-%% ================= Utilidades =================
+%% ================= Utilities =================
 function f = nuevaFig()
     f = figure('Position', [50 50 1200 600], 'Color', 'w');
 end
@@ -283,7 +282,7 @@ function v = getf(D, nombre, defecto)
 end
 
 function nombre = buscarCampo(S, clave)
-    % Devuelve el primer campo de S cuyo nombre contenga 'clave'
+    % Returns the first field of S whose name contains 'clave'
     nombre = '';
     if ~isstruct(S), return; end
     f = fieldnames(S);
@@ -297,7 +296,7 @@ function [figs, nombres] = agregar(Bv, figs, nombres, f, nombre)
 end
 
 function B = bloques_viento(D)
-% Filas [t_ini t_fin wx wy wz]. Vacío si el caso no tiene viento.
+% Rows [t_ini t_fin wx wy wz]. Empty if the case has no wind.
 B = zeros(0, 5);
 if isfield(D, 'cfg') && isfield(D.cfg, 'viento') && isfield(D.cfg.viento, 'bloques')
     B = D.cfg.viento.bloques;
@@ -319,8 +318,8 @@ end
 end
 
 function marcar_viento(f, B)
-% Bandas semitransparentes sobre los intervalos de viento, detrás de las curvas.
-% El primer bloque (lateral) va en verde y el segundo (oblicuo) en azul.
+% Semi-transparent bands over the wind intervals, behind the curves.
+% The first block (lateral) is green and the second (oblique) is blue.
 if isempty(B), return; end
 relleno = [0.75 0.90 0.75; 0.75 0.84 0.95];
 borde0  = [0.15 0.55 0.20; 0.20 0.40 0.85];

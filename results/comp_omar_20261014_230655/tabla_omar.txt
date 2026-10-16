@@ -1,0 +1,19 @@
+
+Omar (2022) vs propuesto. Media +- desvio, t >= 5 s. Delta > 0: el propuesto es menor.
+
+== E4_circ_asta ==
+Metrica                             px4                   omar                  asta                    Delta%       p
+corridas completas                  1/1                   1/1                   1/1                 
+reinicios de SimQuad                0                     0                     0                   
+RMSE x [m]                          0.4903 +- NaN         0.6171 +- NaN         0.1571 +- NaN            +74.5      --
+RMSE x [m/s]                        0.3473 +- NaN         0.4257 +- NaN         0.1492 +- NaN            +65.0      --
+RMS alpha [rad]                     0.1746 +- NaN         0.1744 +- NaN         0.1609 +- NaN             +7.7      --
+Max alpha [rad]                     0.2048 +- NaN         0.2322 +- NaN         0.2024 +- NaN            +12.8      --
+RMS rho [m]                         0.3488 +- NaN         0.3485 +- NaN         0.3218 +- NaN             +7.6      --
+Max rho [m]                         0.4085 +- NaN         0.4622 +- NaN         0.4037 +- NaN            +12.7      --
+RMS |v_perp| [m/s]                  0.2242 +- NaN         0.2281 +- NaN         0.2394 +- NaN             -5.0      --
+Max |v_perp| [m/s]                  0.3665 +- NaN         0.4507 +- NaN         0.5538 +- NaN            -22.9      --
+RMS |h_h-hstar_h| [m]               0.2560 +- NaN         0.2694 +- NaN         0.2179 +- NaN            +19.1      --
+ISH, Eq.(4) of Omar [rad2s]         2.9112 +- NaN         2.9050 +- NaN         2.4706 +- NaN            +15.0      --
+ISH about hstar_h [rad2s]           1.5769 +- NaN         1.7455 +- NaN         1.1403 +- NaN            +34.7      --
+RMS |u_h| [m/s2]                    0.0424 +- NaN         0.0581 +- NaN         0.5590 +- NaN           -862.1      --

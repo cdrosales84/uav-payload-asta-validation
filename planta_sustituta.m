@@ -1,15 +1,15 @@
 function out = planta_sustituta(op, varargin)
-% PLANTA_SUSTITUTA  Modelo simplificado UAV + cable + carga, con la misma interfaz que
-% planta_simquad. Sirve para probar el codigo sin Windows ni SimQuad1.exe (por ejemplo
-% en Octave). NO se usa para ningun resultado del paper.
+% PLANTA_SUSTITUTA  Simplified UAV + cable + payload model, with the same interface as
+% planta_simquad. Used to test the code without Windows or SimQuad1.exe (for example
+% in Octave). NOT used for any paper result.
 %
-% Modelo:
-%   - comando u = [v_xh v_yh v_zh w_zh] en el marco de yaw, con retardo de computo de
-%     cfg.sust.retardo_muestras muestras y un filtro de primer orden tau_att (actitud);
-%   - lazo de velocidad horizontal en el marco de yaw: v_h_dot = (u_f - kv_ku*v_h)/tau
-%     (theta1 verdadero = tau, theta2 verdadero = kv_ku), mas fuerzas externas;
-%   - carga puntual unida al UAV por un resorte-amortiguador (solo traccion);
-%   - viento como velocidad del aire con arrastre lineal sobre UAV y carga.
+% Model:
+%   - command u = [v_xh v_yh v_zh w_zh] in the yaw frame, with a computation delay of
+%     cfg.sust.retardo_muestras samples and a first-order filter tau_att (attitude);
+%   - horizontal velocity loop in the yaw frame: v_h_dot = (u_f - kv_ku*v_h)/tau
+%     (true theta1 = tau, true theta2 = kv_ku), plus external forces;
+%   - point-mass payload attached to the UAV by a spring-damper (tension only);
+%   - wind as air velocity with linear drag on the UAV and the payload.
 
 persistent S C
 switch op
@@ -19,7 +19,7 @@ switch op
         S.pl = x0 - [0;0;C.planta.l]; S.vl = zeros(3,1);
         S.uf = zeros(4,1); S.buf = zeros(4, C.sust.retardo_muestras + 1);
         S.w = zeros(3,1);
-        S.l0 = C.planta.l - (C.planta.mL*C.planta.g)/C.sust.k_cable;   % largo libre del resorte
+        S.l0 = C.planta.l - (C.planta.mL*C.planta.g)/C.sust.k_cable;   % spring free length
         out = [];
     case 'leer'
         out.t = S.t; out.x = S.p; out.v = S.v; out.psi = S.psi; out.r = S.r;
@@ -27,27 +27,27 @@ switch op
     case 'comandar'
         u = varargin{1}(:);
         S.buf = [u, S.buf(:,1:end-1)];
-        ua = S.buf(:,end);                         % comando efectivo (con retardo)
+        ua = S.buf(:,end);                         % effective command (with delay)
         k = C.sust; g = C.planta.g; mL = C.planta.mL; m = k.m_uav;
         n = round(C.planta.dt/k.dt_int);
         dt = C.planta.dt/n;
         for i = 1:n
             S.uf = S.uf + dt/k.tau_att*(ua - S.uf);
-            % cable (resorte-amortiguador, solo traccion)
+            % cable (spring-damper, tension only)
             d  = S.p - S.pl; L = norm(d); e = d/L;
             Tn = k.k_cable*(L - S.l0) + k.c_cable*dot(S.v - S.vl, e);
             Tn = max(Tn, 0);
-            Fc = Tn*e;                             % fuerza sobre la carga (hacia el UAV)
-            % carga
+            Fc = Tn*e;                             % force on the payload (toward the UAV)
+            % payload
             al = Fc/mL - [0;0;g] - k.cd_carga/mL*(S.vl - S.w);
-            % UAV: lazo de velocidad en el marco de yaw
+            % UAV: velocity loop in the yaw frame
             R  = [cos(S.psi) -sin(S.psi); sin(S.psi) cos(S.psi)];
             vh = R.'*S.v(1:2);
             ah = (S.uf(1:2) - k.kv_ku.*vh)./k.tau_xy;
             a  = [R*ah; (S.uf(3) - S.v(3))/k.tau_z] - Fc/m - k.cd_uav/m*(S.v - S.w);
-            a(3) = a(3) + mL*g/m;                  % empuje de equilibrio: compensa el peso estatico de la carga
+            a(3) = a(3) + mL*g/m;                  % trim thrust: cancels the static payload weight
             rd = (S.uf(4) - S.r)/k.tau_psi;
-            % integracion semi-implicita
+            % semi-implicit integration
             S.v = S.v + dt*a;   S.p = S.p + dt*S.v;
             S.vl = S.vl + dt*al; S.pl = S.pl + dt*S.vl;
             S.r = S.r + dt*rd;  S.psi = S.psi + dt*S.r;

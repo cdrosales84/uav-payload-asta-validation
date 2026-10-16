@@ -1,7 +1,7 @@
 function test_referencias()
-% TEST_REFERENCIAS  Verifica que velocidad, aceleracion, jerk y psi_dot de
-% referencia_carga coincidan con la derivada numerica de la senal anterior.
-% Ademas muestra el error de la aceleracion de la lemniscata en ReferenciasCarga_ST.
+% TEST_REFERENCIAS  Checks that the reference velocity, acceleration, jerk, and psi_dot
+% from referencia_carga match the numerical derivative of the previous signal.
+% Also reports the lemniscate acceleration error in ReferenciasCarga_ST.
 
 tipos = {'circulo', 'lemniscata'};
 cfg = cfg_paper();
@@ -15,7 +15,7 @@ for i = 1:numel(tipos)
     assert(all(e < 1e-4), 'test_referencias:%s', tipos{i});
 end
 
-% Comparacion con la expresion de ReferenciasCarga_ST (casos 4 y 5)
+% Comparison with the ReferenciasCarga_ST expression (cases 4 and 5)
 cfg.ref.tipo = 'lemniscata'; L = cfg.ref.lemn;
 r = referencia_carga(t, cfg.ref);
 xdd_viejo = -L.a*L.c^2*2*sin(L.c*t) - L.a*L.c^2*2*cos(L.c*t);

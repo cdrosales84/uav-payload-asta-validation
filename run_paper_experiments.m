@@ -1,19 +1,19 @@
 function run_paper_experiments(varargin)
-% RUN_PAPER_EXPERIMENTS  Regenera todas las corridas, tablas y figuras del paper.
+% RUN_PAPER_EXPERIMENTS  Regenerates every run, table, and figure of the paper.
 %
-%   run_paper_experiments()                         % SimQuad1.exe, 5 repeticiones
-%   run_paper_experiments('backend','sustituta')    % prueba sin simulador (no para el paper)
+%   run_paper_experiments()                         % SimQuad1.exe, 5 repetitions
+%   run_paper_experiments('backend','sustituta')    % test without the simulator (not for the paper)
 %   run_paper_experiments('escenarios',{'E4_circ_asta'}, 'n_rep', 1)
 %
-% Para cada escenario y repeticion guarda results/<fecha>/raw/<escenario>_rep<k>.mat con la
-% serie temporal completa (R) y la configuracion usada (R.cfg). Luego escribe:
-%   resumen.csv            todas las metricas por corrida
-%   tabla_metricas.tex     media +- desvio por escenario (Tabla metrics, ablacion, masa)
-%   tabla_parametros.tex   parametros realmente usados (desde cfg_paper)
-%   figuras/               figuras de control de cada escenario (repeticion 1)
-%   paper_figs/            figuras del manuscrito (figuras_paper.m), EPS y PDF
+% For each scenario and repetition it saves results/<fecha>/raw/<escenario>_rep<k>.mat with the
+% full time series (R) and the configuration used (R.cfg). It then writes:
+%   resumen.csv            every metric per run
+%   tabla_metricas.tex     mean +- std per scenario (Table metrics, ablation, mass)
+%   tabla_parametros.tex   parameters actually used (from cfg_paper)
+%   figuras/               control figures of each scenario (repetition 1)
+%   paper_figs/            manuscript figures (figuras_paper.m), EPS and PDF
 %
-% Ejecutar con la carpeta paper_revision como carpeta actual; agrega ../simulations al path.
+% Run with paper_revision as the current folder; it adds ../simulations to the path.
 
 op = struct('backend', 'simquad', 'n_rep', [], 'escenarios', {{}}, 'salida', '');
 for i = 1:2:numel(varargin), op.(varargin{i}) = varargin{i+1}; end
@@ -62,7 +62,7 @@ escribir_csv(fullfile(op.salida, 'resumen.csv'), filas);
 tabla_metricas_latex(filas, fullfile(op.salida, 'tabla_metricas.tex'));
 tabla_masa_latex(filas, fullfile(op.salida, 'tabla_masa.tex'));
 tabla_parametros_latex(cfg_paper(), fullfile(op.salida, 'tabla_parametros.tex'));
-figuras_paper(op.salida);          % figuras del manuscrito en <salida>/paper_figs
+figuras_paper(op.salida);          % manuscript figures in <salida>/paper_figs
 fprintf('\nResultados en %s\n', op.salida);
 end
 
@@ -116,7 +116,7 @@ fclose(fid);
 end
 
 function tabla_masa_latex(filas, archivo)
-% Barrido de masa (E7): parametros finales y RMS del estado integral nu, fijo vs adaptativo.
+% Mass sweep (E7): final parameters and RMS of the integral state nu, fixed vs adaptive.
 F = filas(cellfun(@(f) strncmp(f.escenario, 'E7_', 3), filas));
 if isempty(F), return; end
 esc = unique(cellfun(@(f) f.escenario, F, 'UniformOutput', false), 'stable');

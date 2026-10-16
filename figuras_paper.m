@@ -1,43 +1,49 @@
 function figuras_paper(dir_res, varargin)
-% FIGURAS_PAPER  Figuras del manuscrito a partir de los resultados de run_paper_experiments.
+% FIGURAS_PAPER  Manuscript figures from the results of run_paper_experiments.
 %
 %   figuras_paper('results/20261010_120000')
 %   figuras_paper(dir_res, 'formato', {'eps','pdf'}, 'ancho_mm', 160, 'banda', true)
 %
-% Lee results/<fecha>/raw/<escenario>_rep<k>.mat y escribe en results/<fecha>/paper_figs/
-% un archivo por figura, con el MISMO nombre que usa \includegraphics en SN_Payload.tex,
-% de modo que basta copiar la carpeta a Paper/Figures.
+% Reads results/<fecha>/raw/<escenario>_rep<k>.mat and writes one file per figure in
+% results/<fecha>/paper_figs/, with the SAME name that \includegraphics uses in
+% SN_Payload.tex, so copying the folder to Paper/Figures is enough.
 %
-% Cada serie temporal se dibuja como la media de las repeticiones (interpoladas a una grilla
-% comun, porque cada corrida tiene su propio tiempo de simulador) y, si 'banda' = true,
-% con una banda minimo-maximo entre repeticiones.
+% Each time series is drawn as the mean of the repetitions (interpolated onto a common
+% grid, because each run has its own simulator time) and, if 'banda' = true, with a
+% min-max band across repetitions.
 %
-% Opciones:
-%   'formato'   {'eps','pdf'} (default). Vectorial. 'png' tambien disponible.
-%   'ancho_mm'  ancho de las figuras de ancho completo. Conviene igualarlo al \textwidth del
-%               manuscrito (en LaTeX: \the\textwidth, 1 pt = 0.3515 mm) y luego incluir con
-%               \includegraphics[width=\linewidth]{...}: asi la letra queda en su tamano real.
-%   'fuente_pt' tamano de letra (default 8).
-%   'banda'     dibujar la banda min-max entre repeticiones (default true).
-%   'salida'    carpeta de salida (default <dir_res>/paper_figs).
+% Options:
+%   'formato'   {'eps','pdf'} (default). Vector. 'png' is also available.
+%   'ancho_mm'  width of the full-width figures. Match it to the manuscript \textwidth
+%               (in LaTeX: \the\textwidth, 1 pt = 0.3515 mm) and then include with
+%               \includegraphics[width=\linewidth]{...}: the type then stays at its real size.
+%   'fuente_pt' font size (default 8).
+%   'banda'     draw the min-max band across repetitions (default true).
+%   'salida'    output folder (default <dir_res>/paper_figs).
 
 op = struct('formato', {{'eps','pdf'}}, 'ancho_mm', 160, 'fuente_pt', 8, 'banda', true, 'salida', '');
 for i = 1:2:numel(varargin), op.(varargin{i}) = varargin{i+1}; end
 if ischar(op.formato), op.formato = {op.formato}; end
 if isempty(op.salida), op.salida = fullfile(dir_res, 'paper_figs'); end
 if ~exist(op.salida, 'dir'), mkdir(op.salida); end
-global FP; FP = op;  %#ok<GVMIS> estilo compartido por las funciones locales
+global FP; FP = op;  %#ok<GVMIS> style shared by the local functions
+if ~es_octave
+    % axis labels with the LaTeX interpreter (previously the $...$ were shown literally)
+    interp0 = get(groot, 'defaultTextInterpreter');
+    set(groot, 'defaultTextInterpreter', 'latex');
+    restaurar = onCleanup(@() set(groot, 'defaultTextInterpreter', interp0)); %#ok<NASGU>
+end
 
-% Colores fijos por controlador (paleta categorica validada; el estilo de linea es la
-% codificacion secundaria para impresion en grises y para daltonismo).
+% Fixed colors per controller (validated categorical palette; the line style is the
+% secondary encoding for grayscale printing and for color blindness).
 C.ref  = struct('c', [0.10 0.10 0.10], 'ls', '--', 'nom', 'Reference');
 C.kin  = struct('c', hex('#eb6834'), 'ls', '-',  'nom', 'Kinematic controller');
 C.prop = struct('c', hex('#2a78d6'), 'ls', '-',  'nom', 'Proposed (kinematic + A-STA)');
-C.smc  = struct('c', hex('#1baf7a'), 'ls', '-',  'nom', 'Boundary-layer SMC (ablation)');  % linea continua: el punteado se pierde sobre el chattering
+C.smc  = struct('c', hex('#1baf7a'), 'ls', '-',  'nom', 'Boundary-layer SMC (ablation)');  % solid line: the dotted style is lost on the chattering
 C.fijo = struct('c', hex('#eda100'), 'ls', ':',  'nom', 'STA, fixed $\hat{\theta}$');
 C.uav  = struct('c', [0.45 0.45 0.45], 'ls', '-', 'nom', 'UAV');
 masas  = [50 100 200 300];
-C.masa = [hex('#86b6ef'); hex('#3987e5'); hex('#1c5cab'); hex('#0d366b')];  % rampa ordinal
+C.masa = [hex('#86b6ef'); hex('#3987e5'); hex('#1c5cab'); hex('#0d366b')];  % ordinal ramp
 
 E1 = cargar(dir_res, 'E1_circ_sin_swing');
 E2 = cargar(dir_res, 'E2_circ_cinematico');
@@ -47,17 +53,17 @@ E6 = cargar(dir_res, 'E6_circ_smc');
 
 W = op.ancho_mm;
 
-%% Fig. 6: vistas 3D, ley sin compensacion (a) y controlador cinematico (b)
+%% Fig. 6: 3D views, law without compensation (a) and kinematic controller (b)
 if ~isempty(E1), vista3d(E1(1), [], 10, C, 'a', 0.48*W, 0.42*W, '3D_Vista_Base'); end
 if ~isempty(E2), vista3d(E2(1), [], 10, C, 'b', 0.48*W, 0.42*W, '3D_Vista_CinematicoII'); end
 
-%% Figs. 7-8: controlador cinematico solo
+%% Figs. 7-8: kinematic controller alone
 if ~isempty(E2)
     fig_posicion({E2}, {C.kin}, C, W, 'CinematicoII');
     fig_oscilacion({E2}, {C.kin}, W, 'CinematicoII_Angles', []);
 end
 
-%% Figs. 9-12: cascada completa, comparada con el cinematico solo
+%% Figs. 9-12: full cascade, compared with the kinematic controller alone
 if ~isempty(E4)
     fig_posicion({E4}, {C.prop}, C, W, 'Compensador');
     if isempty(E2), S = {E4}; K = {C.prop}; else, S = {E2, E4}; K = {C.kin, C.prop}; end
@@ -67,7 +73,7 @@ if ~isempty(E4)
     fig_estimador(E4, C.prop, W, 'Estimador_Validacion');
 end
 
-%% Figs. 13-16: lemniscata con viento
+%% Figs. 13-16: lemniscate with wind
 if ~isempty(E5)
     B = E5(1).cfg.viento.bloques;
     tv = [10, mean(B(1,1:2)), mean(B(min(2,end),1:2))];
@@ -79,14 +85,14 @@ if ~isempty(E5)
     fig_errvel({E5}, {C.prop}, W, 'Viento_ErroresVelocidad', B);
 end
 
-%% Figs. 17-18: ablacion del lazo interno
+%% Figs. 17-18: inner-loop ablation
 if ~isempty(E4) && ~isempty(E6)
     fig_oscilacion({E6, E4}, {C.smc, C.prop}, W, 'Comp_Baseline_Oscilaciones', []);
     fig_correccion({E6, E4}, {C.smc, C.prop}, W, 'Comp_Baseline_Chattering', []);
     fig_correccion({E6, E4}, {C.smc, C.prop}, W, 'Comp_Baseline_Chattering_zoom', [40 50]);
 end
 
-%% Figura nueva: barrido de masa (adaptacion)
+%% New figure: mass sweep (adaptation)
 EA = {}; EF = {};
 for i = 1:numel(masas)
     EA{i} = cargar(dir_res, sprintf('E7_masa_%d_asta', masas(i))); %#ok<AGROW>
@@ -99,7 +105,7 @@ clear global FP
 end
 
 %% ======================================================================
-%% Figuras
+%% Figures
 %% ======================================================================
 function fig_posicion(S, K, C, W, nombre, B)
 if nargin < 6, B = []; end
@@ -165,7 +171,7 @@ exportar(f, nombre);
 end
 
 function fig_correccion(S, K, W, nombre, ventana)
-% correccion del lazo interno: comando enviado menos comando cinematico, canales x,y
+% inner-loop correction: sent command minus kinematic command, x,y channels
 [f, ax] = panel(2, W, 0.36*W);
 G = grilla(S{1});
 lab = {'$u_x - v_{d,x}$ [m/s]', '$u_y - v_{d,y}$ [m/s]'};
@@ -180,7 +186,7 @@ exportar(f, nombre);
 end
 
 function fig_estimador(S, K, W, nombre)
-% validacion del estimador de hdot contra la verdad del simulador (repeticion 1, ventana de 10 s)
+% hdot estimator validation against the simulator ground truth (repetition 1, 10 s window)
 r = S(1); t = r.t; v = [20 30];
 [f, ax] = panel(2, W, 0.36*W);
 lab = {'$\dot h_x$ [m/s]', '$\dot h_y$ [m/s]'};
@@ -197,7 +203,7 @@ end
 function fig_masa(EA, EF, masas, C, W, nombre)
 [f, ax] = panel(2, W, 0.42*W);
 lab = {'$\hat\theta_{1,x}=1/\hat\kappa_{u,x}$', '$\hat\theta_{2,x}=\hat\kappa_{v,x}/\hat\kappa_{u,x}$'};
-fil = [1 2];   % filas de R.theta: [th1_x th2_x th1_y th2_y]
+fil = [1 2];   % rows of R.theta: [th1_x th2_x th1_y th2_y]
 for i = 1:2
     axes(ax(i)); hold on;
     for m = 1:numel(masas)
@@ -209,7 +215,7 @@ for i = 1:2
 end
 leyenda(ax(1), h, arrayfun(@(m) sprintf('$m_L = %d$ g', m), masas, 'UniformOutput', false));
 exportar(f, nombre);
-% texto para el pie de figura: RMS de nu_x fijo vs adaptativo
+% text for the figure caption: RMS of nu_x, fixed vs adaptive
 for m = 1:numel(masas)
     if isempty(EF{m}), continue; end
     a = mean(arrayfun(@(r) rms1(r.nu(1, r.t >= r.cfg.met.t_inicio)), EA{m}));
@@ -219,8 +225,8 @@ end
 end
 
 function vista3d(r, t_inst, cada_s, C, letra, w, h, nombre)
-% Trayectoria 3D: referencia, carga y UAV, con el cable dibujado cada 'cada_s' segundos
-% o en el instante t_inst (cubo de 5 m centrado en el cable, +-2 s de trayectoria y flecha de viento).
+% 3D trajectory: reference, payload, and UAV, with the cable drawn every 'cada_s' seconds
+% or at the instant t_inst (5 m cube centered on the cable, +-2 s of trajectory and a wind arrow).
 f = nueva_fig(w, h);
 ax = axes(f, 'Units', 'centimeters', 'Position', [1.2 1.0 w/10-1.8 h/10-2.0]); hold(ax, 'on');
 t = r.t;
@@ -239,18 +245,18 @@ for k = idx
 end
 if ~isempty(t_inst) && norm(r.viento(:,idx)) > 0
     w = r.viento(:,idx); p0 = r.x(:,idx) + [0;0;0.8]; e = 1.2*w/norm(w);
-    plot3(p0(1)+[-e(1) 0], p0(2)+[-e(2) 0], p0(3)*[1 1], 'k-', 'LineWidth', 1.4);      % flecha de viento
+    plot3(p0(1)+[-e(1) 0], p0(2)+[-e(2) 0], p0(3)*[1 1], 'k-', 'LineWidth', 1.4);      % wind arrow
     plot3(p0(1), p0(2), p0(3), 'k>', 'MarkerSize', 4, 'MarkerFaceColor', 'k');
 end
 grid(ax, 'on'); view(ax, 45, 20);
 if isempty(t_inst)
-    P = [r.xd(:,sel), r.xl(:,sel), r.x(:,sel)]; pad = 0.3;    % limites ajustados a lo dibujado
+    P = [r.xd(:,sel), r.xl(:,sel), r.x(:,sel)]; pad = 0.3;    % limits fitted to what is drawn
     lim = [min(P,[],2) - pad, max(P,[],2) + pad].';
 else
-    c = (r.x(:,idx) + r.xl(:,idx))/2;                         % cubo de +-2.5 m centrado en el cable
+    c = (r.x(:,idx) + r.xl(:,idx))/2;                         % +-2.5 m cube centered on the cable
     lim = [c - 2.5, c + 2.5].';
 end
-set(ax, 'XLim', lim(:,1), 'YLim', lim(:,2), 'ZLim', lim(:,3), 'PlotBoxAspectRatio', diff(lim));  % misma escala en x, y, z
+set(ax, 'XLim', lim(:,1), 'YLim', lim(:,2), 'ZLim', lim(:,3), 'PlotBoxAspectRatio', diff(lim));  % same scale in x, y, z
 xlabel(ax, txt('$x$ [m]')); ylabel(ax, txt('$y$ [m]')); zlabel(ax, txt('$z$ [m]'));
 estilo_ejes(ax);
 leyenda(ax, [h1 h2 h3], {'Reference', 'Payload', 'UAV'});
@@ -258,10 +264,10 @@ exportar(f, nombre);
 end
 
 %% ======================================================================
-%% Datos
+%% Data
 %% ======================================================================
 function S = cargar(dir_res, esc)
-% Carga todas las repeticiones de un escenario y agrega las senales derivadas.
+% Loads every repetition of a scenario and adds the derived signals.
 d = dir(fullfile(dir_res, 'raw', [esc '_rep*.mat']));
 S = [];
 for i = 1:numel(d)
@@ -276,20 +282,20 @@ if isempty(S), fprintf('  (sin resultados de %s)\n', esc); end
 end
 
 function G = grilla(S)
-% grilla comun para todas las repeticiones (cada una tiene su propio reloj de simulador)
+% common grid for every repetition (each one has its own simulator clock)
 tf = min(arrayfun(@(r) r.t(end), S));
 G.t = 0:S(1).cfg.planta.dt:tf;
 end
 
 function Y = interp_rep(S, campo, fila, tg, fn)
-% matriz (repeticiones x tiempo) de la senal interpolada a la grilla tg
+% matrix (repetitions x time) of the signal interpolated onto the grid tg
 if nargin < 5, fn = []; end
 Y = nan(numel(S), numel(tg));
 for k = 1:numel(S)
     y = S(k).(campo)(fila, :);
     if ~isempty(fn), y = fn(y); end
 %     Y(k,:) = interp1(S(k).t, y, tg, 'linear', NaN);
-    [tu, iu] = unique(S(k).t(:), 'last');   % descarta lecturas repetidas del simulador
+    [tu, iu] = unique(S(k).t(:), 'last');   % drops repeated simulator readings
     yv = y(:);
     Y(k,:) = interp1(tu, yv(iu), tg, 'linear', NaN);
 end
@@ -297,7 +303,7 @@ if size(Y,1) == 1, return; end
 end
 
 function h = serie(S, campo, fila, tg, K, fn)
-% media de las repeticiones y banda min-max (color aclarado, sin transparencia: compatible con EPS)
+% mean of the repetitions and min-max band (lightened color, no transparency: EPS compatible)
 global FP %#ok<GVMIS>
 if nargin < 6, fn = []; end
 Y = interp_rep(S, campo, fila, tg, fn);
@@ -312,7 +318,7 @@ h = plot(tg, m, K.ls, 'Color', K.c, 'LineWidth', 1.0);
 end
 
 %% ======================================================================
-%% Estilo
+%% Style
 %% ======================================================================
 function f = nueva_fig(w_mm, h_mm)
 f = figure('Visible', 'off', 'Color', 'w', 'Units', 'centimeters', ...
@@ -321,7 +327,7 @@ f = figure('Visible', 'off', 'Color', 'w', 'Units', 'centimeters', ...
 end
 
 function [f, ax] = panel(n, w_mm, h_mm)
-% n ejes apilados que comparten el eje de tiempo, con margenes fijos en mm
+% n stacked axes that share the time axis, with fixed margins in mm
 f = nueva_fig(w_mm, h_mm);
 izq = 16; der = 4; arr = 9; aba = 10; sep = 2.5;           % mm
 alto = (h_mm - arr - aba - (n-1)*sep)/n;
@@ -349,8 +355,8 @@ end
 function etiqueta_y(s), ylabel(txt(s)); end
 
 function leyenda(ax, h, nombres)
-% Leyenda en una franja propia en el borde superior de la figura, para que no mueva ni
-% achique los ejes (asi todos los paneles quedan alineados).
+% Legend in its own strip at the top of the figure, so it neither moves nor
+% shrinks the axes (every panel then stays aligned).
 global FP %#ok<GVMIS>
 nombres = cellfun(@txt_simple, nombres, 'UniformOutput', false);
 f = ancestor(ax, 'figure'); fp = get(f, 'Position');          % cm
@@ -369,7 +375,7 @@ end
 function linea_cero(t), plot([t(1) t(end)], [0 0], '-', 'Color', [0.6 0.6 0.6], 'LineWidth', 0.5); end
 
 function sombrear_viento(B)
-% intervalos de viento como bandas grises de fondo
+% wind intervals as gray background bands
 if isempty(B), return; end
 yl = [-1e3 1e3];
 for i = 1:size(B,1)
@@ -397,7 +403,7 @@ fprintf('  %s\n', nombre);
 end
 
 function ajustar_ylim(f)
-% los parches de viento se dibujan con altura grande; se recalcula el ylim con las lineas
+% the wind patches are drawn very tall; ylim is recomputed from the lines
 ax = findobj(f, 'Type', 'axes');
 for i = 1:numel(ax)
     L = findobj(ax(i), 'Type', 'line');
@@ -409,17 +415,17 @@ for i = 1:numel(ax)
     end
     y = y(isfinite(y));
     if isempty(y) || strcmp(get(ax(i), 'Tag'), 'legend'), continue; end
-    if ~isequal(round(get(ax(i), 'View')), [0 90]), continue; end   % ejes 3D: no tocar
+    if ~isequal(round(get(ax(i), 'View')), [0 90]), continue; end   % 3D axes: leave them alone
     lo = min(y); hi = max(y); m = 0.08*max(hi - lo, eps);
     set(ax(i), 'YLim', [lo - m, hi + m]);
 end
 end
 
 %% ======================================================================
-%% Utilidades
+%% Utilities
 %% ======================================================================
 function s = txt(s)
-% MATLAB interpreta LaTeX; Octave no, asi que alli se simplifica la etiqueta (solo vista previa)
+% MATLAB interprets LaTeX; Octave does not, so the label is simplified there (preview only)
 if es_octave, s = txt_simple(s); end
 end
 
@@ -435,6 +441,6 @@ function c = hex(s), c = sscanf(s(2:end), '%2x%2x%2x').'/255; end
 function a = envolver(a), a = atan2(sin(a), cos(a)); end
 function r = rms1(x), r = sqrt(mean(x.^2)); end
 function y = sin_saltos(y)
-% inserta NaN donde un angulo envuelto salta 2*pi, para no dibujar lineas verticales
+% inserts NaN where a wrapped angle jumps by 2*pi, so vertical lines are not drawn
 j = find(abs(diff(y)) > pi); y(j+1) = NaN;
 end

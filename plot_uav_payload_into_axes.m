@@ -1,54 +1,54 @@
 function plot_uav_payload_into_axes(ax, varargin)
-% PLOT_UAV_PAYLOAD_INTO_AXES  Dibuja un frame de la simulacion UAV-cuerda-carga en un axes existente.
+% PLOT_UAV_PAYLOAD_INTO_AXES  Draws one frame of the UAV-rope-payload simulation into an existing axes.
 %
-% Formato nuevo (resultados de sim_payload_asta / run_paper_experiments):
+% New format (results from sim_payload_asta / run_paper_experiments):
 %   plot_uav_payload_into_axes(ax, R, k)
 %   plot_uav_payload_into_axes(ax, R, k, 'AxesMode', 'local', ...)
-%       R : estructura R del .mat (tambien acepta S = load(archivo), con S.R)
-%       k : indice de muestra (para un tiempo t: [~, k] = min(abs(R.t - t)))
+%       R : R structure from the .mat (also accepts S = load(file), with S.R)
+%       k : sample index (for a time t: [~, k] = min(abs(R.t - t)))
 %
-% Formato antiguo (se mantiene por compatibilidad con los scripts de ../simulations):
+% Legacy format (kept for compatibility with the scripts in ../simulations):
 %   plot_uav_payload_into_axes(ax, k, xd, yd, zd, yQuad, yXil, yRope, payload, tam_carga, frameRate, ...)
 %
-% Opciones (Name-Value):
-%   'WindHist'       matriz 3xN de viento. Formato nuevo: por defecto R.viento
-%   'AxesMode'       'global' (trayectoria completa) o 'local' (zoom alrededor de UAV + carga)
-%   'LocalRadius'    semilado del cubo de vista en modo local [m], default 1.2
-%   'DrawWind'       logical, default true en global y false en local
-%   'TitleStr'       titulo del axes (default segun t y modo)
-%   'ShowTimeTitle'  si false, no pone titulo (default true)
-%   'Limites'        [xmin xmax ymin ymax zmin zmax] en modo global (default: segun los datos)
-%   'Margen'         margen [m] de los limites automaticos en modo global, default 1.5
-%   'EstimarActitud' formato nuevo: inclina el UAV segun su aceleracion (default true).
-%                    R no guarda roll/pitch; se aproximan suponiendo que el empuje apunta
-%                    en la direccion de a + g*e_z (solo para visualizacion).
+% Options (Name-Value):
+%   'WindHist'       3xN wind matrix. New format: defaults to R.viento
+%   'AxesMode'       'global' (full trajectory) or 'local' (zoom around UAV + payload)
+%   'LocalRadius'    half-side of the view cube in local mode [m], default 1.2
+%   'DrawWind'       logical, default true in global and false in local
+%   'TitleStr'       axes title (default from t and the mode)
+%   'ShowTimeTitle'  if false, no title is set (default true)
+%   'Limites'        [xmin xmax ymin ymax zmin zmax] in global mode (default: from the data)
+%   'Margen'         margin [m] of the automatic limits in global mode, default 1.5
+%   'EstimarActitud' new format: tilts the UAV from its acceleration (default true).
+%                    R does not store roll/pitch; they are approximated by assuming the
+%                    thrust points along a + g*e_z (visualization only).
 %
-% Correspondencia con el formato antiguo:
+% Correspondence with the legacy format:
 %   xd, yd, zd          -> R.xd(1,:), R.xd(2,:), R.xd(3,:)
-%   yQuad(1:3,:)        -> R.x          yQuad(15,:) -> R.psi    yQuad(13:14,:) -> no se guarda
+%   yQuad(1:3,:)        -> R.x          yQuad(15,:) -> R.psi    yQuad(13:14,:) -> not stored
 %   yXil                -> R.xl
-%   yRope               -> no se guarda: la cuerda se dibuja recta entre R.x y R.xl (esta tensa)
+%   yRope               -> not stored: the rope is drawn straight between R.x and R.xl (it is taut)
 %   payload, tam_carga  -> R.cfg.planta.mL, R.cfg.planta.tam_carga
-%   frameRate           -> no hace falta: el tiempo es R.t(k)
+%   frameRate           -> not needed: the time is R.t(k)
 %
-% Requiere Nquadrotor, Nquadrotor_parametros y cube_plot (carpeta ../simulations en el path).
+% Requires Nquadrotor, Nquadrotor_parametros, and cube_plot (folder ../simulations on the path).
 
 if isempty(varargin)
     error('plot_uav_payload_into_axes:args', 'Faltan argumentos.');
 end
 
 if isstruct(varargin{1})
-    % ---------------- formato nuevo: (ax, R, k, opciones) ----------------
+    % ---------------- new format: (ax, R, k, options) ----------------
     if numel(varargin) < 2
         error('plot_uav_payload_into_axes:args', 'Uso: plot_uav_payload_into_axes(ax, R, k, ...)');
     end
     R = varargin{1};
-    if isfield(R, 'R'), R = R.R; end            % se paso S = load(archivo)
+    if isfield(R, 'R'), R = R.R; end            % S = load(file) was passed
     k_frame = varargin{2};
     opciones = varargin(3:end);
     formatoNuevo = true;
 else
-    % ---------------- formato antiguo: posicionales ----------------
+    % ---------------- legacy format: positional ----------------
     if numel(varargin) < 10
         error('plot_uav_payload_into_axes:args', ...
             'Uso antiguo: (ax, k, xd, yd, zd, yQuad, yXil, yRope, payload, tam_carga, frameRate, ...)');
@@ -71,7 +71,7 @@ addParameter(p, 'EstimarActitud', true, @(x) islogical(x) && isscalar(x));
 parse(p, opciones{:});
 op = p.Results;
 
-%% ---------------- datos en una representacion comun ----------------
+%% ---------------- data in a common representation ----------------
 if formatoNuevo
     D = datos_desde_R(R, op.EstimarActitud);
     if isempty(op.WindHist) && isfield(R, 'viento'), op.WindHist = R.viento; end
@@ -86,14 +86,14 @@ drawWind = op.DrawWind;
 if isempty(drawWind), drawWind = strcmp(axesMode, 'global'); end
 hayCarga = D.mL >= 0.001 && ~isempty(D.xl);
 
-pq  = D.xq(:, k_frame);                         % posicion del UAV
+pq  = D.xq(:, k_frame);                         % UAV position
 att = D.att(:, k_frame);                        % [roll; pitch; yaw]
 
-%% ---------------- ejes ----------------
+%% ---------------- axes ----------------
 hold(ax, 'on');
 grid(ax, 'on');
 box(ax, 'on');
-axes(ax);                                       % Nquadrotor y cube_plot dibujan en gca
+axes(ax);                                       % Nquadrotor and cube_plot draw on gca
 
 xlabel(ax, 'x [m]', 'FontSize', 11, 'Interpreter', 'latex');
 ylabel(ax, 'y [m]', 'FontSize', 11, 'Interpreter', 'latex');
@@ -112,7 +112,7 @@ if strcmp(axesMode, 'global')
         P = P(:, all(isfinite(P), 1));
         L = [min(P(1,:)) max(P(1,:)) min(P(2,:)) max(P(2,:)) min(P(3,:)) max(P(3,:))] ...
             + op.Margen * [-1 1 -1 1 -1 1];
-        L(5) = max(0, L(5));                    % no por debajo del suelo
+        L(5) = max(0, L(5));                    % not below the ground
     end
 else
     if hayCarga
@@ -127,13 +127,9 @@ xmin = L(1); xmax = L(2); ymin = L(3); ymax = L(4); zmin = L(5); zmax = L(6);
 
 xlim(ax, [xmin xmax]);
 ylim(ax, [ymin ymax]);
-if strcmp(axesMode, 'local')
-    zlim(ax, [zmin zmax]);              % el recuadro zoom sigue a UAV + carga
-else
-    zlim(ax, [0, max(zmax, 1)]);        % vista global: suelo visible, sin recortar la trayectoria
-end
+zlim(ax, [0 10]);
 
-% plano de referencia (suelo, o el piso de la vista si el suelo queda fuera)
+% reference plane (ground, or the floor of the view if the ground is outside)
 [Xg, Yg] = meshgrid(linspace(xmin, xmax, 2), linspace(ymin, ymax, 2));
 Zg = 0 * ones(size(Xg));
 surf(ax, Xg, Yg, Zg, ...
@@ -144,7 +140,7 @@ surf(ax, Xg, Yg, Zg, ...
 lighting(ax, 'gouraud');
 camlight(ax, 'headlight');
 
-%% ---------------- colores ----------------
+%% ---------------- colors ----------------
 color_matlab = get(groot, 'defaultAxesColorOrder');
 colorquad = color_matlab(1, :);
 colorFrenteQuad = [1 0 1];
@@ -152,7 +148,7 @@ colorBox = [0.38 0.1 0.035];
 colorCuerda = [0.5430 0.2695 0.0742];
 colorWind = [0.12 0.62 0.22];
 
-%% ---------------- trayectorias ----------------
+%% ---------------- trajectories ----------------
 scale = 0.573;
 Nquadrotor_parametros(1, scale, colorFrenteQuad, colorquad);
 
@@ -173,9 +169,9 @@ plot3(ax, D.xd(1, k_frame), D.xd(2, k_frame), D.xd(3, k_frame), ...
 %% ---------------- UAV ----------------
 Nquadrotor(1, [pq(1), pq(2), pq(3), att(1), att(2), att(3)]);
 
-%% ---------------- cuerda y carga ----------------
+%% ---------------- rope and payload ----------------
 if hayCarga
-    r = D.cuerda(k_frame);                      % n x 3, primera fila junto al UAV, ultima = carga
+    r = D.cuerda(k_frame);                      % n x 3, first row next to the UAV, last = payload
 
     plot3(ax, r(:, 1), r(:, 2), r(:, 3) + 0.0025, ...
         'Color', colorCuerda, 'LineWidth', 1.6);
@@ -186,7 +182,7 @@ if hayCarga
     dirBoxT = r(end-1, :) - r(end, :);
     dirBoxT = dirBoxT / max(norm(dirBoxT), 1e-12);
     tc = D.tam_carga;
-    pc = r(end, :);                             % punto de enganche de la carga
+    pc = r(end, :);                             % payload attachment point
 
     if D.xl(3, k_frame) < tc / 2
         Hbox = cube_plot([pc(1), pc(2), tc / 2], tc, tc, tc, colorBox);
@@ -198,7 +194,7 @@ if hayCarga
     rotate(Hbox, [0 1 0], rad2deg(asin(dirBoxT(1))), pc);
 end
 
-%% ---------------- viento ----------------
+%% ---------------- wind ----------------
 if drawWind
     if ~isempty(op.WindHist) && size(op.WindHist, 2) >= k_frame
         w_now = op.WindHist(:, k_frame);
@@ -242,7 +238,7 @@ if drawWind
     end
 end
 
-%% ---------------- titulo y leyenda ----------------
+%% ---------------- title and legend ----------------
 if op.ShowTimeTitle
     titleStr = op.TitleStr;
     if isempty(titleStr)
@@ -258,7 +254,7 @@ end
 lighting(ax, 'gouraud');
 camlight(ax, 'headlight');
 
-% Leyenda al final + AutoUpdate off: evita que UAV/cuerda/caja entren como dataN
+% Legend at the end + AutoUpdate off: keeps the UAV/rope/box out of the legend as dataN
 if ~isempty(hPay)
     hLeg = [hRef, hPay]; txtLeg = {'$\mathbf{x}_d$', '$\mathbf{x}_\ell$'};
 else
@@ -267,14 +263,14 @@ end
 try
     legend(ax, hLeg, txtLeg, 'Interpreter', 'latex', 'FontSize', 12, ...
         'Location', 'northwest', 'AutoUpdate', 'off');
-catch                                           % versiones sin 'AutoUpdate'
+catch                                           % versions without 'AutoUpdate'
     legend(ax, hLeg, txtLeg, 'Interpreter', 'latex', 'FontSize', 12, 'Location', 'northeast');
 end
 end
 
 %% ======================================================================
 function D = datos_desde_R(R, estimarActitud)
-% Representacion comun a partir de la estructura R de sim_payload_asta.
+% Common representation built from the R structure of sim_payload_asta.
 D.t   = R.t(:).';
 D.xd  = R.xd;
 D.xq  = R.x;
@@ -292,8 +288,8 @@ if estimarActitud && isfield(R, 'v')
     D.att(1:2, :) = actitud_cuasiestatica(R.v, R.psi, D.t);
 end
 
-% La cuerda no se guarda en R: con el cable tenso es el segmento UAV -> carga
-% (mismo numero de puntos que yRope(1:3:40,:,k) del formato antiguo).
+% The rope is not stored in R: with a taut cable it is the UAV -> payload segment
+% (same number of points as yRope(1:3:40,:,k) in the legacy format).
 npts = 14;
 s = linspace(0, 1, npts).';
 D.cuerda = @(k) (1 - s) * R.x(:, k).' + s * R.xl(:, k).';
@@ -312,13 +308,13 @@ D.cuerda = @(k) yRope(1:3:40, :, k);
 end
 
 function rp = actitud_cuasiestatica(v, psi, t)
-% Roll y pitch aproximados: el empuje apunta segun a + g*e_z, con a = dv/dt suavizada.
-% Convencion de Nquadrotor: Rot = Rz(psi)*Ry(theta)*Rx(phi), z hacia arriba.
+% Approximate roll and pitch: thrust points along a + g*e_z, with a = smoothed dv/dt.
+% Nquadrotor convention: Rot = Rz(psi)*Ry(theta)*Rx(phi), z upward.
 g = 9.81;
 N = numel(t);
 dtm = median(diff(t));
 if ~(dtm > 0), dtm = 0.02; end
-w = max(1, round(0.1 / dtm));                   % semiventana ~0.1 s
+w = max(1, round(0.1 / dtm));                   % half-window ~0.1 s
 i0 = max(1, (1:N) - w);
 i1 = min(N, (1:N) + w);
 dT = t(i1) - t(i0);
@@ -329,7 +325,7 @@ a(~isfinite(a)) = 0;
 
 f = a + [0; 0; g];
 c = cos(psi); s = sin(psi);
-fb1 =  c .* f(1,:) + s .* f(2,:);               % f en el marco de yaw: Rz(-psi)*f
+fb1 =  c .* f(1,:) + s .* f(2,:);               % f in the yaw frame: Rz(-psi)*f
 fb2 = -s .* f(1,:) + c .* f(2,:);
 fb3 = f(3,:);
 theta = atan2(fb1, fb3);

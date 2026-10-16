@@ -1,25 +1,25 @@
 function R = sim_payload_asta(cfg)
-% SIM_PAYLOAD_ASTA  Una corrida del controlador en cascada del manuscrito revisado.
+% SIM_PAYLOAD_ASTA  One run of the cascade controller from the revised manuscript.
 %
-%   R = sim_payload_asta(cfg)      con cfg = cfg_paper(escenario)
+%   R = sim_payload_asta(cfg)      with cfg = cfg_paper(escenario)
 %
-% El lazo lee la planta, evalua la referencia en el tiempo del simulador, llama a
-% controlador_paso (que contiene todas las ecuaciones de la Secc. 2) y envia el
-% comando. Devuelve todas las senales en R; R.cfg es la configuracion usada.
+% The loop reads the plant, evaluates the reference at the simulator time, calls
+% controlador_paso (which contains every equation of Sec. 2), and sends the
+% command. It returns every signal in R; R.cfg is the configuration that was used.
 %
-% [CORR] Con el simulador en tiempo real (backend 'simquad'), la posicion de la carga
-% a veces llega con un frame de atraso respecto de la del UAV (quad1 y rope1 se leen
-% por separado). corregir_lectura_carga detecta esas muestras y reemplaza x_l por la
-% prediccion antes de que entren al controlador. R.xl guarda el valor corregido,
-% R.xl_crudo la lectura original y R.corr_xl marca las muestras corregidas.
+% [CORR] With the real-time simulator (backend 'simquad'), the payload position
+% sometimes arrives one frame late relative to the UAV (quad1 and rope1 are read
+% separately). corregir_lectura_carga detects those samples and replaces x_l by
+% the prediction before they enter the controller. R.xl stores the corrected
+% value, R.xl_crudo the original reading, and R.corr_xl marks the corrected samples.
 
 planta = str2func(['planta_' cfg.planta.backend]);
-es_rt  = strcmp(cfg.planta.backend, 'simquad');      % co-simulacion en tiempo real
+es_rt  = strcmp(cfg.planta.backend, 'simquad');      % real-time co-simulation
 dt0    = cfg.planta.dt;
 Nmax   = ceil(1.2*cfg.planta.T/dt0) + 10;
 
 r0 = referencia_carga(0, cfg.ref);
-x0 = r0.p + [0; 0; cfg.planta.l];                     % carga en la referencia, cable vertical
+x0 = r0.p + [0; 0; cfg.planta.l];                     % payload on the reference, cable vertical
 planta('iniciar', cfg, x0, r0.psi);
 
 Z = @(n) nan(n, Nmax);
@@ -28,10 +28,10 @@ L = struct('t',Z(1),'dt',Z(1),'x',Z(3),'v',Z(3),'psi',Z(1),'xl',Z(3), ...
     'h',Z(3),'hp',Z(3),'hs',Z(2),'hsd',Z(2),'ex',Z(3),'epsi',Z(1), ...
     'vc',Z(3),'ukh',Z(4),'vh',Z(2),'vt',Z(2),'s',Z(2),'nu',Z(2),'w',Z(2), ...
     'phith',Z(2),'theta',Z(4),'ad_on',Z(2),'sat',Z(2),'u',Z(4),'viento',Z(3), ...
-    'xl_crudo',Z(3),'corr_xl',Z(1));                  % [CORR] 1) nuevos registros
+    'xl_crudo',Z(3),'corr_xl',Z(1));                  % [CORR] 1) new logs
 
 st = []; t_prev = []; t0 = []; k = 0; motivo = 'fin'; w_ant = [0;0;0];
-stc = [];                                             % [CORR] 2) estado del corrector
+stc = [];                                             % [CORR] 2) corrector state
 if es_rt, tic; end
 while true
     if es_rt
@@ -47,14 +47,14 @@ while true
         t = k*dt0;
     end
     if isempty(t_prev), dtk = dt0; else, dtk = t - t_prev; end
-    if dtk <= 0, dtk = dt0; end                       % el simulador no avanzo: se usa el nominal
+    if dtk <= 0, dtk = dt0; end                       % the simulator did not advance: use the nominal dt
     t_prev = t;
     if t > cfg.planta.T || k >= Nmax, break; end
     k = k + 1;
 
-    % [CORR] 3) corregir la lectura de la carga ANTES de usar m (controlador,
-    % registro y corte por divergencia). Solo en tiempo real: la planta sustituta
-    % no tiene este problema.
+    % [CORR] 3) correct the payload reading BEFORE using m (controller,
+    % log, and divergence cutoff). Real time only: the surrogate plant
+    % does not have this problem.
     xl_crudo = m.xl;
     corr = false;
     if es_rt
@@ -75,9 +75,9 @@ while true
     L.vh(:,k) = lg.v_h; L.vt(:,k) = lg.vt; L.s(:,k) = lg.s; L.nu(:,k) = lg.nu; L.w(:,k) = lg.w;
     L.phith(:,k) = lg.phith; L.theta(:,k) = lg.theta; L.ad_on(:,k) = lg.ad_on; L.sat(:,k) = lg.sat;
     L.u(:,k) = lg.u; L.viento(:,k) = w;
-    L.xl_crudo(:,k) = xl_crudo; L.corr_xl(k) = corr;  % [CORR] 4) registro
+    L.xl_crudo(:,k) = xl_crudo; L.corr_xl(k) = corr;  % [CORR] 4) log
 
-    % corte por divergencia (Fig. 6a)
+    % divergence cutoff (Fig. 6a)
     alpha = atan2(norm(lg.h(1:2)), lg.h(3));
     if alpha > cfg.exp.alpha_abort || norm(rr.p - m.xl) > cfg.exp.ex_abort
         motivo = 'divergencia'; break;
@@ -91,7 +91,7 @@ R = L;
 R.cfg = cfg;
 R.motivo = motivo;
 R.completo = strcmp(motivo, 'fin');
-R.n_corr_xl = sum(R.corr_xl == 1);                    % [CORR] cantidad de lecturas corregidas
+R.n_corr_xl = sum(R.corr_xl == 1);                    % [CORR] number of corrected readings
 R.fecha = datestr(now, 'yyyy-mm-dd HH:MM:SS');
 R.entorno = entorno();
 end

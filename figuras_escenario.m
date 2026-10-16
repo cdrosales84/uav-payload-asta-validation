@@ -1,8 +1,8 @@
 function figuras_escenario(R, M, prefijo)
-% FIGURAS_ESCENARIO  Figuras de una corrida (las del manuscrito y las de validacion).
-%   1 posicion y yaw de la carga vs referencia     4 errores de velocidad del lazo interno
-%   2 alpha, rho y |v_perp| (verdad del simulador) 5 theta_hat (adaptacion)
-%   3 errores de posicion y yaw                    6 validacion del estimador de hdot
+% FIGURAS_ESCENARIO  Figures for one run (manuscript figures and validation figures).
+%   1 payload position and yaw vs reference        4 inner-loop velocity errors
+%   2 alpha, rho, and |v_perp| (simulator truth)   5 theta_hat (adaptation)
+%   3 position and yaw errors                      6 hdot estimator validation
 
 t = R.t; S = M.serie; lw = 1.2;
 f = figure('Visible', 'off');

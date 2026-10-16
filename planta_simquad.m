@@ -1,16 +1,16 @@
 function out = planta_simquad(op, varargin)
-% PLANTA_SIMQUAD  Interfaz con el simulador de alta fidelidad (SimQuad1.exe + mex, Windows).
+% PLANTA_SIMQUAD  Interface to the high-fidelity simulator (SimQuad1.exe + mex, Windows).
 %
 %   planta_simquad('iniciar', cfg, x0, psi0)
 %   m = planta_simquad('leer')           -> m.t, m.x, m.v, m.psi, m.r, m.xl, m.rope, m.ok
-%   planta_simquad('comandar', u)        -> u = [v_xh v_yh v_zh w_zh] (marco de yaw, m/s y rad/s)
-%   planta_simquad('viento', w)          -> w = [wx wy wz] aplicado al UAV, la cuerda y la carga
+%   planta_simquad('comandar', u)        -> u = [v_xh v_yh v_zh w_zh] (yaw frame, m/s and rad/s)
+%   planta_simquad('viento', w)          -> w = [wx wy wz] applied to the UAV, the rope, and the payload
 %   planta_simquad('cerrar')
 %
-% Requiere que la carpeta ../simulations (mex y SimQuad1.exe) este en el path.
-% Indices de quad1 (ver quad1.cpp): 1:3 posicion, 4:6 velocidad inercial, 15 yaw,
-% 23 velocidad de yaw (wzh), 24 tiempo del simulador. rope1 devuelve las 40
-% particulas de la cuerda; la ultima es la carga.
+% Requires the ../simulations folder (mex and SimQuad1.exe) to be on the path.
+% quad1 indices (see quad1.cpp): 1:3 position, 4:6 inertial velocity, 15 yaw,
+% 23 yaw rate (wzh), 24 simulator time. rope1 returns the 40 rope particles;
+% the last one is the payload.
 
 persistent cfgp
 switch op
@@ -28,7 +28,7 @@ switch op
         simulation1([1, 2*p.T, p.mL, p.tam_carga, p.l, p.spring_friction, p.spring_constant, ...
             p.air_friction, p.ground_repel, p.ground_slide, p.ground_absorption, 0], ...
             [x0(:); psi0], 0, [], []);
-        pause(1);                                  % inicializacion del simulador
+        pause(1);                                  % simulator initialization
         planta_simquad('viento', [0 0 0]);
         out = [];
     case 'leer'

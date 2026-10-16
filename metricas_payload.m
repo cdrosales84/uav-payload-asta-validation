@@ -1,22 +1,22 @@
 function M = metricas_payload(R)
-% METRICAS_PAYLOAD  Metricas de seguimiento y de oscilacion a partir de la verdad del simulador.
+% METRICAS_PAYLOAD  Tracking and swing metrics from the simulator ground truth.
 %
-%   M = metricas_payload(R)       con R = sim_payload_asta(cfg)
+%   M = metricas_payload(R)       with R = sim_payload_asta(cfg)
 %
-% Las velocidades de la carga NO se toman del estimador: se obtienen derivando la
-% posicion de la carga que entrega el simulador (ultima particula de la cuerda) con
-% diferencias centrales sobre el tiempo real del simulador. El estimador h_p se valida
-% contra esa derivada (M.est_*).
+% Payload velocities are not taken from the estimator: they are obtained by
+% differentiating the payload position returned by the simulator (last rope
+% particle) with central differences on the simulator's real time. The h_p
+% estimator is validated against that derivative (M.est_*).
 
 t = R.t; N = numel(t);
 cfg = R.cfg;
 sel = t >= cfg.met.t_inicio;
 
-% velocidad verdadera de la carga y de hdot (diferencias centrales, tiempo no uniforme)
+% true payload velocity and hdot (central differences, nonuniform time)
 vl = dercentral(R.xl, t);
 hdot = R.v - vl;
 
-% seguimiento de la carga (errores sin filtrar)
+% payload tracking (unfiltered errors)
 ex  = R.xd - R.xl;
 evl = R.vd - vl;
 M.rmse_ex  = rmsn(ex(:,sel));
@@ -24,42 +24,42 @@ M.rmse_evl = rmsn(evl(:,sel));
 M.rmse_ex_xyz = sqrt(mean(ex(:,sel).^2, 2)).';
 M.rmse_epsi = sqrt(mean(wrap(R.psid(sel) - R.psi(sel)).^2));
 
-% oscilacion
+% swing
 h = R.h; rho = sqrt(h(1,:).^2 + h(2,:).^2);
-alpha = atan2(rho, h(3,:));                         % h = x - x_l  ->  h_z > 0 con la carga abajo
+alpha = atan2(rho, h(3,:));                         % h = x - x_l  ->  h_z > 0 with the payload below
 hu = h ./ sqrt(sum(h.^2,1));
 vrel = vl - R.v;                                    % v_L - v_U = -hdot
 vperp = vrel - hu .* sum(vrel.*hu, 1);
 nvp = sqrt(sum(vperp.^2,1));
-swing = sqrt(sum((h(1:2,:) - R.hs).^2, 1));         % desvio respecto de la inclinacion cuasiestatica
+swing = sqrt(sum((h(1:2,:) - R.hs).^2, 1));         % deviation from the quasi-static tilt
 M.rms_alpha = rms1(alpha(sel));  M.max_alpha = max(alpha(sel));
 M.rms_rho   = rms1(rho(sel));    M.max_rho   = max(rho(sel));
 M.rms_vperp = rms1(nvp(sel));    M.max_vperp = max(nvp(sel));
 M.rms_swing = rms1(swing(sel));  M.max_swing = max(swing(sel));
 
-% validacion del estimador de hdot contra la verdad del simulador (canales horizontales)
+% hdot estimator validation against the simulator ground truth (horizontal channels)
 se = t >= cfg.met.t_inicio_est;
 eh = R.hp(1:2,se) - hdot(1:2,se);
 M.est_rms_err  = rmsn(eh);
 M.est_rms_true = rmsn(hdot(1:2,se));
 [M.est_retardo, M.est_ganancia] = retardo_ganancia(R.hp(1:2,se), hdot(1:2,se), t(se));
 
-% lazo interno
+% inner loop
 M.rms_vt    = sqrt(mean(R.vt(:,sel).^2, 2)).';
 M.rms_s     = sqrt(mean(R.s(:,sel).^2, 2)).';
 M.rms_nu    = sqrt(mean(R.nu(:,sel).^2, 2)).';
 M.frac_sat  = mean(any(R.sat(:,sel),1));
 M.theta_fin = R.theta(:,end).';                     % [th1_x th2_x th1_y th2_y]
-ts = t(sel); dts = diff(ts); ok = dts > 0;         % el simulador puede repetir un tiempo de muestra
+ts = t(sel); dts = diff(ts); ok = dts > 0;         % the simulator may repeat a sample time
 du = diff(R.u(1:2,sel), 1, 2); du = du(:,ok) ./ dts(ok);
-M.rms_du    = sqrt(mean(du.^2, 2)).';               % diagnostico de chattering
+M.rms_du    = sqrt(mean(du.^2, 2)).';               % chattering diagnostic
 M.tv_u      = sum(abs(diff(R.u(1:2,sel), 1, 2)), 2).';
 
-% corrida
+% run
 M.completo = R.completo; M.t_final = t(end);
 M.dt_medio = mean(R.dt); M.dt_max = max(R.dt);
 
-% series para figuras
+% series for figures
 M.serie = struct('t',t,'vl',vl,'hdot',hdot,'alpha',alpha,'rho',rho,'vperp',nvp,'swing',swing);
 end
 
@@ -77,7 +77,7 @@ function r = rms1(x), r = sqrt(mean(x.^2)); end
 function a = wrap(a), a = atan2(sin(a), cos(a)); end
 
 function [tau, g] = retardo_ganancia(y, x, t)
-% retardo (s) que maximiza la correlacion entre la estimacion y y la verdad x, y ganancia
+% delay (s) that maximizes the correlation between estimate y and truth x, and the gain
 dt = mean(diff(t)); best = -inf; lag = 0;
 for L = 0:15
     a = y(:, 1+L:end); b = x(:, 1:end-L);

@@ -1,0 +1,2 @@
+escenario,rep,completo,t_final,rmse_ex,rmse_evl,rms_alpha,max_alpha,rms_rho,max_rho,rms_vperp,max_vperp,rms_swing,max_swing,est_rms_err,est_retardo,est_ganancia,rms_vt_x,rms_vt_y,rms_nu_x,rms_nu_y,rms_du_x,rms_du_y,tv_u_x,tv_u_y,frac_sat,th1_x,th2_x,th1_y,th2_y,dt_medio,dt_max
+E4_circ_asta,1,1,99.9873,0.385494,0.241015,0.161572,0.262,0.323099,0.520165,0.247036,0.833053,0.227248,0.631678,0.0248196,0.0400061,0.989539,0.11133,0.090549,0.0883993,0.169253,0.386106,0.386463,32.1317,32.0663,0,0.335848,0.995475,0.362686,1.00777,0.0201295,0.0462677

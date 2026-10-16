@@ -1,6 +1,6 @@
 function tabla_parametros_latex(cfg, archivo)
-% TABLA_PARAMETROS_LATEX  Escribe la tabla de parametros del controlador a partir de cfg,
-% para que la tabla del manuscrito coincida siempre con los valores del codigo.
+% TABLA_PARAMETROS_LATEX  Writes the controller parameter table from cfg,
+% so the manuscript table always matches the values used in the code.
 
 dt = cfg.planta.dt;
 fid = fopen(archivo, 'w');

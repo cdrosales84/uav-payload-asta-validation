@@ -1,43 +1,43 @@
 function fig = plot_uav_payload_frame(varargin)
-% PLOT_UAV_PAYLOAD_FRAME  Dibuja un frame offline de la simulacion UAV-carga (una figura, un axes).
+% PLOT_UAV_PAYLOAD_FRAME  Draws one offline frame of the UAV-payload simulation (one figure, one axes).
 %
-% Formato nuevo (resultados de sim_payload_asta / run_paper_experiments):
+% New format (results from sim_payload_asta / run_paper_experiments):
 %   S   = load('results/E2_circ_cinematico/raw/E2_circ_cinematico_rep1.mat');
 %   fig = plot_uav_payload_frame(S.R, k)
 %   fig = plot_uav_payload_frame(S.R, k, 'AxesMode', 'local', 'Figura', fig)
-%       k : indice de muestra. Para un instante t:  [~, k] = min(abs(S.R.t - t));
+%       k : sample index. For an instant t:  [~, k] = min(abs(S.R.t - t));
 %
-%   Opciones propias:
-%     'Figura'  figura existente a reutilizar (se limpia). Util para animar sin abrir
-%               una figura por frame.
-%   El resto de opciones se pasan a plot_uav_payload_into_axes ('AxesMode',
+%   Own options:
+%     'Figura'  existing figure to reuse (it is cleared). Useful for animating
+%               without opening one figure per frame.
+%   The remaining options are passed to plot_uav_payload_into_axes ('AxesMode',
 %   'LocalRadius', 'DrawWind', 'TitleStr', 'Limites', 'EstimarActitud', 'WindHist', ...).
 %
-% Formato antiguo (compatibilidad):
+% Legacy format (compatibility):
 %   fig = plot_uav_payload_frame(k, xd, yd, zd, yQuad, yXil, yRope, payload, tam_carga, frameRate)
 %   fig = plot_uav_payload_frame(..., wind_hist)
 %
-% Ejemplo de animacion a 30 fps con el formato nuevo:
+% Example of a 30 fps animation with the new format:
 %   R = S.R; fig = [];
 %   for t = 0:1/30:R.t(end)
 %       [~, k] = min(abs(R.t - t));
 %       fig = plot_uav_payload_frame(R, k, 'Figura', fig);
 %   end
 %
-% La logica de dibujo esta en plot_uav_payload_into_axes.
+% The drawing logic is in plot_uav_payload_into_axes.
 
 if isempty(varargin)
     error('plot_uav_payload_frame:args', 'Faltan argumentos.');
 end
 
 if isstruct(varargin{1})
-    % ---------------- formato nuevo: (R, k, opciones) ----------------
+    % ---------------- new format: (R, k, options) ----------------
     R = varargin{1};
-    if isfield(R, 'R'), R = R.R; end            % se paso S = load(archivo)
+    if isfield(R, 'R'), R = R.R; end            % S = load(file) was passed
     k = varargin{2};
     opciones = varargin(3:end);
 
-    % separar la opcion 'Figura' de las que van a plot_uav_payload_into_axes
+    % split the 'Figura' option from those passed to plot_uav_payload_into_axes
     fig = [];
     i = 1;
     while i <= numel(opciones) - 1
@@ -56,9 +56,9 @@ if isstruct(varargin{1})
         'AxesMode', 'global', ...
         'DrawWind', true, ...
         'TitleStr', sprintf('t = %.2f s', R.t(kk)), ...
-        opciones{:});                           % las opciones del usuario tienen prioridad
+        opciones{:});                           % the caller's options take priority
 else
-    % ---------------- formato antiguo ----------------
+    % ---------------- legacy format ----------------
     [k_frame, xd, yd, zd, yQuad, yXil, yRope, payload, tam_carga, frameRate] = varargin{1:10};
     wind_hist = [];
     if numel(varargin) > 10, wind_hist = varargin{11}; end

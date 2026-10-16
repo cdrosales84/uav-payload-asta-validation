@@ -1,0 +1,24 @@
+% Generado por comparar_omar_vs_asta.m (2026-10-14 23:12, backend simquad).
+% Media $\pm$ desvio sobre repeticiones, t >= 5 s. Delta = (Omar - propuesto)/Omar.
+% p: prueba t de Welch bilateral, Omar vs propuesto.
+
+% ---- E4_circ_asta ----
+\begin{tabular}{lccccc}
+\toprule
+Metric & PX4-type tracking (no ASC) & Omar (2022) delayed-feedback ASC & Proposed (kinematic + A-STA) & $\Delta$ [\%] & $p$ \\
+\midrule
+Completed runs & 1/1 & 1/1 & 1/1 & & \\
+RMSE $\tilde{\mathbf{x}}$ [m] & $0.4903$ & $0.6171$ & $0.1571$ & +74.5 & -- \\
+RMSE $\dot{\tilde{\mathbf{x}}}$ [m/s] & $0.3473$ & $0.4257$ & $0.1492$ & +65.0 & -- \\
+RMS $\alpha$ [rad] & $0.1746$ & $0.1744$ & $0.1609$ & +7.7 & -- \\
+Max $\alpha$ [rad] & $0.2048$ & $0.2322$ & $0.2024$ & +12.8 & -- \\
+RMS $\rho$ [m] & $0.3488$ & $0.3485$ & $0.3218$ & +7.6 & -- \\
+Max $\rho$ [m] & $0.4085$ & $0.4622$ & $0.4037$ & +12.7 & -- \\
+RMS $\|\mathbf{v}_\perp\|$ [m/s] & $0.2242$ & $0.2281$ & $0.2394$ & -5.0 & -- \\
+Max $\|\mathbf{v}_\perp\|$ [m/s] & $0.3665$ & $0.4507$ & $0.5538$ & -22.9 & -- \\
+RMS $\|\mathbf{h}_h-\mathbf{h}^\star_h\|$ [m] & $0.2560$ & $0.2694$ & $0.2179$ & +19.1 & -- \\
+ISH, Eq.~(4) of Omar [rad$^2$s] & $2.9112$ & $2.9050$ & $2.4706$ & +15.0 & -- \\
+ISH about $\mathbf{h}^\star_h$ [rad$^2$s] & $1.5769$ & $1.7455$ & $1.1403$ & +34.7 & -- \\
+RMS $\|\dot{\mathbf{u}}_h\|$ [m/s$^2$] & $0.0424$ & $0.0581$ & $0.5590$ & -862.1 & -- \\
+\bottomrule
+\end{tabular}

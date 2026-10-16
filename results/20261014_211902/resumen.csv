@@ -1,0 +1,2 @@
+escenario,rep,completo,t_final,rmse_ex,rmse_evl,rms_alpha,max_alpha,rms_rho,max_rho,rms_vperp,max_vperp,rms_swing,max_swing,est_rms_err,est_retardo,est_ganancia,rms_vt_x,rms_vt_y,rms_nu_x,rms_nu_y,rms_du_x,rms_du_y,tv_u_x,tv_u_y,frac_sat,th1_x,th2_x,th1_y,th2_y,dt_medio,dt_max
+E5_lemn_viento,1,1,99.9752,0.436117,0.199361,0.108631,0.300393,0.219025,0.59857,0.160612,0.736718,0.214935,0.6472,0.0209887,0.0399998,1.00032,0.113542,0.101434,0.106531,0.15804,0.420232,0.386431,34.8937,31.7415,0,0.353509,0.9952,0.334068,1.02473,0.019999,0.034625
